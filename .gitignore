@@ -1,0 +1,16 @@
+# Build directories
+build
+builddir
+release
+shadersbin
+
+# Subprojects
+subprojects/packagecache
+subprojects/libgmath
+subprojects/glfw-*
+
+# Editor files
+.vscode
+
+# Other files
+.nfs*
