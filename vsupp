@@ -76,23 +76,6 @@
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:malloc
-   fun:_dbus_strdup
-   fun:dbus_bus_register
-   obj:/usr/lib/x86_64-linux-gnu/libdbus-1.so.3.19.13
-   obj:*
-   obj:*
-   obj:*
-   obj:*
-   obj:*
-   obj:*
-   obj:*
-   obj:*
-}
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: reachable
-   fun:malloc
    fun:_XimOpenIM
    fun:glfwInit
    fun:main
@@ -174,6 +157,23 @@
    obj:/usr/lib/x86_64-linux-gnu/libdbus-1.so.3.19.13
    fun:dbus_bus_register
    obj:/usr/lib/x86_64-linux-gnu/libdbus-1.so.3.19.13
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_dbus_strdup
+   fun:dbus_bus_register
+   obj:/usr/lib/x86_64-linux-gnu/libdbus-1.so.3.19.13
+   obj:*
    obj:*
    obj:*
    obj:*
@@ -1091,7 +1091,7 @@
    obj:*
    obj:*
    obj:*
-   obj:/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.296
+   obj:/usr/lib/x86_64-linux-gnu/libvulkan.so.1.4.313
 }
 {
    <insert_a_suppression_name_here>
@@ -1108,7 +1108,7 @@
    obj:*
    obj:*
    obj:*
-   obj:/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.296
+   obj:/usr/lib/x86_64-linux-gnu/libvulkan.so.1.4.313
 }
 {
    <insert_a_suppression_name_here>
@@ -5425,7 +5425,7 @@
    obj:*
    obj:*
    obj:*
-   obj:/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.296
+   obj:/usr/lib/x86_64-linux-gnu/libvulkan.so.1.4.313
 }
 {
    <insert_a_suppression_name_here>
@@ -5442,7 +5442,7 @@
    obj:*
    obj:*
    obj:*
-   obj:/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.296
+   obj:/usr/lib/x86_64-linux-gnu/libvulkan.so.1.4.313
 }
 {
    <insert_a_suppression_name_here>
@@ -17672,7 +17672,7 @@
    obj:*
    obj:*
    obj:*
-   obj:/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.296
+   obj:/usr/lib/x86_64-linux-gnu/libvulkan.so.1.4.313
 }
 {
    <insert_a_suppression_name_here>
@@ -42574,7 +42574,7 @@
    fun:_dl_catch_error
    fun:_dlerror_run
    fun:dlclose@@GLIBC_2.34
-   obj:/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.296
+   obj:/usr/lib/x86_64-linux-gnu/libvulkan.so.1.4.313
    fun:vkDestroyInstance
    fun:_ZN13VulkanContext7destroyEv
    fun:_Z13destroyEngineR6Engine
