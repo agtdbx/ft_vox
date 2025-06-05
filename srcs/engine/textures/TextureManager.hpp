@@ -116,7 +116,7 @@ public:
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
 	std::unordered_map<std::string, Texture>	textures;
-	std::unordered_map<std::string, Image>	images;
+	std::unordered_map<std::string, Image>		images;
 
 //**** PRIVATE METHODS *********************************************************
 	/**

@@ -2,21 +2,21 @@
 # define LOOP_HPP
 
 # include <define.hpp>
-# include <program/shaderStruct.hpp>
 # include <engine/engine.hpp>
-# include <engine/mesh/Mesh.hpp>
 # include <engine/camera/Camera.hpp>
 # include <engine/window/Window.hpp>
 # include <engine/shader/Shader.hpp>
 # include <engine/inputs/InputManager.hpp>
 # include <engine/vulkan/VulkanContext.hpp>
 # include <engine/textures/TextureManager.hpp>
+# include <program/shaderStruct.hpp>
+# include <program/map/Map.hpp>
 
 /**
  * @brief Init function of program.
  *
  * @param engine Engine to init.
- * @param mesh Mesh to init.
+ * @param map Map to init.
  * @param shader Shader to init.
  * @param camera Camera to init.
  *
@@ -24,7 +24,7 @@
  */
 bool init(
 			Engine &engine,
-			Mesh &mesh,
+			Map &map,
 			Shader &shader,
 			Camera &camera);
 /**
@@ -38,31 +38,26 @@ void	events(
  * @brief Make computation of program.
  *
  * @param engine Engine struct.
- * @param mesh Mesh to update.
- * @param ubo UBO to update.
+ * @param map Map to update.
  * @param camera Camera to update.
  * @param delta Delta time, previous main loop execution time in second.
  */
 void	computation(
 			Engine &engine,
-			Mesh &mesh,
-			UBO3DMesh &ubo,
+			Map &map,
 			Camera &camera,
 			double delta);
 /**
  * @brief Function to call drawing.
  *
  * @param engine Engine struct.
- * @param mesh Mesh to draw.
- * @param mesh Mesh to draw.
- * @param ubo UBO to use in shader.
+ * @param map Map to draw.
  * @param shader Shader used for draw.
  * @param camera Camera used for draw.
  */
 void	draw(
 			Engine &engine,
-			Mesh &mesh,
-			UBO3DMesh &ubo,
+			Map &map,
 			Shader &shader,
 			Camera &camera);
 

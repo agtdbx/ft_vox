@@ -1,14 +1,18 @@
 #include <program/loop/loop.hpp>
 
 
-static void perfLog(double delta, Window &window);
-static void cameraMovements(InputManager &inputManager, Camera &camera, double delta);
+static void perfLog(
+				double delta,
+				Window &window);
+static void cameraMovements(
+				InputManager &inputManager,
+				Camera &camera,
+				double delta);
 
 
 void	computation(
 			Engine &engine,
-			Mesh &mesh,
-			UBO3DMesh &ubo,
+			Map &map,
 			Camera &camera,
 			double delta)
 {
@@ -17,16 +21,12 @@ void	computation(
 	perfLog(delta, engine.window);
 
 	cameraMovements(inputManager, camera, delta);
-
-	// Update ubo
-	ubo.model = mesh.getModel();
-	ubo.view = camera.getView();
-	ubo.proj = camera.getProjection();
-	ubo.proj.at(1, 1) *= -1;
 }
 
 
-static void perfLog(double delta, Window &window)
+static void perfLog(
+				double delta,
+				Window &window)
 {
 	static double	printFpsTime = 0.0;
 	static double	minDelta = 1000.0;
@@ -64,7 +64,10 @@ static void perfLog(double delta, Window &window)
 }
 
 
-static void cameraMovements(InputManager &inputManager, Camera &camera, double delta)
+static void cameraMovements(
+				InputManager &inputManager,
+				Camera &camera,
+				double delta)
 {
 	// Speed
 	float speed = SPEED * delta;

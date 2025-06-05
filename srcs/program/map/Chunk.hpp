@@ -1,0 +1,131 @@
+#ifndef CHUNK_HPP
+# define CHUNK_HPP
+
+# define CHUNK_SIZE 16
+
+const int	CHUNK_SIZE2 = CHUNK_SIZE * CHUNK_SIZE;
+const int	CHUNK_SIZE3 = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
+
+# include <engine/engine.hpp>
+# include <engine/mesh/Mesh.hpp>
+# include <engine/shader/Shader.hpp>
+# include <engine/camera/Camera.hpp>
+# include <program/map/Cube.hpp>
+# include <program/shaderStruct.hpp>
+
+/**
+ * @brief Chunk class.
+ */
+class Chunk
+{
+public:
+//**** PUBLIC ATTRIBUTS ********************************************************
+//**** INITIALISION ************************************************************
+//---- Constructors ------------------------------------------------------------
+	/**
+	 * @brief Default contructor of Chunk class.
+	 *
+	 * @return The default Chunk.
+	 */
+	Chunk(void);
+	/**
+	 * @brief Copy constructor of Chunk class.
+	 *
+	 * @param obj The Chunk to copy.
+	 *
+	 * @return The Chunk copied from parameter.
+	 */
+	Chunk(const Chunk &obj);
+
+//---- Destructor --------------------------------------------------------------
+	/**
+	 * @brief Destructor of Chunk class.
+	 */
+	~Chunk();
+
+//**** ACCESSORS ***************************************************************
+//---- Getters -----------------------------------------------------------------
+	/**
+	 * @brief Getter of cube in a chunk.
+	 *
+	 * @param x X coordonate of the cube in the chunk.
+	 * @param y Y coordonate of the cube in the chunk.
+	 * @param z Z coordonate of the cube in the chunk.
+	 *
+	 * @return The cube at the coordonate, or air in case of invalid coordonates.
+	 */
+	Cube	getCube(unsigned int x, unsigned int y, unsigned int z);
+
+//---- Setters -----------------------------------------------------------------
+	/**
+	 * @brief Setter of cube in a chunk. Does nothing in case of invalid coordonates.
+	 *
+	 * @param x X coordonate of the cube in the chunk.
+	 * @param y Y coordonate of the cube in the chunk.
+	 * @param z Z coordonate of the cube in the chunk.
+	 * @param cube The new cube to set.
+	 */
+	void	setCube(unsigned int x, unsigned int y, unsigned int z, Cube cube);
+
+//---- Operators ---------------------------------------------------------------
+	/**
+	 * @brief Copy operator of Chunk class.
+	 *
+	 * @param obj The Chunk to copy.
+	 *
+	 * @return The Chunk copied from parameter.
+	 */
+	Chunk	&operator=(const Chunk &obj);
+
+//**** PUBLIC METHODS **********************************************************
+	/**
+	 * @brief Init the chunk meshes.
+	 *
+	 * @param commandPool The engine command pool.
+	 * @param camera The camera.
+	 */
+	void	init(VulkanCommandPool &commandPool, Camera &camera);
+	/**
+	 * @brief Draw chunk meshes.
+	 *
+	 * @param engine Engine struct.
+	 * @param shader Shader used to draw meshes.
+	 * @param camera The camera.
+	 */
+	void	draw(Engine &engine, Camera &camera, Shader &shader);
+	/**
+	 * @brief Destroy chunk.
+	 */
+	void	destroy(void);
+
+//**** STATIC METHODS **********************************************************
+
+private:
+//**** PRIVATE ATTRIBUTS *******************************************************
+//---- Chunk properties --------------------------------------------------------
+	std::vector<gm::Vec3f>	positions;
+	Cube	cubes[CHUNK_SIZE3]; // id = x + y * SIZE + z * SIZE2
+	Mesh	meshUp, meshDown, meshRight, meshLeft, meshFront, meshBack;
+	UBO3DChunk	uboUp;
+//---- Copy --------------------------------------------------------------------
+	VulkanCommandPool	*copyCommandPool;
+
+//**** PRIVATE METHODS *********************************************************
+	/**
+	 * @brief Generate meshes for the first time.
+	 */
+	void	generateMeshes(void);
+	/**
+	 * @brief Update meshes when a block change.
+	 */
+	void	updateMeshes(void);
+	/**
+	 * @brief Create mesh for up faces.
+	 */
+	void	createMeshUp(void);
+
+};
+
+//**** FUNCTIONS ***************************************************************
+
+#endif

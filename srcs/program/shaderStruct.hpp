@@ -6,7 +6,7 @@
 /*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/04 15:27:31 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/06/05 13:51:48 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 # include <gmath.hpp>
 
 // Uniform buffer object
-struct UBO3DMesh {
+struct UBO3DChunk {
 	gm::Mat4f	model;
 	gm::Mat4f	view;
 	gm::Mat4f	proj;

@@ -2,16 +2,14 @@
 
 void	draw(
 			Engine &engine,
-			Mesh &mesh,
-			UBO3DMesh &ubo,
+			Map &map,
 			Shader &shader,
 			Camera &camera)
 {
 	// Start drawing
 	engine.window.startDraw();
 
-	shader.updateUBO(engine.window, &ubo);
-	engine.window.drawMesh(mesh, shader);
+	map.draw(engine, camera, shader);
 
 	// End drawing
 	engine.window.endDraw(engine.context);

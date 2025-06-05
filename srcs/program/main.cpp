@@ -6,7 +6,7 @@
 /*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 15:33:15 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/04 16:21:34 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/06/05 14:04:29 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,17 +24,16 @@ int	main(void)
 
 	Engine	engine;
 	Camera	camera;
-	Mesh	mesh;
 	Shader	shader;
-	UBO3DMesh	ubo;
+	Map		map;
 
-	if (!init(engine, mesh, shader, camera))
+	if (!init(engine, map, shader, camera))
 	{
 		// Wait all vulkan tasks
 		vkDeviceWaitIdle(engine.context.getDevice());
 
 		// Destroy vulkans attributs
-		mesh.destroy();
+		map.destroy();
 		shader.destroy(engine);
 
 		// Terminate engine and glfw
@@ -61,17 +60,17 @@ int	main(void)
 			break;
 
 		// Compute part
-		computation(engine, mesh, ubo, camera, delta);
+		computation(engine, map, camera, delta);
 
 		// Drawing part
-		draw(engine, mesh, ubo, shader, camera);
+		draw(engine, map, shader, camera);
 	}
 
 	// Wait all vulkan tasks
 	vkDeviceWaitIdle(engine.context.getDevice());
 
 	// Destroy vulkans attributs
-	mesh.destroy();
+	map.destroy();
 	shader.destroy(engine);
 
 	// Terminate engine and glfw

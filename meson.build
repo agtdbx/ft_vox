@@ -25,6 +25,8 @@ srcs = [
   'srcs/program/loop/computation.cpp',
   'srcs/program/loop/draw.cpp',
   'srcs/program/loop/events.cpp',
+  'srcs/program/map/Chunk.cpp',
+  'srcs/program/map/Map.cpp',
 ]
 
 executable('ft_vox',
