@@ -176,7 +176,7 @@ void	Chunk::createMeshUp(void)
 		}
 	}
 
-	this->meshUp = Mesh(vertices, indices);
+	this->meshUp = ChunkMesh(vertices, indices);
 	this->meshUp.createBuffers(*this->copyCommandPool);
 }
 

@@ -45,7 +45,7 @@ static void	loadTextures(Engine &engine)
 
 static void loadShaders(Engine &engine, Shader &shader)
 {
-	shader.init(engine, sizeof(UBO3DChunk), FCUL_COUNTER,
-					"shadersbin/mesh_vert.spv", "shadersbin/mesh_frag.spv",
-					{"dirt"});
+	shader.init<Vertex>(engine, sizeof(UBO3DChunk), FCUL_COUNTER,
+							"shadersbin/mesh_vert.spv", "shadersbin/mesh_frag.spv",
+							{"dirt"});
 }
