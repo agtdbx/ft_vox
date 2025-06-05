@@ -8,12 +8,13 @@ const int	CHUNK_SIZE3 = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
 
 # include <engine/engine.hpp>
 # include <engine/mesh/Mesh.hpp>
+# include <engine/mesh/VertexPos.hpp>
 # include <engine/shader/Shader.hpp>
 # include <engine/camera/Camera.hpp>
 # include <program/map/Cube.hpp>
 # include <program/shaderStruct.hpp>
 
-using ChunkMesh = Mesh<Vertex>;
+using ChunkMesh = Mesh<VertexPos>;
 
 /**
  * @brief Chunk class.
@@ -114,13 +115,9 @@ private:
 
 //**** PRIVATE METHODS *********************************************************
 	/**
-	 * @brief Generate meshes for the first time.
+	 * @brief Create meshes.
 	 */
-	void	generateMeshes(void);
-	/**
-	 * @brief Update meshes when a block change.
-	 */
-	void	updateMeshes(void);
+	void	createMeshes(void);
 	/**
 	 * @brief Create mesh for up faces.
 	 */

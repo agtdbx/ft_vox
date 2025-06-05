@@ -6,7 +6,7 @@
 /*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/05 11:39:52 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/06/05 16:56:18 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@
 # define FOV 80.0f
 # define NEAR 0.1f
 # define FAR 100.0f
-# define SPEED 1.0f
+# define SPEED 3.0f // TODO Put it to 1
 # define SPRINT 5.0f // TODO Put it to x20
 # define ROTATE 45.0f
 

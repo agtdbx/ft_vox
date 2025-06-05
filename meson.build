@@ -11,6 +11,7 @@ srcs = [
   'srcs/engine/vulkan/VulkanUtils.cpp',
   'srcs/engine/camera/Camera.cpp',
   'srcs/engine/mesh/Vertex.cpp',
+  'srcs/engine/mesh/VertexPos.cpp',
   'srcs/engine/window/Window.cpp',
   'srcs/engine/engine.cpp',
   'srcs/engine/shader/Shader.cpp',

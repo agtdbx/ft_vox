@@ -68,7 +68,7 @@ public:
 	 *
 	 * @warning You need to call createBuffers after it if you want to use it for drawing.
 	 */
-	Mesh(const std::vector<Vertex> &vertices, const std::vector<uint32_t> &indices)
+	Mesh(const std::vector<VertexType> &vertices, const std::vector<uint32_t> &indices)
 	{
 		this->position = gm::Vec3f(0.0f);
 		this->model = gm::Mat4f(1.0f);
