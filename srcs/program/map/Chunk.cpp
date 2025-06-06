@@ -113,14 +113,14 @@ void	Chunk::draw(Engine &engine, Camera &camera, Shader *chunkShaders)
 	this->uboPos.view = camera.getView();
 
 	// Draw mesh up
-	chunkShaders[SHADER_UP].updateUBO(engine.window, &this->uboPos, 0);
+	/*chunkShaders[SHADER_UP].updateUBO(engine.window, &this->uboPos, 0);
 	chunkShaders[SHADER_UP].updateUBO(engine.window, &this->uboCubes, 1);
-	engine.window.drawMesh(this->meshUp, chunkShaders[SHADER_UP]);
+	engine.window.drawMesh(this->meshUp, chunkShaders[SHADER_UP]);*/
 
 	// Draw mesh front
-	// chunkShaders[SHADER_FRONT].updateUBO(engine.window, &this->uboPos, 0);
-	// chunkShaders[SHADER_FRONT].updateUBO(engine.window, &this->uboCubes, 1);
-	// engine.window.drawMesh(this->meshFront, chunkShaders[SHADER_FRONT]);
+	chunkShaders[SHADER_FRONT].updateUBO(engine.window, &this->uboPos, 0);
+	chunkShaders[SHADER_FRONT].updateUBO(engine.window, &this->uboCubes, 1);
+	engine.window.drawMesh(this->meshFront, chunkShaders[SHADER_FRONT]);
 }
 
 
