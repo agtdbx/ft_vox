@@ -2,7 +2,7 @@
 
 // Images input
 layout(binding = 1) uniform UniformBufferObject {
-    int cubes[4096];
+    ivec4 cubes[1024]; // 1024 * 4 = 4096 ints
 } ubo;
 layout(binding = 2) uniform sampler2D sampleGrass;
 layout(binding = 3) uniform sampler2D sampleDirt;
@@ -23,8 +23,6 @@ layout(location = 0) out vec4   outColor;
 
 // Constants
 const vec3  normal = vec3(0, 1, 0);
-const int   chunkSize = 16;
-const int   chunkSize2 = 256;
 
 // Function
 vec4    getColor(vec2 texCoord, int cubeType)
@@ -58,10 +56,10 @@ void main() {
     vec2    texCoord = fragPosition.xz;
 
     int x = int(fragPosition.x);
-    int y = int(fragPosition.y);
+    int y = int(fragPosition.y + 0.01);
     int z = int(fragPosition.z);
-    // int cubeType = ubo.cubes[x + y * 16 + z * 256];
-    int cubeType = 10;
+    int cubeId = x + y * 16 + z * 256;
+    int cubeType = ubo.cubes[cubeId >> 2][cubeId % 4]; // >> 2 = / 4
 
     outColor = getColor(texCoord, cubeType);
 }

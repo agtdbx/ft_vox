@@ -9,6 +9,8 @@ static uint32_t	getVetrexId(
 					std::vector<VertexPos> &vertices,
 					VertexPos &vertex,
 					int &nbVertex);
+static char	cubeToChar(Cube cube); // TODO Remove
+static char	printChunkSlide(Cube *cubes, int z); // TODO Remove
 
 //**** INITIALISION ************************************************************
 //---- Constructors ------------------------------------------------------------
@@ -26,11 +28,11 @@ Chunk::Chunk(void)
 					this->cubes[id] = CUBE_AIR;
 				else
 				{
-					if (x % 2 == 0 && y % 2 == 0)
+					if (x % 2 == 0 && z % 2 == 0)
 						this->cubes[id] = CUBE_GRASS;
-					else if (x % 2 == 0 && y % 2 == 1)
+					else if (x % 2 == 0 && z % 2 == 1)
 						this->cubes[id] = CUBE_DIRT;
-					else if (x % 2 == 1 && y % 2 == 0)
+					else if (x % 2 == 1 && z % 2 == 0)
 						this->cubes[id] = CUBE_STONE;
 					else
 						this->cubes[id] = CUBE_WATER;
@@ -204,4 +206,50 @@ static uint32_t	getVetrexId(
 	vertices.push_back(vertex);
 
 	return (nbVertex++);
+}
+
+
+static char	cubeToChar(Cube cube)
+{
+	if (cube == CUBE_AIR)
+		return (' ');
+	else if (cube == CUBE_GRASS)
+		return ('G');
+	else if (cube == CUBE_DIRT)
+		return ('D');
+	else if (cube == CUBE_STONE)
+		return ('S');
+	else if (cube == CUBE_WATER)
+		return ('W');
+	else if (cube == CUBE_SNOW)
+		return ('s');
+	else if (cube == CUBE_ICE)
+		return ('I');
+	else if (cube == CUBE_SAND)
+		return ('S');
+	else if (cube == CUBE_LAVA)
+		return ('L');
+	else if (cube == CUBE_IRON)
+		return ('i');
+	else if (cube == CUBE_DIAMOND)
+		return ('d');
+	else
+		return ('?');
+}
+
+
+static char	printChunkSlide(Cube *cubes, int z)
+{
+	for (int y = CHUNK_SIZE - 1; y >= 0; y--)
+	{
+		printf("|");
+		for (int x = 0; x < CHUNK_SIZE; x++)
+		{
+			int	id = x + y * CHUNK_SIZE + z * CHUNK_SIZE2;
+			if (x > 0)
+				printf(" ");
+			printf("%c", cubeToChar(cubes[id]));
+		}
+		printf("|\n");
+	}
 }
