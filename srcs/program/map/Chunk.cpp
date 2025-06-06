@@ -89,6 +89,14 @@ void	Chunk::setCube(unsigned int x, unsigned int y, unsigned int z, Cube cube)
 	this->cubes[x + y * CHUNK_SIZE + z * CHUNK_SIZE2] = cube;
 }
 
+
+void	Chunk::setCube(const gm::Vec3u &pos, Cube cube)
+{
+	if (pos.x >= CHUNK_SIZE || pos.y >= CHUNK_SIZE || pos.z >= CHUNK_SIZE)
+		return ;
+	this->cubes[pos.x + pos.y * CHUNK_SIZE + pos.z * CHUNK_SIZE2] = cube;
+}
+
 //---- Operators ---------------------------------------------------------------
 
 Chunk	&Chunk::operator=(const Chunk &obj)

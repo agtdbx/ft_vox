@@ -2,7 +2,7 @@
 
 // Images input
 layout(binding = 1) uniform UniformBufferObject {
-    ivec4 cubes[1024]; // 1024 * 4 = 4096 ints
+    ivec4 cubes[8192]; // 8192 * 4 = 32768 ints
 } ubo;
 layout(binding = 2) uniform sampler2D sampleGrass;
 layout(binding = 3) uniform sampler2D sampleDirt;
@@ -59,7 +59,7 @@ vec4    getUpColor()
     int x = int(fragPosition.x);
     int y = int(fragPosition.y - 0.01);
     int z = int(fragPosition.z);
-    int cubeId = x + y * 16 + z * 256;
+    int cubeId = x + y * 32 + z * 1024;
     int cubeType = ubo.cubes[cubeId >> 2][cubeId % 4]; // >> 2 = / 4
 
     return (getCubeTexture(texCoord, cubeType));
@@ -73,7 +73,7 @@ vec4    getDownColor()
     int x = int(fragPosition.x);
     int y = int(fragPosition.y + 0.01);
     int z = int(fragPosition.z);
-    int cubeId = x + y * 16 + z * 256;
+    int cubeId = x + y * 32 + z * 1024;
     int cubeType = ubo.cubes[cubeId >> 2][cubeId % 4]; // >> 2 = / 4
 
     return (getCubeTexture(texCoord, cubeType));
@@ -87,7 +87,7 @@ vec4    getLeftColor()
     int x = int(fragPosition.x + 0.01);
     int y = int(fragPosition.y);
     int z = int(fragPosition.z);
-    int cubeId = x + y * 16 + z * 256;
+    int cubeId = x + y * 32 + z * 1024;
     int cubeType = ubo.cubes[cubeId >> 2][cubeId % 4]; // >> 2 = / 4
 
     return (getCubeTexture(texCoord, cubeType));
@@ -101,7 +101,7 @@ vec4    getRightColor()
     int x = int(fragPosition.x - 0.01);
     int y = int(fragPosition.y);
     int z = int(fragPosition.z);
-    int cubeId = x + y * 16 + z * 256;
+    int cubeId = x + y * 32 + z * 1024;
     int cubeType = ubo.cubes[cubeId >> 2][cubeId % 4]; // >> 2 = / 4
 
     return (getCubeTexture(texCoord, cubeType));
@@ -115,7 +115,7 @@ vec4    getFrontColor()
     int x = int(fragPosition.x);
     int y = int(fragPosition.y);
     int z = int(fragPosition.z - 0.01);
-    int cubeId = x + y * 16 + z * 256;
+    int cubeId = x + y * 32 + z * 1024;
     int cubeType = ubo.cubes[cubeId >> 2][cubeId % 4]; // >> 2 = / 4
 
     return (getCubeTexture(texCoord, cubeType));
@@ -129,7 +129,7 @@ vec4    getBackColor()
     int x = int(fragPosition.x);
     int y = int(fragPosition.y);
     int z = int(fragPosition.z + 0.01);
-    int cubeId = x + y * 16 + z * 256;
+    int cubeId = x + y * 32 + z * 1024;
     int cubeType = ubo.cubes[cubeId >> 2][cubeId % 4]; // >> 2 = / 4
 
     return (getCubeTexture(texCoord, cubeType));

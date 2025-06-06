@@ -56,7 +56,7 @@ public:
 	/**
 	 * @brief Getter of cube in a chunk.
 	 *
-	 * @param xpos Coordonate of the cube in the chunk.
+	 * @param pos Coordonate of the cube in the chunk.
 	 *
 	 * @return The cube at the coordonate, or air in case of invalid coordonates.
 	 */
@@ -72,6 +72,13 @@ public:
 	 * @param cube The new cube to set.
 	 */
 	void	setCube(unsigned int x, unsigned int y, unsigned int z, Cube cube);
+	/**
+	 * @brief Setter of cube in a chunk. Does nothing in case of invalid coordonates.
+	 *
+	 * @param xpos Coordonate of the cube in the chunk.
+	 * @param cube The new cube to set.
+	 */
+	void	setCube(const gm::Vec3u &pos, Cube cube);
 
 //---- Operators ---------------------------------------------------------------
 	/**
