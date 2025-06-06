@@ -39,7 +39,19 @@ bool init(
 
 static void	loadTextures(Engine &engine)
 {
-	engine.textureManager.addTexture("dirt", "data/textures/dirt.png");
+	std::vector<std::string>	names = {
+		"diamond", "dirt", "grass", "ice", "iron",
+		"lava", "sand", "snow", "stone", "water"
+	};
+
+	engine.textureManager.addTexture("test", "data/textures/test.png");
+
+	for (std::string &name : names)
+	{
+		engine.textureManager.addTexture(name + "-up", "data/textures/" + name +"-up.png");
+		engine.textureManager.addTexture(name + "-side", "data/textures/" + name +"-side.png");
+		engine.textureManager.addTexture(name + "-down", "data/textures/" + name +"-down.png");
+	}
 }
 
 
@@ -47,5 +59,5 @@ static void loadShaders(Engine &engine, Shader &shader)
 {
 	shader.init<VertexPos>(engine, sizeof(UBO3DChunk), FCUL_COUNTER,
 							"shadersbin/mesh_vert.spv", "shadersbin/meshUp_frag.spv",
-							{"dirt"});
+							{"test"});
 }
