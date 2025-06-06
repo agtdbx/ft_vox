@@ -69,4 +69,9 @@ static void loadShaders(Engine &engine, Shader *chunkShaders)
 							engine, FCUL_COUNTER,
 							"shadersbin/mesh_vert.spv", "shadersbin/meshUp_frag.spv",
 							uboTypes, texturesUp);
+
+	chunkShaders[SHADER_FRONT].init<VertexPos>(
+							engine, FCUL_COUNTER,
+							"shadersbin/mesh_vert.spv", "shadersbin/meshFront_frag.spv",
+							uboTypes, texturesUp);
 }

@@ -114,10 +114,6 @@ private:
 	 * @brief Create meshes.
 	 */
 	void	createMeshes(void);
-	/**
-	 * @brief Create mesh for up faces.
-	 */
-	void	createMeshUp(void);
 
 };
 
