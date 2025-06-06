@@ -114,6 +114,11 @@ void	Chunk::draw(Engine &engine, Camera &camera, Shader *chunkShaders)
 	chunkShaders[SHADER_UP].updateUBO(engine.window, &this->uboPos, 0);
 	chunkShaders[SHADER_UP].updateUBO(engine.window, &this->uboCubes, 1);
 	engine.window.drawMesh(this->meshUp, chunkShaders[SHADER_UP]);
+
+	// Draw mesh front
+	// chunkShaders[SHADER_FRONT].updateUBO(engine.window, &this->uboPos, 0);
+	// chunkShaders[SHADER_FRONT].updateUBO(engine.window, &this->uboCubes, 1);
+	// engine.window.drawMesh(this->meshFront, chunkShaders[SHADER_FRONT]);
 }
 
 
@@ -132,20 +137,26 @@ void	Chunk::destroy(void)
 
 void	Chunk::createMeshes(void)
 {
-	this->createMeshUp();
-}
-
-
-void	Chunk::createMeshUp(void)
-{
 	std::vector<VertexPos>	vertices;
-	std::vector<uint32_t>	indices;
+	std::vector<uint32_t>	indicesFront;
+	std::vector<uint32_t>	indicesBack;
+	std::vector<uint32_t>	indicesUp;
+	std::vector<uint32_t>	indicesDown;
+	std::vector<uint32_t>	indicesLeft;
+	std::vector<uint32_t>	indicesRight;
 	int						nbVertex = 0;
 	std::unordered_map<std::size_t, uint32_t>	vertexIndex;
 
 	int	id;
-	static uint32_t	idUL;
-	static uint32_t	idDR;
+	static uint32_t RUF_id;
+	static uint32_t RDF_id;
+	static uint32_t LUF_id;
+	static uint32_t LDF_id;
+	static uint32_t RUB_id;
+	static uint32_t RDB_id;
+	static uint32_t LUB_id;
+	static uint32_t LDB_id;
+
 	// Front faces
 	for (int x = 0; x < CHUNK_SIZE; x++)
 	{
@@ -158,29 +169,111 @@ void	Chunk::createMeshUp(void)
 					continue;
 
 				// Point
-				VertexPos pointUL(gm::Vec3f(x    , y, z    ));
-				VertexPos pointDL(gm::Vec3f(x    , y, z + 1));
-				VertexPos pointDR(gm::Vec3f(x + 1, y, z + 1));
-				VertexPos pointUR(gm::Vec3f(x + 1, y, z    ));
+				VertexPos pointRUF(gm::Vec3f(x + 1, y    , z + 1));
+				VertexPos pointRDF(gm::Vec3f(x + 1, y - 1, z + 1));
+				VertexPos pointLUF(gm::Vec3f(x    , y    , z + 1));
+				VertexPos pointLDF(gm::Vec3f(x    , y - 1, z + 1));
+				VertexPos pointRUB(gm::Vec3f(x + 1, y    , z    ));
+				VertexPos pointRDB(gm::Vec3f(x + 1, y - 1, z    ));
+				VertexPos pointLUB(gm::Vec3f(x    , y    , z    ));
+				VertexPos pointLDB(gm::Vec3f(x    , y - 1, z    ));
 
-				idUL = getVetrexId(vertexIndex, vertices, pointUL, nbVertex);
-				idDR = getVetrexId(vertexIndex, vertices, pointDR, nbVertex);
+				//Id
+				RUF_id = getVetrexId(vertexIndex, vertices, pointRUF, nbVertex);
+				RDF_id = getVetrexId(vertexIndex, vertices, pointRDF, nbVertex);
+				LUF_id = getVetrexId(vertexIndex, vertices, pointLUF, nbVertex);
+				LDF_id = getVetrexId(vertexIndex, vertices, pointLDF, nbVertex);
+				RUB_id = getVetrexId(vertexIndex, vertices, pointRUB, nbVertex);
+				RDB_id = getVetrexId(vertexIndex, vertices, pointRDB, nbVertex);
+				LUB_id = getVetrexId(vertexIndex, vertices, pointLUB, nbVertex);
+				LDB_id = getVetrexId(vertexIndex, vertices, pointLDB, nbVertex);
 
+				// Face Up
 				// Triangle 1
-				indices.push_back(idUL);
-				indices.push_back(getVetrexId(vertexIndex, vertices, pointDL, nbVertex));
-				indices.push_back(idDR);
+				indicesUp.push_back(LUB_id);
+				indicesUp.push_back(LUF_id);
+				indicesUp.push_back(RUF_id);
 
 				// Triangle 2
-				indices.push_back(idUL);
-				indices.push_back(idDR);
-				indices.push_back(getVetrexId(vertexIndex, vertices, pointUR, nbVertex));
+				indicesUp.push_back(LUB_id);
+				indicesUp.push_back(RUF_id);
+				indicesUp.push_back(RUB_id);
+
+				// Face Front
+				// Triangle 1
+				indicesFront.push_back(LUF_id);
+				indicesFront.push_back(LDF_id);
+				indicesFront.push_back(RDF_id);
+
+				// Triangle 2
+				indicesFront.push_back(LUF_id);
+				indicesFront.push_back(RDF_id);
+				indicesFront.push_back(RUF_id);
+
+				// Face Right
+				// Triangle 1
+				indicesRight.push_back(RUF_id);
+				indicesRight.push_back(RDF_id);
+				indicesRight.push_back(RDB_id);
+
+				// Triangle 2
+				indicesRight.push_back(RUF_id);
+				indicesRight.push_back(RDB_id);
+				indicesRight.push_back(RUB_id);
+
+				// Face Left
+				// Triangle 1
+				indicesLeft.push_back(LUB_id);
+				indicesLeft.push_back(LDB_id);
+				indicesLeft.push_back(LDF_id);
+
+				// Triangle 2
+				indicesLeft.push_back(LUB_id);
+				indicesLeft.push_back(LDF_id);
+				indicesLeft.push_back(LUF_id);
+
+				// Face Down
+				// Triangle 1
+				indicesDown.push_back(LDF_id);
+				indicesDown.push_back(LDB_id);
+				indicesDown.push_back(RDB_id);
+
+				// Triangle 2
+				indicesDown.push_back(LDF_id);
+				indicesDown.push_back(RDB_id);
+				indicesDown.push_back(RDF_id);
+
+				// Face Back
+				// Triangle 1
+				indicesBack.push_back(LUB_id);
+				indicesBack.push_back(LDB_id);
+				indicesBack.push_back(RDB_id);
+
+				// Triangle 2
+				indicesBack.push_back(LUB_id);
+				indicesBack.push_back(RDB_id);
+				indicesBack.push_back(RUF_id);
 			}
 		}
 	}
 
-	this->meshUp = ChunkMesh(vertices, indices);
+	this->meshFront = ChunkMesh(vertices, indicesFront);
+	this->meshFront.createBuffers(*this->copyCommandPool);
+
+	this->meshUp = ChunkMesh(vertices, indicesUp);
 	this->meshUp.createBuffers(*this->copyCommandPool);
+
+	this->meshBack = ChunkMesh(vertices, indicesBack);
+	this->meshBack.createBuffers(*this->copyCommandPool);
+
+	this->meshLeft = ChunkMesh(vertices, indicesLeft);
+	this->meshLeft.createBuffers(*this->copyCommandPool);
+
+	this->meshRight = ChunkMesh(vertices, indicesRight);
+	this->meshRight.createBuffers(*this->copyCommandPool);
+
+	this->meshDown = ChunkMesh(vertices, indicesDown);
+	this->meshDown.createBuffers(*this->copyCommandPool);
 }
 
 //**** FUNCTIONS ***************************************************************
