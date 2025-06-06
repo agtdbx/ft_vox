@@ -3,13 +3,13 @@
 void	draw(
 			Engine &engine,
 			Map &map,
-			Shader &shader,
+			Shader *chunkShaders,
 			Camera &camera)
 {
 	// Start drawing
 	engine.window.startDraw();
 
-	map.draw(engine, camera, shader);
+	map.draw(engine, camera, chunkShaders);
 
 	// End drawing
 	engine.window.endDraw(engine.context);

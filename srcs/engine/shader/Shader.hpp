@@ -17,6 +17,21 @@ enum FaceCulling
 	FCUL_COUNTER,
 };
 
+
+enum UBOLocation
+{
+	UBO_VERTEX,
+	UBO_FRAGMENT,
+};
+
+
+struct UBOType
+{
+	size_t		size;
+	UBOLocation	location;
+};
+
+
 //**** STATIC DEFINE FUNCTIONS *************************************************
 
 static inline std::vector<const Image *>	getImages(const TextureManager &textureManager, const std::vector<std::string> &imageIds);
@@ -90,20 +105,17 @@ public:
 	 * @brief Init shader from parameters.
 	 *
 	 * @param engine The engine struct.
-	 * @param uboStructSize The size of the struct used for UBO.
 	 * @param faceCulling How do face culling. Clock wise, counter or disable it.
 	 * @param vertexPath Path to compile vertex shader file.
 	 * @param fragmentPath Path to compile fragment shader file.
 	 */
 	template<typename VertexType>
 	void	init(
-				Engine &engine, size_t uboStructSize, FaceCulling faceCulling,
+				Engine &engine, FaceCulling faceCulling,
 				std::string vertexPath, std::string fragmentPath)
 	{
 		VkDevice	device = engine.context.getDevice();
 		VkPhysicalDevice	physicalDevice = engine.context.getPhysicalDevice();
-
-		this->uboStructSize = uboStructSize;
 
 		this->createDescriptorSetLayout(device, 0);
 		this->createGraphicsPipeline<VertexType>(device, engine.window, vertexPath, fragmentPath,
@@ -116,22 +128,50 @@ public:
 	 * @brief Init shader from parameters.
 	 *
 	 * @param engine The engine struct.
-	 * @param uboStructSize The size of the struct used for UBO.
 	 * @param faceCulling How do face culling. Clock wise, counter or disable it.
 	 * @param vertexPath Path to compile vertex shader file.
 	 * @param fragmentPath Path to compile fragment shader file.
+	 * @param uboTypes Vector of ubo types.
+	 */
+	template<typename VertexType>
+	void	init(
+				Engine &engine, FaceCulling faceCulling,
+				std::string vertexPath, std::string fragmentPath,
+				const std::vector<UBOType> &uboTypes)
+	{
+		VkDevice	device = engine.context.getDevice();
+		VkPhysicalDevice	physicalDevice = engine.context.getPhysicalDevice();
+
+		this->uboTypes = uboTypes;
+
+		this->createDescriptorSetLayout(device, 0);
+		this->createGraphicsPipeline<VertexType>(device, engine.window, vertexPath, fragmentPath,
+										faceCulling);
+		this->createUniformBuffers(device, physicalDevice);
+		this->createDescriptorPool(device, 0);
+		this->createDescriptorSets(device, {});
+	}
+	/**
+	 * @brief Init shader from parameters.
+	 *
+	 * @param engine The engine struct.
+	 * @param faceCulling How do face culling. Clock wise, counter or disable it.
+	 * @param vertexPath Path to compile vertex shader file.
+	 * @param fragmentPath Path to compile fragment shader file.
+	 * @param uboTypes Vector of ubo types.
 	 * @param imageIds Vector of image id to used in shader.
 	 */
 	template<typename VertexType>
 	void	init(
-				Engine &engine, size_t uboStructSize, FaceCulling faceCulling,
+				Engine &engine, FaceCulling faceCulling,
 				std::string vertexPath, std::string fragmentPath,
+				const std::vector<UBOType> &uboTypes,
 				const std::vector<std::string> &imageIds)
 	{
 		VkDevice	device = engine.context.getDevice();
 		VkPhysicalDevice	physicalDevice = engine.context.getPhysicalDevice();
 
-		this->uboStructSize = uboStructSize;
+		this->uboTypes = uboTypes;
 
 		std::vector<const Image *> images = getImages(engine.textureManager, imageIds);
 
@@ -153,14 +193,15 @@ public:
 	 *
  	 * @param window Window class of the engine.
 	 * @param ubo Pointer of uniform values struct used for update.
+	 * @param uboId Id of ubo in init vector. Id isn't check for speed, will crash if pass an incorect id.
 	 */
-	void	updateUBO(Window &window, void *ubo);
+	void	updateUBO(Window &window, void *ubo, int uboId);
 
 //**** STATIC METHODS **********************************************************
 
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
-	size_t							uboStructSize;
+	std::vector<UBOType>			uboTypes;
 	VkDescriptorSetLayout			descriptorSetLayout;
 	VkPipelineLayout				pipelineLayout;
 	VkPipeline						graphicsPipeline;

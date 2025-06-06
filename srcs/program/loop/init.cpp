@@ -2,13 +2,13 @@
 
 
 static void	loadTextures(Engine &engine);
-static void loadShaders(Engine &engine, Shader &shader);
+static void loadShaders(Engine &engine, Shader *chunkShaders);
 
 
 bool init(
 		Engine &engine,
 		Map &map,
-		Shader &shader,
+		Shader *chunkShaders,
 		Camera &camera)
 {
 	camera.setPosition(gm::Vec3f(7.65f, 15.89f, 24.78f));
@@ -26,7 +26,7 @@ bool init(
 		engine.textureManager.createAllImages(engine);
 
 		map.init(engine.commandPool, camera);
-		loadShaders(engine, shader);
+		loadShaders(engine, chunkShaders);
 	}
 	catch(const std::exception& e)
 	{
@@ -40,8 +40,8 @@ bool init(
 static void	loadTextures(Engine &engine)
 {
 	std::vector<std::string>	names = {
-		"diamond", "dirt", "grass", "ice", "iron",
-		"lava", "sand", "snow", "stone", "water"
+		"grass", "dirt", "stone", "water", "snow",
+		"ice", "sand", "lava", "iron", "diamond",
 	};
 
 	engine.textureManager.addTexture("test", "data/textures/test.png");
@@ -55,9 +55,18 @@ static void	loadTextures(Engine &engine)
 }
 
 
-static void loadShaders(Engine &engine, Shader &shader)
+static void loadShaders(Engine &engine, Shader *chunkShaders)
 {
-	shader.init<VertexPos>(engine, sizeof(UBO3DChunk), FCUL_COUNTER,
+	std::vector<UBOType>	uboTypes = {{sizeof(UBO3DChunkPos), UBO_VERTEX}, {sizeof(UBO3DChunkCubes), UBO_FRAGMENT}};
+	std::vector<std::string>	texturesUp = {"grass-up", "dirt-up", "stone-up", "water-up", "snow-up",
+												"ice-up", "sand-up", "lava-up", "iron-up", "diamond-up"};
+	std::vector<std::string>	texturesSide = {"grass-side", "dirt-side", "stone-side", "water-side", "snow-side",
+												"ice-side", "sand-side", "lava-side", "iron-side", "diamond-side"};
+	std::vector<std::string>	texturesDown = {"grass-down", "dirt-down", "stone-down", "water-down", "snow-down",
+												"ice-down", "sand-down", "lava-down", "iron-down", "diamond-down"};
+
+	chunkShaders[SHADER_UP].init<VertexPos>(
+							engine, FCUL_COUNTER,
 							"shadersbin/mesh_vert.spv", "shadersbin/meshUp_frag.spv",
-							{"test"});
+							uboTypes, texturesUp);
 }

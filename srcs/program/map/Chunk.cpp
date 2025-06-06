@@ -25,7 +25,16 @@ Chunk::Chunk(void)
 				if (y > 8)
 					this->cubes[id] = CUBE_AIR;
 				else
-					this->cubes[id] = CUBE_DIRT;
+				{
+					if (x % 2 == 0 && y % 2 == 0)
+						this->cubes[id] = CUBE_GRASS;
+					else if (x % 2 == 0 && y % 2 == 1)
+						this->cubes[id] = CUBE_DIRT;
+					else if (x % 2 == 1 && y % 2 == 0)
+						this->cubes[id] = CUBE_STONE;
+					else
+						this->cubes[id] = CUBE_WATER;
+				}
 			}
 		}
 	}
@@ -89,19 +98,22 @@ void	Chunk::init(VulkanCommandPool &commandPool, Camera &camera)
 	this->copyCommandPool = &commandPool;
 	this->createMeshes();
 
-	this->uboUp.proj = camera.getProjection();
-	this->uboUp.proj.at(1, 1) *= -1;
-	this->uboUp.model = this->meshUp.getModel();
+	this->uboPos.proj = camera.getProjection();
+	this->uboPos.proj.at(1, 1) *= -1;
+	this->uboPos.model = this->meshUp.getModel();
+	for (int i = 0; i < CHUNK_SIZE3; i++)
+		this->uboCubes.cubes[i] = this->cubes[i];
 }
 
 
-void	Chunk::draw(Engine &engine, Camera &camera, Shader &shader)
+void	Chunk::draw(Engine &engine, Camera &camera, Shader *chunkShaders)
 {
-	this->uboUp.view = camera.getView();
+	this->uboPos.view = camera.getView();
 
 	// Draw mesh up
-	shader.updateUBO(engine.window, &this->uboUp);
-	engine.window.drawMesh(this->meshUp, shader);
+	chunkShaders[SHADER_UP].updateUBO(engine.window, &this->uboPos, 0);
+	chunkShaders[SHADER_UP].updateUBO(engine.window, &this->uboCubes, 1);
+	engine.window.drawMesh(this->meshUp, chunkShaders[SHADER_UP]);
 }
 
 
@@ -132,6 +144,8 @@ void	Chunk::createMeshUp(void)
 	std::unordered_map<std::size_t, uint32_t>	vertexIndex;
 
 	int	id;
+	static uint32_t	idUL;
+	static uint32_t	idDR;
 	// Front faces
 	for (int x = 0; x < CHUNK_SIZE; x++)
 	{
@@ -149,14 +163,17 @@ void	Chunk::createMeshUp(void)
 				VertexPos pointDR(gm::Vec3f(x + 1, y, z + 1));
 				VertexPos pointUR(gm::Vec3f(x + 1, y, z    ));
 
+				idUL = getVetrexId(vertexIndex, vertices, pointUL, nbVertex);
+				idDR = getVetrexId(vertexIndex, vertices, pointDR, nbVertex);
+
 				// Triangle 1
-				indices.push_back(getVetrexId(vertexIndex, vertices, pointUL, nbVertex));
+				indices.push_back(idUL);
 				indices.push_back(getVetrexId(vertexIndex, vertices, pointDL, nbVertex));
-				indices.push_back(getVetrexId(vertexIndex, vertices, pointDR, nbVertex));
+				indices.push_back(idDR);
 
 				// Triangle 2
-				indices.push_back(getVetrexId(vertexIndex, vertices, pointUL, nbVertex));
-				indices.push_back(getVetrexId(vertexIndex, vertices, pointDR, nbVertex));
+				indices.push_back(idUL);
+				indices.push_back(idDR);
 				indices.push_back(getVetrexId(vertexIndex, vertices, pointUR, nbVertex));
 			}
 		}

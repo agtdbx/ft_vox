@@ -6,7 +6,7 @@
 /*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 15:33:15 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/05 14:04:29 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/06/06 11:32:26 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,17 +24,18 @@ int	main(void)
 
 	Engine	engine;
 	Camera	camera;
-	Shader	shader;
+	Shader	chunkShaders[NB_CHUNK_SHADER];
 	Map		map;
 
-	if (!init(engine, map, shader, camera))
+	if (!init(engine, map, chunkShaders, camera))
 	{
 		// Wait all vulkan tasks
 		vkDeviceWaitIdle(engine.context.getDevice());
 
 		// Destroy vulkans attributs
 		map.destroy();
-		shader.destroy(engine);
+		for (int i = 0; i < NB_CHUNK_SHADER; i++)
+			chunkShaders[i].destroy(engine);
 
 		// Terminate engine and glfw
 		destroyEngine(engine);
@@ -63,7 +64,7 @@ int	main(void)
 		computation(engine, map, camera, delta);
 
 		// Drawing part
-		draw(engine, map, shader, camera);
+		draw(engine, map, chunkShaders, camera);
 	}
 
 	// Wait all vulkan tasks
@@ -71,7 +72,8 @@ int	main(void)
 
 	// Destroy vulkans attributs
 	map.destroy();
-	shader.destroy(engine);
+	for (int i = 0; i < NB_CHUNK_SHADER; i++)
+		chunkShaders[i].destroy(engine);
 
 	// Terminate engine and glfw
 	destroyEngine(engine);

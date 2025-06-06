@@ -58,10 +58,10 @@ public:
 	 * @brief Draw chunks.
 	 *
 	 * @param engine Engine struct.
-	 * @param shader Shader used to draw meshes.
+	 * @param chunkShaders Shader used to draw chunk meshes.
 	 * @param camera The camera.
 	 */
-	void	draw(Engine &engine, Camera &camera, Shader &shader);
+	void	draw(Engine &engine, Camera &camera, Shader *chunkShaders);
 	/**
 	 * @brief Destroy chunks.
 	 */

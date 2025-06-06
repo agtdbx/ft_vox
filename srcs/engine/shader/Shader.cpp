@@ -10,7 +10,6 @@
 
 Shader::Shader(void)
 {
-	this->uboStructSize = 0;
 	this->descriptorSetLayout = NULL;
 	this->pipelineLayout = NULL;
 	this->graphicsPipeline = NULL;
@@ -20,7 +19,6 @@ Shader::Shader(void)
 
 Shader::Shader(const Shader &obj)
 {
-	this->uboStructSize = 0;
 	this->descriptorSetLayout = NULL;
 	this->pipelineLayout = NULL;
 	this->graphicsPipeline = NULL;
@@ -71,8 +69,8 @@ void	Shader::destroy(Engine &engine)
 	VkDevice	device = engine.context.getDevice();
 
 	// Free uniforms buffers
-	size_t nbUBO = this->uniformBuffers.size();
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT && i < nbUBO; i++)
+	size_t nbBuffers = this->uniformBuffers.size();
+	for (size_t i = 0; i < nbBuffers; i++)
 	{
 		if (this->uniformBuffers[i])
 			vkDestroyBuffer(device, this->uniformBuffers[i], nullptr);
@@ -96,9 +94,10 @@ void	Shader::destroy(Engine &engine)
 }
 
 
-void	Shader::updateUBO(Window &window, void *ubo)
+void	Shader::updateUBO(Window &window, void *ubo, int uboId)
 {
-	memcpy(this->uniformBuffersMapped[window.getCurrentFrame()], ubo, this->uboStructSize);
+	int	bufferId = window.getCurrentFrame() * this->uboTypes.size() + uboId;
+	memcpy(this->uniformBuffersMapped[bufferId], ubo, this->uboTypes[uboId].size);
 }
 
 //**** STATIC METHODS **********************************************************
@@ -106,28 +105,37 @@ void	Shader::updateUBO(Window &window, void *ubo)
 
 void	Shader::createDescriptorSetLayout(VkDevice device, size_t nbImages)
 {
-	// Bind uniforms to shaders
-	VkDescriptorSetLayoutBinding uboLayoutBinding{};
-	uboLayoutBinding.binding = 0;
-	uboLayoutBinding.descriptorCount = 1;
-	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
-	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	int	nbUbo = this->uboTypes.size();
 
-	std::vector<VkDescriptorSetLayoutBinding> bindings(1 + nbImages);
-	bindings[0] = uboLayoutBinding;
+	std::vector<VkDescriptorSetLayoutBinding> bindings(nbUbo + nbImages);
+
+	// Bind uniforms to shaders
+	std::vector<VkDescriptorSetLayoutBinding> uboLayoutBindings(nbUbo);
+	for (int i = 0; i < nbUbo; i++)
+	{
+		uboLayoutBindings[i].binding = i;
+		uboLayoutBindings[i].descriptorCount = 1;
+		uboLayoutBindings[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		uboLayoutBindings[i].pImmutableSamplers = nullptr; // Optional
+		if (this->uboTypes[i].location == UBO_VERTEX)
+			uboLayoutBindings[i].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		else
+			uboLayoutBindings[i].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+		bindings[i] = uboLayoutBindings[i];
+	}
 
 	// Bind sampler to shaders
 	std::vector<VkDescriptorSetLayoutBinding> samplerLayoutBindings(nbImages);
 	for (size_t i = 0; i < nbImages; i++)
 	{
-		samplerLayoutBindings[i].binding = 1 + i;
+		samplerLayoutBindings[i].binding = nbUbo + i;
 		samplerLayoutBindings[i].descriptorCount = 1;
 		samplerLayoutBindings[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		samplerLayoutBindings[i].pImmutableSamplers = nullptr;
 		samplerLayoutBindings[i].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-		bindings[1 + i] = samplerLayoutBindings[i];
+		bindings[nbUbo + i] = samplerLayoutBindings[i];
 	}
 
 	VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -142,17 +150,27 @@ void	Shader::createDescriptorSetLayout(VkDevice device, size_t nbImages)
 
 void	Shader::createUniformBuffers(VkDevice device, VkPhysicalDevice physicalDevice)
 {
-	this->uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-	this->uniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
-	this->uniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
+	int	nbUbo = this->uboTypes.size();
+	int	nbBuffers = MAX_FRAMES_IN_FLIGHT * nbUbo;
 
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+	this->uniformBuffers.resize(nbBuffers);
+	this->uniformBuffersMemory.resize(nbBuffers);
+	this->uniformBuffersMapped.resize(nbBuffers);
+
+	int	bufferId;
+	int	bufferOffset = 0;
+	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
-		createVulkanBuffer(device, physicalDevice,
-							this->uboStructSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-							VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-							this->uniformBuffers[i], this->uniformBuffersMemory[i]);
-		vkMapMemory(device, this->uniformBuffersMemory[i], 0, this->uboStructSize, 0, &this->uniformBuffersMapped[i]);
+		for (int j = 0; j < nbUbo; j++)
+		{
+			bufferId = bufferOffset + j;
+			createVulkanBuffer(device, physicalDevice,
+								this->uboTypes[j].size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+								VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+								this->uniformBuffers[bufferId], this->uniformBuffersMemory[bufferId]);
+			vkMapMemory(device, this->uniformBuffersMemory[bufferId], 0, this->uboTypes[j].size, 0, &this->uniformBuffersMapped[bufferId]);
+		}
+		bufferOffset += nbUbo;
 	}
 }
 
@@ -160,14 +178,18 @@ void	Shader::createUniformBuffers(VkDevice device, VkPhysicalDevice physicalDevi
 void	Shader::createDescriptorPool(VkDevice device, size_t nbImages)
 {
 	uint32_t maxFramesInFlight = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+	size_t nbUbo = this->uboTypes.size();
 
-	std::vector<VkDescriptorPoolSize> poolSizes(1 + nbImages);
-	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[0].descriptorCount = maxFramesInFlight;
+	std::vector<VkDescriptorPoolSize> poolSizes(nbUbo + nbImages);
+	for (size_t i = 0; i < nbUbo; i++)
+	{
+		poolSizes[i].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		poolSizes[i].descriptorCount = maxFramesInFlight;
+	}
 	for (size_t i = 0; i < nbImages; i++)
 	{
-		poolSizes[1 + i].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSizes[1 + i].descriptorCount = maxFramesInFlight;
+		poolSizes[nbUbo + i].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		poolSizes[nbUbo + i].descriptorCount = maxFramesInFlight;
 	}
 
 	VkDescriptorPoolCreateInfo poolInfo{};
@@ -197,6 +219,7 @@ void	Shader::createDescriptorSets(
 		throw std::runtime_error("Allocate descriptor sets failed");
 
 	// Get images
+	uint32_t nbUbo = this->uboTypes.size();
 	uint32_t nbImages = images.size();
 
 	// Create images struct
@@ -211,24 +234,30 @@ void	Shader::createDescriptorSets(
 	// Init sets for each frame
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
-		VkDescriptorBufferInfo bufferInfo{};
-		bufferInfo.buffer = this->uniformBuffers[i];
-		bufferInfo.offset = 0;
-		bufferInfo.range = this->uboStructSize;
+		// Create ubo struct
+		std::vector<VkDescriptorBufferInfo>	buffersInfo(nbUbo);
+		for (uint32_t j = 0; j < nbUbo; j++)
+		{
+			buffersInfo[j].buffer = this->uniformBuffers[i * nbUbo + j];
+			buffersInfo[j].offset = 0;
+			buffersInfo[j].range = this->uboTypes[j].size;
+		}
 
-		std::vector<VkWriteDescriptorSet> descriptorWrites(1 + nbImages);
-
-		descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrites[0].dstSet = this->descriptorSets[i];
-		descriptorWrites[0].dstBinding = 0;
-		descriptorWrites[0].dstArrayElement = 0;
-		descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		descriptorWrites[0].descriptorCount = 1;
-		descriptorWrites[0].pBufferInfo = &bufferInfo;
+		std::vector<VkWriteDescriptorSet> descriptorWrites(nbUbo + nbImages);
+		for (uint32_t j = 0; j < nbUbo; j++)
+		{
+			descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[j].dstSet = this->descriptorSets[i];
+			descriptorWrites[j].dstBinding = j;
+			descriptorWrites[j].dstArrayElement = 0;
+			descriptorWrites[j].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			descriptorWrites[j].descriptorCount = 1;
+			descriptorWrites[j].pBufferInfo = &buffersInfo[j];
+		}
 
 		for (uint32_t j = 0; j < nbImages; j++)
 		{
-			uint32_t	id = j + 1;
+			uint32_t	id = nbUbo + j;
 
 			descriptorWrites[id].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			descriptorWrites[id].dstSet = this->descriptorSets[i];

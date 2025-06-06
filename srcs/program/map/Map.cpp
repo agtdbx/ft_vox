@@ -45,9 +45,9 @@ void	Map::init(VulkanCommandPool &commandPool, Camera &camera)
 }
 
 
-void	Map::draw(Engine &engine, Camera &camera, Shader &shader)
+void	Map::draw(Engine &engine, Camera &camera, Shader *chunkShaders)
 {
-	this->chunk.draw(engine, camera, shader);
+	this->chunk.draw(engine, camera, chunkShaders);
 }
 
 

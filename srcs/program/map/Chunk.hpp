@@ -1,11 +1,6 @@
 #ifndef CHUNK_HPP
 # define CHUNK_HPP
 
-# define CHUNK_SIZE 16
-
-const int	CHUNK_SIZE2 = CHUNK_SIZE * CHUNK_SIZE;
-const int	CHUNK_SIZE3 = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
-
 # include <engine/engine.hpp>
 # include <engine/mesh/Mesh.hpp>
 # include <engine/mesh/VertexPos.hpp>
@@ -92,10 +87,10 @@ public:
 	 * @brief Draw chunk meshes.
 	 *
 	 * @param engine Engine struct.
-	 * @param shader Shader used to draw meshes.
+	 * @param chunkShaders Shaders used to draw meshes.
 	 * @param camera The camera.
 	 */
-	void	draw(Engine &engine, Camera &camera, Shader &shader);
+	void	draw(Engine &engine, Camera &camera, Shader *chunkShaders);
 	/**
 	 * @brief Destroy chunk.
 	 */
@@ -107,9 +102,10 @@ private:
 //**** PRIVATE ATTRIBUTS *******************************************************
 //---- Chunk properties --------------------------------------------------------
 	std::vector<gm::Vec3f>	positions;
-	Cube	cubes[CHUNK_SIZE3]; // id = x + y * SIZE + z * SIZE2
-	ChunkMesh	meshUp, meshDown, meshRight, meshLeft, meshFront, meshBack;
-	UBO3DChunk	uboUp;
+	Cube			cubes[CHUNK_SIZE3]; // id = x + y * SIZE + z * SIZE2
+	ChunkMesh		meshUp, meshDown, meshRight, meshLeft, meshFront, meshBack;
+	UBO3DChunkPos	uboPos;
+	UBO3DChunkCubes	uboCubes;
 //---- Copy --------------------------------------------------------------------
 	VulkanCommandPool	*copyCommandPool;
 

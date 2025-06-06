@@ -6,7 +6,7 @@
 /*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/05 16:56:18 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/06/06 11:40:44 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,5 +38,21 @@
 # define ROTATE 45.0f
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
+
+// Shader defines
+# define NB_CHUNK_SHADER 6
+enum ShaderDir {
+	SHADER_UP = 0,
+	SHADER_DOWN,
+	SHADER_LEFT,
+	SHADER_RIGHT,
+	SHADER_FRONT,
+	SHADER_BACK,
+};
+
+// Chunk defines
+# define CHUNK_SIZE 16
+const int	CHUNK_SIZE2 = CHUNK_SIZE * CHUNK_SIZE;
+const int	CHUNK_SIZE3 = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
 
 #endif
