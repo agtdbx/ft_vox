@@ -14,6 +14,7 @@ void	computation(
 			Engine &engine,
 			Map &map,
 			Camera &camera,
+			bool &enableFdfShader,
 			double delta)
 {
 	InputManager &inputManager = engine.inputManager;
@@ -21,6 +22,9 @@ void	computation(
 	perfLog(delta, engine.window);
 
 	cameraMovements(inputManager, camera, delta);
+
+	if (inputManager.tab.isPressed())
+		enableFdfShader = !enableFdfShader;
 }
 
 

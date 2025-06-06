@@ -18,6 +18,14 @@ enum FaceCulling
 };
 
 
+enum DrawMode
+{
+	DRAW_POLYGON,
+	DRAW_LINE,
+	DRAW_POINT,
+};
+
+
 enum UBOLocation
 {
 	UBO_VERTEX,
@@ -111,7 +119,7 @@ public:
 	 */
 	template<typename VertexType>
 	void	init(
-				Engine &engine, FaceCulling faceCulling,
+				Engine &engine, FaceCulling faceCulling, DrawMode drawMode,
 				std::string vertexPath, std::string fragmentPath)
 	{
 		VkDevice	device = engine.context.getDevice();
@@ -119,7 +127,7 @@ public:
 
 		this->createDescriptorSetLayout(device, 0);
 		this->createGraphicsPipeline<VertexType>(device, engine.window, vertexPath, fragmentPath,
-										faceCulling);
+										faceCulling, drawMode);
 		this->createUniformBuffers(device, physicalDevice);
 		this->createDescriptorPool(device, 0);
 		this->createDescriptorSets(device, {});
@@ -135,7 +143,7 @@ public:
 	 */
 	template<typename VertexType>
 	void	init(
-				Engine &engine, FaceCulling faceCulling,
+				Engine &engine, FaceCulling faceCulling, DrawMode drawMode,
 				std::string vertexPath, std::string fragmentPath,
 				const std::vector<UBOType> &uboTypes)
 	{
@@ -146,7 +154,7 @@ public:
 
 		this->createDescriptorSetLayout(device, 0);
 		this->createGraphicsPipeline<VertexType>(device, engine.window, vertexPath, fragmentPath,
-										faceCulling);
+										faceCulling, drawMode);
 		this->createUniformBuffers(device, physicalDevice);
 		this->createDescriptorPool(device, 0);
 		this->createDescriptorSets(device, {});
@@ -163,7 +171,7 @@ public:
 	 */
 	template<typename VertexType>
 	void	init(
-				Engine &engine, FaceCulling faceCulling,
+				Engine &engine, FaceCulling faceCulling, DrawMode drawMode,
 				std::string vertexPath, std::string fragmentPath,
 				const std::vector<UBOType> &uboTypes,
 				const std::vector<std::string> &imageIds)
@@ -177,7 +185,7 @@ public:
 
 		this->createDescriptorSetLayout(device, images.size());
 		this->createGraphicsPipeline<VertexType>(device, engine.window, vertexPath, fragmentPath,
-										faceCulling);
+										faceCulling, drawMode);
 		this->createUniformBuffers(device, physicalDevice);
 		this->createDescriptorPool(device, images.size());
 		this->createDescriptorSets(device, images);
@@ -231,7 +239,7 @@ private:
 	void	createGraphicsPipeline(
 				VkDevice device, Window &window,
 				std::string vertexPath, std::string fragmentPath,
-				FaceCulling faceCulling)
+				FaceCulling faceCulling, DrawMode drawMode)
 	{
 		// Read files
 		std::vector<char> vertShaderCode = readFile(vertexPath);
@@ -286,7 +294,12 @@ private:
 		rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 		rasterizer.depthClampEnable = VK_FALSE;
 		rasterizer.rasterizerDiscardEnable = VK_FALSE; // Make VK_TRUE for disable rasterization
-		rasterizer.polygonMode = VK_POLYGON_MODE_FILL; // Set draw mode (fill / line / point)
+		if (drawMode == DRAW_POLYGON)
+			rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+		else if (drawMode == DRAW_LINE)
+			rasterizer.polygonMode = VK_POLYGON_MODE_LINE;
+		else
+			rasterizer.polygonMode = VK_POLYGON_MODE_POINT;
 		rasterizer.lineWidth = 1.0f;
 		if (faceCulling == FCUL_NONE)
 			rasterizer.cullMode = VK_CULL_MODE_NONE;

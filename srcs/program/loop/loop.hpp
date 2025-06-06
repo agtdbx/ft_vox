@@ -18,6 +18,7 @@
  * @param engine Engine to init.
  * @param map Map to init.
  * @param chunkShader Shader for chunk to init.
+ * @param chunkFdfShader Fdf shader for chunk to init.
  * @param camera Camera to init.
  *
  * @return True if the init succeed, false else.
@@ -26,6 +27,7 @@ bool init(
 			Engine &engine,
 			Map &map,
 			Shader &chunkShader,
+			Shader &chunkFdfShader,
 			Camera &camera);
 /**
  * @brief Update envents of program.
@@ -40,12 +42,14 @@ void	events(
  * @param engine Engine struct.
  * @param map Map to update.
  * @param camera Camera to update.
+ * @param enableFdfShader Bool for know if use fdf shader.
  * @param delta Delta time, previous main loop execution time in second.
  */
 void	computation(
 			Engine &engine,
 			Map &map,
 			Camera &camera,
+			bool &enableFdfShader,
 			double delta);
 /**
  * @brief Function to call drawing.
@@ -53,12 +57,16 @@ void	computation(
  * @param engine Engine struct.
  * @param map Map to draw.
  * @param chunkShader Shader used for draw chunks.
+ * @param chunkFdfShader Fdf shader for chunk to init.
+ * @param enableFdfShader Bool for know if use fdf shader.
  * @param camera Camera used for draw.
  */
 void	draw(
 			Engine &engine,
 			Map &map,
 			Shader &chunkShader,
+			Shader &chunkFdfShader,
+			bool enableFdfShader,
 			Camera &camera);
 
 

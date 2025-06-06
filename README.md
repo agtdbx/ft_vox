@@ -27,7 +27,7 @@ cd release
 ```
 
 ### Keys
-**Camera mode** :
+**Camera** :
 - front			w
 - back			s
 - left			a
@@ -40,3 +40,7 @@ cd release
 - turn down		down
 - sprint		left control (for movement)
 - p				print camera info
+
+\
+**Camera** :
+- enable/disable fdf view	tab

@@ -6,7 +6,7 @@
 /*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 15:33:15 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/06 15:06:48 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/06/06 16:35:32 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,10 +24,11 @@ int	main(void)
 
 	Engine	engine;
 	Camera	camera;
-	Shader	chunkShader;
+	Shader	chunkShader, chunkFdfShader;
+	bool	enableFdfShader = false;
 	Map		map;
 
-	if (!init(engine, map, chunkShader, camera))
+	if (!init(engine, map, chunkShader, chunkFdfShader, camera))
 	{
 		// Wait all vulkan tasks
 		vkDeviceWaitIdle(engine.context.getDevice());
@@ -60,10 +61,10 @@ int	main(void)
 			break;
 
 		// Compute part
-		computation(engine, map, camera, delta);
+		computation(engine, map, camera, enableFdfShader, delta);
 
 		// Drawing part
-		draw(engine, map, chunkShader, camera);
+		draw(engine, map, chunkShader, chunkFdfShader, enableFdfShader, camera);
 	}
 
 	// Wait all vulkan tasks
