@@ -10,7 +10,7 @@ static uint32_t	getVetrexId(
 					VertexPos &vertex,
 					int &nbVertex);
 static char	cubeToChar(Cube cube); // TODO Remove
-static char	printChunkSlide(Cube *cubes, int z); // TODO Remove
+static void	printChunkSlide(Cube *cubes, int z); // TODO Remove
 
 //**** INITIALISION ************************************************************
 //---- Constructors ------------------------------------------------------------
@@ -41,6 +41,9 @@ Chunk::Chunk(void)
 		}
 	}
 	this->copyCommandPool = NULL;
+
+	this->setCube(8, 9, 8, CUBE_LAVA);
+	this->setCube(6, 12, 6, CUBE_DIAMOND);
 }
 
 
@@ -49,6 +52,7 @@ Chunk::Chunk(const Chunk &obj)
 	for (int i = 0; i < CHUNK_SIZE3; i++)
 		this->cubes[i] = obj.cubes[i];
 	this->copyCommandPool = obj.copyCommandPool;
+	this->mesh = obj.mesh;
 }
 
 //---- Destructor --------------------------------------------------------------
@@ -66,6 +70,14 @@ Cube	Chunk::getCube(unsigned int x, unsigned int y, unsigned int z)
 	if (x >= CHUNK_SIZE || y >= CHUNK_SIZE || z >= CHUNK_SIZE)
 		return (CUBE_AIR);
 	return (this->cubes[x + y * CHUNK_SIZE + z * CHUNK_SIZE2]);
+}
+
+
+Cube	Chunk::getCube(const gm::Vec3u &pos)
+{
+	if (pos.x >= CHUNK_SIZE || pos.y >= CHUNK_SIZE || pos.z >= CHUNK_SIZE)
+		return (CUBE_AIR);
+	return (this->cubes[pos.x + pos.y * CHUNK_SIZE + pos.z * CHUNK_SIZE2]);
 }
 
 //---- Setters -----------------------------------------------------------------
@@ -90,6 +102,8 @@ Chunk	&Chunk::operator=(const Chunk &obj)
 	if (!this->copyCommandPool)
 		this->copyCommandPool = obj.copyCommandPool;
 
+	this->mesh = obj.mesh;
+
 	return (*this);
 }
 
@@ -102,36 +116,26 @@ void	Chunk::init(VulkanCommandPool &commandPool, Camera &camera)
 
 	this->uboPos.proj = camera.getProjection();
 	this->uboPos.proj.at(1, 1) *= -1;
-	this->uboPos.model = this->meshUp.getModel();
+	this->uboPos.model = this->mesh.getModel();
 	for (int i = 0; i < CHUNK_SIZE3; i++)
 		this->uboCubes.cubes[i] = this->cubes[i];
 }
 
 
-void	Chunk::draw(Engine &engine, Camera &camera, Shader *chunkShaders)
+void	Chunk::draw(Engine &engine, Camera &camera, Shader &chunkShader)
 {
 	this->uboPos.view = camera.getView();
 
 	// Draw mesh up
-	/*chunkShaders[SHADER_UP].updateUBO(engine.window, &this->uboPos, 0);
-	chunkShaders[SHADER_UP].updateUBO(engine.window, &this->uboCubes, 1);
-	engine.window.drawMesh(this->meshUp, chunkShaders[SHADER_UP]);*/
-
-	// Draw mesh front
-	chunkShaders[SHADER_FRONT].updateUBO(engine.window, &this->uboPos, 0);
-	chunkShaders[SHADER_FRONT].updateUBO(engine.window, &this->uboCubes, 1);
-	engine.window.drawMesh(this->meshFront, chunkShaders[SHADER_FRONT]);
+	chunkShader.updateUBO(engine.window, &this->uboPos, 0);
+	chunkShader.updateUBO(engine.window, &this->uboCubes, 1);
+	engine.window.drawMesh(this->mesh, chunkShader);
 }
 
 
 void	Chunk::destroy(void)
 {
-	this->meshUp.destroy();
-	this->meshDown.destroy();
-	this->meshRight.destroy();
-	this->meshLeft.destroy();
-	this->meshFront.destroy();
-	this->meshBack.destroy();
+	this->mesh.destroy();
 }
 
 //**** STATIC METHODS **********************************************************
@@ -139,143 +143,100 @@ void	Chunk::destroy(void)
 
 void	Chunk::createMeshes(void)
 {
-	std::vector<VertexPos>	vertices;
-	std::vector<uint32_t>	indicesFront;
-	std::vector<uint32_t>	indicesBack;
-	std::vector<uint32_t>	indicesUp;
-	std::vector<uint32_t>	indicesDown;
-	std::vector<uint32_t>	indicesLeft;
-	std::vector<uint32_t>	indicesRight;
-	int						nbVertex = 0;
 	std::unordered_map<std::size_t, uint32_t>	vertexIndex;
+	std::vector<VertexPos>	vertices;
+	std::vector<uint32_t>	indices;
+	int						nbVertex = 0;
+	const gm::Vec3f			normalUp(0, 1, 0);
+	const gm::Vec3f			normalDown(0, -1, 0);
+	const gm::Vec3f			normalFront(0, 0, 1);
+	const gm::Vec3f			normalBack(0, 0, -1);
+	const gm::Vec3f			normalLeft(-1, 0, 0);
+	const gm::Vec3f			normalRight(1, 0, 0);
 
-	int	id;
-	static uint32_t RUF_id;
-	static uint32_t RDF_id;
-	static uint32_t LUF_id;
-	static uint32_t LDF_id;
-	static uint32_t RUB_id;
-	static uint32_t RDB_id;
-	static uint32_t LUB_id;
-	static uint32_t LDB_id;
+	int			id;
+	gm::Vec3f	pointLUF, pointLDF, pointRUF, pointRDF,
+				pointLUB, pointLDB, pointRUB, pointRDB;
 
-	// Front faces
-	for (int x = 0; x < CHUNK_SIZE; x++)
+	for (unsigned int x = 0; x < CHUNK_SIZE; x++)
 	{
-		for (int y = 0; y < CHUNK_SIZE; y++)
+		for (unsigned int y = 0; y < CHUNK_SIZE; y++)
 		{
-			for (int z = 0; z < CHUNK_SIZE; z++)
+			for (unsigned int z = 0; z < CHUNK_SIZE; z++)
 			{
 				id = x + y * CHUNK_SIZE + z * CHUNK_SIZE2;
 				if (this->cubes[id] == CUBE_AIR)
 					continue;
 
-				// Point
-				VertexPos pointRUF(gm::Vec3f(x + 1, y    , z + 1));
-				VertexPos pointRDF(gm::Vec3f(x + 1, y - 1, z + 1));
-				VertexPos pointLUF(gm::Vec3f(x    , y    , z + 1));
-				VertexPos pointLDF(gm::Vec3f(x    , y - 1, z + 1));
-				VertexPos pointRUB(gm::Vec3f(x + 1, y    , z    ));
-				VertexPos pointRDB(gm::Vec3f(x + 1, y - 1, z    ));
-				VertexPos pointLUB(gm::Vec3f(x    , y    , z    ));
-				VertexPos pointLDB(gm::Vec3f(x    , y - 1, z    ));
+				// Points
+				pointLUF = gm::Vec3f(x    , y + 1, z + 1);
+				pointLDF = gm::Vec3f(x    , y    , z + 1);
+				pointRUF = gm::Vec3f(x + 1, y + 1, z + 1);
+				pointRDF = gm::Vec3f(x + 1, y    , z + 1);
+				pointLUB = gm::Vec3f(x    , y + 1, z    );
+				pointLDB = gm::Vec3f(x    , y    , z    );
+				pointRUB = gm::Vec3f(x + 1, y + 1, z    );
+				pointRDB = gm::Vec3f(x + 1, y    , z    );
 
-				//Id
-				RUF_id = getVetrexId(vertexIndex, vertices, pointRUF, nbVertex);
-				RDF_id = getVetrexId(vertexIndex, vertices, pointRDF, nbVertex);
-				LUF_id = getVetrexId(vertexIndex, vertices, pointLUF, nbVertex);
-				LDF_id = getVetrexId(vertexIndex, vertices, pointLDF, nbVertex);
-				RUB_id = getVetrexId(vertexIndex, vertices, pointRUB, nbVertex);
-				RDB_id = getVetrexId(vertexIndex, vertices, pointRDB, nbVertex);
-				LUB_id = getVetrexId(vertexIndex, vertices, pointLUB, nbVertex);
-				LDB_id = getVetrexId(vertexIndex, vertices, pointLDB, nbVertex);
-
-				// Face Up
-				// Triangle 1
-				indicesUp.push_back(LUB_id);
-				indicesUp.push_back(LUF_id);
-				indicesUp.push_back(RUF_id);
-
-				// Triangle 2
-				indicesUp.push_back(LUB_id);
-				indicesUp.push_back(RUF_id);
-				indicesUp.push_back(RUB_id);
-
-				// Face Front
-				// Triangle 1
-				indicesFront.push_back(LUF_id);
-				indicesFront.push_back(LDF_id);
-				indicesFront.push_back(RDF_id);
-
-				// Triangle 2
-				indicesFront.push_back(LUF_id);
-				indicesFront.push_back(RDF_id);
-				indicesFront.push_back(RUF_id);
-
-				// Face Right
-				// Triangle 1
-				indicesRight.push_back(RUF_id);
-				indicesRight.push_back(RDF_id);
-				indicesRight.push_back(RDB_id);
-
-				// Triangle 2
-				indicesRight.push_back(RUF_id);
-				indicesRight.push_back(RDB_id);
-				indicesRight.push_back(RUB_id);
-
-				// Face Left
-				// Triangle 1
-				indicesLeft.push_back(LUB_id);
-				indicesLeft.push_back(LDB_id);
-				indicesLeft.push_back(LDF_id);
-
-				// Triangle 2
-				indicesLeft.push_back(LUB_id);
-				indicesLeft.push_back(LDF_id);
-				indicesLeft.push_back(LUF_id);
-
-				// Face Down
-				// Triangle 1
-				indicesDown.push_back(LDF_id);
-				indicesDown.push_back(LDB_id);
-				indicesDown.push_back(RDB_id);
-
-				// Triangle 2
-				indicesDown.push_back(LDF_id);
-				indicesDown.push_back(RDB_id);
-				indicesDown.push_back(RDF_id);
-
-				// Face Back
-				// Triangle 1
-				indicesBack.push_back(LUB_id);
-				indicesBack.push_back(LDB_id);
-				indicesBack.push_back(RDB_id);
-
-				// Triangle 2
-				indicesBack.push_back(LUB_id);
-				indicesBack.push_back(RDB_id);
-				indicesBack.push_back(RUF_id);
+				// Face up
+				this->createFace(vertexIndex, vertices, indices, nbVertex, {x, y + 1, z},
+									pointLUB, pointLUF, pointRUF, pointRUB, normalUp);
+				// Face down
+				this->createFace(vertexIndex, vertices, indices, nbVertex, {x, y - 1, z},
+									pointLDF, pointLDB, pointRDB, pointRDF, normalDown);
+				// Face front
+				this->createFace(vertexIndex, vertices, indices, nbVertex, {x, y, z + 1},
+									pointLUF, pointLDF, pointRDF, pointRUF, normalFront);
+				// Face back
+				this->createFace(vertexIndex, vertices, indices, nbVertex, {x, y, z - 1},
+									pointRUB, pointRDB, pointLDB, pointLUB, normalBack);
+				// Face right
+				this->createFace(vertexIndex, vertices, indices, nbVertex, {x + 1, y, z},
+									pointRUF, pointRDF, pointRDB, pointRUB, normalRight);
+				// Face left
+				this->createFace(vertexIndex, vertices, indices, nbVertex, {x - 1, y, z},
+									pointLUB, pointLDB, pointLDF, pointLUF, normalLeft);
 			}
 		}
 	}
 
-	this->meshFront = ChunkMesh(vertices, indicesFront);
-	this->meshFront.createBuffers(*this->copyCommandPool);
+	this->mesh = ChunkMesh(vertices, indices);
+	this->mesh.createBuffers(*this->copyCommandPool);
+}
 
-	this->meshUp = ChunkMesh(vertices, indicesUp);
-	this->meshUp.createBuffers(*this->copyCommandPool);
 
-	this->meshBack = ChunkMesh(vertices, indicesBack);
-	this->meshBack.createBuffers(*this->copyCommandPool);
+void	Chunk::createFace(
+				std::unordered_map<std::size_t, uint32_t> &vertexIndex,
+				std::vector<VertexPos> &vertices,
+				std::vector<uint32_t> &indices,
+				int &nbVertex,
+				const gm::Vec3u &posCheck,
+				const gm::Vec3f &posLU,
+				const gm::Vec3f &posLD,
+				const gm::Vec3f &posRD,
+				const gm::Vec3f &posRU,
+				const gm::Vec3f &normal)
+{
+	if (this->getCube(posCheck) != CUBE_AIR)
+		return ;
 
-	this->meshLeft = ChunkMesh(vertices, indicesLeft);
-	this->meshLeft.createBuffers(*this->copyCommandPool);
+	VertexPos pointLU(posLU, normal);
+	VertexPos pointLD(posLD, normal);
+	VertexPos pointRD(posRD, normal);
+	VertexPos pointRU(posRU, normal);
 
-	this->meshRight = ChunkMesh(vertices, indicesRight);
-	this->meshRight.createBuffers(*this->copyCommandPool);
+	uint32_t	LU_id = getVetrexId(vertexIndex, vertices, pointLU, nbVertex);
+	uint32_t	LD_id = getVetrexId(vertexIndex, vertices, pointLD, nbVertex);
+	uint32_t	RD_id = getVetrexId(vertexIndex, vertices, pointRD, nbVertex);
+	uint32_t	RU_id = getVetrexId(vertexIndex, vertices, pointRU, nbVertex);
 
-	this->meshDown = ChunkMesh(vertices, indicesDown);
-	this->meshDown.createBuffers(*this->copyCommandPool);
+	indices.push_back(LU_id);
+	indices.push_back(LD_id);
+	indices.push_back(RD_id);
+
+	indices.push_back(LU_id);
+	indices.push_back(RD_id);
+	indices.push_back(RU_id);
 }
 
 //**** FUNCTIONS ***************************************************************
@@ -331,7 +292,7 @@ static char	cubeToChar(Cube cube)
 }
 
 
-static char	printChunkSlide(Cube *cubes, int z)
+static void	printChunkSlide(Cube *cubes, int z)
 {
 	for (int y = CHUNK_SIZE - 1; y >= 0; y--)
 	{

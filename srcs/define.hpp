@@ -6,7 +6,7 @@
 /*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/06 11:40:44 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/06/06 15:54:48 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,23 +32,12 @@
 // Camera defines
 # define FOV 80.0f
 # define NEAR 0.1f
-# define FAR 100.0f
+# define FAR 1000.0f
 # define SPEED 3.0f // TODO Put it to 1
 # define SPRINT 5.0f // TODO Put it to x20
 # define ROTATE 45.0f
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
-
-// Shader defines
-# define NB_CHUNK_SHADER 6
-enum ShaderDir {
-	SHADER_UP = 0,
-	SHADER_DOWN,
-	SHADER_LEFT,
-	SHADER_RIGHT,
-	SHADER_FRONT,
-	SHADER_BACK,
-};
 
 // Chunk defines
 # define CHUNK_SIZE 16

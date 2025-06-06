@@ -2,13 +2,13 @@
 
 
 static void	loadTextures(Engine &engine);
-static void loadShaders(Engine &engine, Shader *chunkShaders);
+static void loadShaders(Engine &engine, Shader &chunkShader);
 
 
 bool init(
 		Engine &engine,
 		Map &map,
-		Shader *chunkShaders,
+		Shader &chunkShader,
 		Camera &camera)
 {
 	camera.setPosition(gm::Vec3f(7.65f, 15.89f, 24.78f));
@@ -26,7 +26,7 @@ bool init(
 		engine.textureManager.createAllImages(engine);
 
 		map.init(engine.commandPool, camera);
-		loadShaders(engine, chunkShaders);
+		loadShaders(engine, chunkShader);
 	}
 	catch(const std::exception& e)
 	{
@@ -55,7 +55,7 @@ static void	loadTextures(Engine &engine)
 }
 
 
-static void loadShaders(Engine &engine, Shader *chunkShaders)
+static void loadShaders(Engine &engine, Shader &chunkShader)
 {
 	std::vector<UBOType>	uboTypes = {{sizeof(UBO3DChunkPos), UBO_VERTEX}, {sizeof(UBO3DChunkCubes), UBO_FRAGMENT}};
 	std::vector<std::string>	texturesUp = {"grass-up", "dirt-up", "stone-up", "water-up", "snow-up",
@@ -65,13 +65,8 @@ static void loadShaders(Engine &engine, Shader *chunkShaders)
 	std::vector<std::string>	texturesDown = {"grass-down", "dirt-down", "stone-down", "water-down", "snow-down",
 												"ice-down", "sand-down", "lava-down", "iron-down", "diamond-down"};
 
-	chunkShaders[SHADER_UP].init<VertexPos>(
-							engine, FCUL_COUNTER,
-							"shadersbin/mesh_vert.spv", "shadersbin/meshUp_frag.spv",
-							uboTypes, texturesUp);
-
-	chunkShaders[SHADER_FRONT].init<VertexPos>(
-							engine, FCUL_COUNTER,
-							"shadersbin/mesh_vert.spv", "shadersbin/meshFront_frag.spv",
-							uboTypes, texturesUp);
+	chunkShader.init<VertexPos>(
+					engine, FCUL_COUNTER,
+					"shadersbin/mesh_vert.spv", "shadersbin/mesh_frag.spv",
+					uboTypes, texturesUp);
 }

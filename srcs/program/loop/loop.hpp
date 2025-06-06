@@ -17,7 +17,7 @@
  *
  * @param engine Engine to init.
  * @param map Map to init.
- * @param chunkShaders Shaders for chunk to init.
+ * @param chunkShader Shader for chunk to init.
  * @param camera Camera to init.
  *
  * @return True if the init succeed, false else.
@@ -25,7 +25,7 @@
 bool init(
 			Engine &engine,
 			Map &map,
-			Shader *chunkShaders,
+			Shader &chunkShader,
 			Camera &camera);
 /**
  * @brief Update envents of program.
@@ -52,13 +52,13 @@ void	computation(
  *
  * @param engine Engine struct.
  * @param map Map to draw.
- * @param chunkShaders Shader used for draw chunks.
+ * @param chunkShader Shader used for draw chunks.
  * @param camera Camera used for draw.
  */
 void	draw(
 			Engine &engine,
 			Map &map,
-			Shader *chunkShaders,
+			Shader &chunkShader,
 			Camera &camera);
 
 

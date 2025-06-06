@@ -53,6 +53,14 @@ public:
 	 * @return The cube at the coordonate, or air in case of invalid coordonates.
 	 */
 	Cube	getCube(unsigned int x, unsigned int y, unsigned int z);
+	/**
+	 * @brief Getter of cube in a chunk.
+	 *
+	 * @param xpos Coordonate of the cube in the chunk.
+	 *
+	 * @return The cube at the coordonate, or air in case of invalid coordonates.
+	 */
+	Cube	getCube(const gm::Vec3u &pos);
 
 //---- Setters -----------------------------------------------------------------
 	/**
@@ -87,10 +95,10 @@ public:
 	 * @brief Draw chunk meshes.
 	 *
 	 * @param engine Engine struct.
-	 * @param chunkShaders Shaders used to draw meshes.
+	 * @param chunkShader Shader used to draw meshes.
 	 * @param camera The camera.
 	 */
-	void	draw(Engine &engine, Camera &camera, Shader *chunkShaders);
+	void	draw(Engine &engine, Camera &camera, Shader &chunkShader);
 	/**
 	 * @brief Destroy chunk.
 	 */
@@ -103,7 +111,7 @@ private:
 //---- Chunk properties --------------------------------------------------------
 	std::vector<gm::Vec3f>	positions;
 	Cube			cubes[CHUNK_SIZE3]; // id = x + y * SIZE + z * SIZE2
-	ChunkMesh		meshUp, meshDown, meshRight, meshLeft, meshFront, meshBack;
+	ChunkMesh		mesh;
 	UBO3DChunkPos	uboPos;
 	UBO3DChunkCubes	uboCubes;
 //---- Copy --------------------------------------------------------------------
@@ -114,6 +122,20 @@ private:
 	 * @brief Create meshes.
 	 */
 	void	createMeshes(void);
+	/**
+	 * @brief Create face up mesh.
+	 */
+	void	createFace(
+				std::unordered_map<std::size_t, uint32_t> &vertexIndex,
+				std::vector<VertexPos> &vertices,
+				std::vector<uint32_t> &indices,
+				int &nbVertex,
+				const gm::Vec3u &posCheck,
+				const gm::Vec3f &posLU,
+				const gm::Vec3f &posLD,
+				const gm::Vec3f &posRD,
+				const gm::Vec3f &posRU,
+				const gm::Vec3f &normal);
 
 };
 

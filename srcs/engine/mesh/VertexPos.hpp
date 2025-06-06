@@ -7,7 +7,7 @@
 # include <gmath.hpp>
 
 /**
- * @brief Class for 3D vertex with a position. Made to work with Vulkan.
+ * @brief Class for 3D vertex with a position and a normal. Made to work with Vulkan.
  */
 class VertexPos
 {
@@ -17,6 +17,10 @@ public:
 	 * @brief Position of vertex.
 	 */
 	gm::Vec3f	pos;
+	/**
+	 * @brief Normal of vertex.
+	 */
+	gm::Vec3f	nrm;
 
 //**** INITIALISION ************************************************************
 //---- Constructors ------------------------------------------------------------
@@ -38,10 +42,11 @@ public:
 	 * @brief Constructor of VertexPos class.
 	 *
 	 * @param pos The position of VertexPos.
+	 * @param nrm The normal of VertexPos.
 	 *
 	 * @return The VertexPos create from parameter.
 	 */
-	VertexPos(const gm::Vec3f &pos);
+	VertexPos(const gm::Vec3f &pos, const gm::Vec3f &nrm);
 
 //---- Destructor --------------------------------------------------------------
 	/**
@@ -82,7 +87,7 @@ public:
 	 *
 	 * @return The VkVertexInputAttributeDescription for VertexPos class.
 	 */
-	static std::array<VkVertexInputAttributeDescription, 1>	getAttributeDescriptions(void);
+	static std::array<VkVertexInputAttributeDescription, 2>	getAttributeDescriptions(void);
 
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
