@@ -44,6 +44,7 @@ Chunk::Chunk(void)
 
 	this->setCube(8, 9, 8, CUBE_LAVA);
 	this->setCube(6, 12, 6, CUBE_DIAMOND);
+	this->setCube(20, 16, 12, CUBE_GRASS);
 }
 
 
