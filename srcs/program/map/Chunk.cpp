@@ -118,6 +118,8 @@ void	Chunk::init(VulkanCommandPool &commandPool, Camera &camera)
 	this->uboPos.proj = camera.getProjection();
 	this->uboPos.proj.at(1, 1) *= -1;
 	this->uboPos.model = this->mesh.getModel();
+	this->uboPos.pos = gm::Vec4f(this->mesh.getPosition());
+
 	for (int i = 0; i < CHUNK_SIZE3; i++)
 		this->uboCubes.cubes[i] = this->cubes[i];
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 15:33:15 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/06 16:35:32 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/06/08 12:40:54 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ int	main(void)
 		// Destroy vulkans attributs
 		map.destroy();
 		chunkShader.destroy(engine);
+		chunkFdfShader.destroy(engine);
 
 		// Terminate engine and glfw
 		destroyEngine(engine);
@@ -73,6 +74,7 @@ int	main(void)
 	// Destroy vulkans attributs
 	map.destroy();
 	chunkShader.destroy(engine);
+	chunkFdfShader.destroy(engine);
 
 	// Terminate engine and glfw
 	destroyEngine(engine);
