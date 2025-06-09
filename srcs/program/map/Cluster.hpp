@@ -1,62 +1,54 @@
-#ifndef MAP_HPP
-# define MAP_HPP
+#ifndef CLUSTER_HPP
+# define CLUSTER_HPP
 
 # include <program/map/Chunk.hpp>
-# include <program/map/Cluster.hpp>
-
-# define NB_CHUNK 2 // TODO : REMOVE
 
 /**
- * @brief Map class.
+ * @brief Cluster class.
  */
-class Map
+class Cluster
 {
 public:
 //**** PUBLIC ATTRIBUTS ********************************************************
+	Chunk	*chunks[CLUSTER_SIZE3];
+
 //**** INITIALISION ************************************************************
 //---- Constructors ------------------------------------------------------------
 	/**
-	 * @brief Default contructor of Map class.
+	 * @brief Default contructor of Cluster class.
 	 *
-	 * @return The default Map.
+	 * @return The default Cluster.
 	 */
-	Map(void);
+	Cluster(void);
 	/**
-	 * @brief Copy constructor of Map class.
+	 * @brief Copy constructor of Cluster class.
 	 *
-	 * @param obj The Map to copy.
+	 * @param obj The Cluster to copy.
 	 *
-	 * @return The Map copied from parameter.
+	 * @return The Cluster copied from parameter.
 	 */
-	Map(const Map &obj);
+	Cluster(const Cluster &obj);
 
 //---- Destructor --------------------------------------------------------------
 	/**
-	 * @brief Destructor of Map class.
+	 * @brief Destructor of Cluster class.
 	 */
-	~Map();
+	~Cluster();
 
 //**** ACCESSORS ***************************************************************
 //---- Getters -----------------------------------------------------------------
 //---- Setters -----------------------------------------------------------------
 //---- Operators ---------------------------------------------------------------
 	/**
-	 * @brief Copy operator of Map class.
+	 * @brief Copy operator of Cluster class.
 	 *
-	 * @param obj The Map to copy.
+	 * @param obj The Cluster to copy.
 	 *
-	 * @return The Map copied from parameter.
+	 * @return The Cluster copied from parameter.
 	 */
-	Map	&operator=(const Map &obj);
+	Cluster	&operator=(const Cluster &obj);
 
 //**** PUBLIC METHODS **********************************************************
-	/**
-	 * @brief Init chunks.
-	 *
-	 * @param commandPool The engine command pool.
-	 * @param camera The camera.
-	 */
-	void	init(VulkanCommandPool &commandPool, Camera &camera);
 	/**
 	 * @brief Draw chunks.
 	 *
@@ -65,17 +57,11 @@ public:
 	 * @param camera The camera.
 	 */
 	void	draw(Engine &engine, Camera &camera, Shader &chunkShader);
-	/**
-	 * @brief Destroy chunks.
-	 */
-	void	destroy(void);
 
 //**** STATIC METHODS **********************************************************
 
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
-	Chunk	chunks[NB_CHUNK];
-	Cluster	cluster;
 //**** PRIVATE METHODS *********************************************************
 };
 

@@ -153,51 +153,10 @@ public:
 		VkPipeline graphicsPipeline;
 		std::vector<VkDescriptorSet> descriptorSets;
 
-		getShaderInfo(pipelineLayout,graphicsPipeline, descriptorSets, shader);
+		getShaderInfo(pipelineLayout, graphicsPipeline, descriptorSets, shader);
 
-		VkCommandBufferBeginInfo beginInfo{};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = 0; // Optional
-		beginInfo.pInheritanceInfo = nullptr; // Optional
-
-		if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
-			throw std::runtime_error("Begin record of command buffer failed");
-
-		// Define render process
-		VkRenderPassBeginInfo renderPassInfo{};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass = this->renderPass;
-		renderPassInfo.framebuffer = this->swapChainFramebuffers[this->imageIndex];
-		renderPassInfo.renderArea.offset = {0, 0};
-		renderPassInfo.renderArea.extent = this->swapChainExtent;
-
-		// Depth clear
-		std::array<VkClearValue, 2> clearValues{};
-		clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
-		clearValues[1].depthStencil = {1.0f, 0};
-
-		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-		renderPassInfo.pClearValues = clearValues.data();
-
-		// Start render process
-		vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		// Bind shader
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-
-		// Define draw region size
-		VkViewport viewport{};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = static_cast<float>(this->swapChainExtent.width);
-		viewport.height = static_cast<float>(this->swapChainExtent.height);
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
-		// Define draw region mask
-		VkRect2D scissor{};
-		scissor.offset = {0, 0};
-		scissor.extent = this->swapChainExtent;
-		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
 		// Use vertex and index buffers
 		VkBuffer vertexBuffers[] = {mesh.getVertexBuffer()};
@@ -210,11 +169,6 @@ public:
 
 		// Draw with index
 		vkCmdDrawIndexed(commandBuffer, mesh.getNbIndex(), 1, 0, 0, 0);
-
-		// Wait drawing end
-		vkCmdEndRenderPass(commandBuffer);
-		if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
-			throw std::runtime_error("Command buffur record failed");
 	}
 	/**
 	 * @brief Finish and apply draw onto window.

@@ -110,10 +110,15 @@ Chunk	&Chunk::operator=(const Chunk &obj)
 
 //**** PUBLIC METHODS **********************************************************
 
-void	Chunk::init(VulkanCommandPool &commandPool, Camera &camera)
+void	Chunk::init(
+				VulkanCommandPool &commandPool,
+				Camera &camera,
+				const gm::Vec3f &position)
 {
 	this->copyCommandPool = &commandPool;
 	this->createMeshes();
+
+	this->mesh.setPosition(position);
 
 	this->uboPos.proj = camera.getProjection();
 	this->uboPos.proj.at(1, 1) *= -1;

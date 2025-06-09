@@ -1,27 +1,25 @@
-#include <program/map/Map.hpp>
+#include <program/map/Cluster.hpp>
 
 //**** STATIC FUNCTIONS DEFINE *************************************************
 //**** INITIALISION ************************************************************
 //---- Constructors ------------------------------------------------------------
 
-Map::Map(void)
+Cluster::Cluster(void)
 {
-	for (int i = 0; i < NB_CHUNK; i++)
-		this->chunks[i] = Chunk();
-	this->cluster = Cluster();
+	for (int i = 0; i <  CLUSTER_SIZE3; i++)
+		this->chunks[i] = NULL;
 }
 
 
-Map::Map(const Map &obj)
+Cluster::Cluster(const Cluster &obj)
 {
-	for (int i = 0; i < NB_CHUNK; i++)
+	for (int i = 0; i <  CLUSTER_SIZE3; i++)
 		this->chunks[i] = obj.chunks[i];
-	this->cluster = obj.cluster;
 }
 
 //---- Destructor --------------------------------------------------------------
 
-Map::~Map()
+Cluster::~Cluster()
 {
 
 }
@@ -31,55 +29,26 @@ Map::~Map()
 //---- Setters -----------------------------------------------------------------
 //---- Operators ---------------------------------------------------------------
 
-Map	&Map::operator=(const Map &obj)
+Cluster	&Cluster::operator=(const Cluster &obj)
 {
 	if (this == &obj)
 		return (*this);
 
-	for (int i = 0; i < NB_CHUNK; i++)
+	for (int i = 0; i <  CLUSTER_SIZE3; i++)
 		this->chunks[i] = obj.chunks[i];
-	this->cluster = obj.cluster;
 
 	return (*this);
 }
 
 //**** PUBLIC METHODS **********************************************************
 
-void	Map::init(VulkanCommandPool &commandPool, Camera &camera)
+void	Cluster::draw(Engine &engine, Camera &camera, Shader &chunkShader)
 {
-	// Init chunks
-	std::vector<gm::Vec3f>	chunksPos = {
-		{  0,  0,  0},
-		{ 32,  0,  0},
-		{-32,  0,  0},
-		{  0,  0, 32},
-		{ 32,  0, 32},
-		{-32,  0, 32},
-		{  0,  0,-32},
-		{ 32,  0,-32},
-		{-32,  0,-32},
-	};
-
-	for (int i = 0; i < NB_CHUNK; i++)
-		this->chunks[i].init(commandPool, camera, chunksPos[i]);
-
-	// Init cluster
-	for (int i = 0; i < NB_CHUNK; i++)
-		this->cluster.chunks[i] = &this->chunks[i];
-}
-
-
-void	Map::draw(Engine &engine, Camera &camera, Shader &chunkShader)
-{
-	// this->chunks[0].draw(engine, camera, chunkShader);
-	this->cluster.draw(engine, camera, chunkShader);
-}
-
-
-void	Map::destroy(void)
-{
-	for (int i = 0; i < NB_CHUNK; i++)
-		this->chunks[i].destroy();
+	for (int i = 0; i <  CLUSTER_SIZE3; i++)
+	{
+		if (this->chunks[i] != NULL)
+			this->chunks[i]->draw(engine, camera, chunkShader);
+	}
 }
 
 //**** STATIC METHODS **********************************************************

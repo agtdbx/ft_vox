@@ -89,8 +89,12 @@ public:
 	 *
 	 * @param commandPool The engine command pool.
 	 * @param camera The camera.
+	 * @param position The chunk position.
 	 */
-	void	init(VulkanCommandPool &commandPool, Camera &camera);
+	void	init(
+				VulkanCommandPool &commandPool,
+				Camera &camera,
+				const gm::Vec3f &position);
 	/**
 	 * @brief Draw chunk meshes.
 	 *

@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/07 11:08:56 by gugus            ###   ########.fr       */
+/*   Updated: 2025/06/09 15:28:20 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,5 +43,10 @@ const int MAX_FRAMES_IN_FLIGHT = 2;
 # define CHUNK_SIZE 32
 const int	CHUNK_SIZE2 = CHUNK_SIZE * CHUNK_SIZE;
 const int	CHUNK_SIZE3 = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
+
+// Cluster defines
+# define CLUSTER_SIZE 8
+const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
+const int	CLUSTER_SIZE3 = CLUSTER_SIZE * CLUSTER_SIZE * CLUSTER_SIZE;
 
 #endif
