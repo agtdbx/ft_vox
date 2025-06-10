@@ -10,6 +10,7 @@
 # include <string>
 
 class Shader;
+class ShaderParam;
 class VulkanContext;
 
 /**
@@ -144,16 +145,17 @@ public:
 	 *
 	 * @param mesh Mesh to draw.
 	 * @param shader Shader used to draw mesh.
-	 * @param descriptorSets . // TODO : doc
+	 * @param shaderParam ShaderParam used to draw mesh.
 	 */
 	template<typename VertexType>
-	void	drawMesh(Mesh<VertexType> &mesh, Shader &shader, std::vector<VkDescriptorSet> &descriptorSets)
+	void	drawMesh(Mesh<VertexType> &mesh, Shader &shader, ShaderParam &shaderParam)
 	{
 		VkCommandBuffer commandBuffer = this->copyCommandBuffers[this->currentFrame];
-		VkPipelineLayout pipelineLayout;
-		VkPipeline graphicsPipeline;
+		VkPipelineLayout				pipelineLayout;
+		VkPipeline						graphicsPipeline;
+		std::vector<VkDescriptorSet>	descriptorSets;
 
-		getShaderInfo(pipelineLayout, graphicsPipeline, shader);
+		getShaderInfo(pipelineLayout, graphicsPipeline, descriptorSets, shader, shaderParam);
 
 		// Bind shader
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
@@ -241,11 +243,17 @@ private:
 	 * @brief Destroy vulkan swap chain.
 	 */
 	void	destroySwapChain(void);
-
+	/**
+	 * @brief Get info from shader and shaderParam.
+	 *
+	 *
+	 */
 	void	getShaderInfo(
 				VkPipelineLayout &pipelineLayout,
 				VkPipeline &graphicsPipeline,
-				Shader &shader);
+				std::vector<VkDescriptorSet> &descriptorSets,
+				Shader &shader,
+				ShaderParam &shaderParam);
 };
 
 //**** FUNCTIONS ***************************************************************

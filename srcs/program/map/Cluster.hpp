@@ -54,7 +54,7 @@ public:
 	 *
 	 * @param engine Engine struct.
 	 * @param camera The camera.
-	 * @param chunkShader Shader used to draw chunk meshes.
+	 * @param chunkShader Shaders used to draw chunk meshes.
 	 */
 	void	draw(Engine &engine, Camera &camera, ChunkShader &chunkShader);
 

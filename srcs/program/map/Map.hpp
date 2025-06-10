@@ -4,7 +4,7 @@
 # include <program/map/Chunk.hpp>
 # include <program/map/Cluster.hpp>
 
-# define NB_CHUNK 1 // TODO : REMOVE
+# define NB_CHUNK 9 // TODO : REMOVE
 
 /**
  * @brief Map class.
@@ -53,8 +53,9 @@ public:
 	/**
 	 * @brief Init chunks.
 	 *
-	 * @param commandPool The engine command pool.
+	 * @param engine Engine struct.
 	 * @param camera The camera.
+	 * @param chunkShader Shaders used to draw chunk meshes.
 	 */
 	void	init(
 				Engine &engine,
@@ -65,7 +66,7 @@ public:
 	 *
 	 * @param engine Engine struct.
 	 * @param camera The camera.
-	 * @param chunkShader Shader used to draw chunk meshes.
+	 * @param chunkShader Shaders used to draw chunk meshes.
 	 */
 	void	draw(
 				Engine &engine,
@@ -74,7 +75,7 @@ public:
 	/**
 	 * @brief Destroy chunks.
 	 */
-	void	destroy(void);
+	void	destroy(Engine &engine);
 
 //**** STATIC METHODS **********************************************************
 

@@ -67,7 +67,7 @@ static void loadShaders(
 	chunkShader.shader.init<VertexPos>(
 						engine, FCUL_COUNTER, DRAW_POLYGON,
 						"shadersbin/mesh_vert.spv", "shadersbin/mesh_frag.spv",
-						uboTypes, CUBE_TEXTURES);
+						uboTypes, CUBE_TEXTURES.size());
 	chunkShader.shaderFdf.init<VertexPos>(
 						engine, FCUL_NONE, DRAW_LINE,
 						"shadersbin/mesh_vert.spv", "shadersbin/fdf_frag.spv",

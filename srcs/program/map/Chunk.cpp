@@ -129,10 +129,8 @@ void	Chunk::init(
 	for (int i = 0; i < CHUNK_SIZE3; i++)
 		this->uboCubes.cubes[i] = this->cubes[i];
 
-	this->descriptorSets = chunkShader.shader.getDescriptorSets();
-	// this->descriptorSets = chunkShader.shader.createNewDescriptorSets(engine, CUBE_TEXTURES);
-	this->descriptorSetsFdf = chunkShader.shaderFdf.getDescriptorSets();
-	// this->descriptorSetsFdf = chunkShader.shaderFdf.createNewDescriptorSets(engine, CUBE_TEXTURES);
+	chunkShader.shader.initShaderParam(engine, this->shaderParam, CUBE_TEXTURES);
+	chunkShader.shaderFdf.initShaderParam(engine, this->shaderParamFdf, {});
 }
 
 
@@ -143,21 +141,23 @@ void	Chunk::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 	// Draw mesh
 	if (!chunkShader.shaderFdfEnable)
 	{
-		chunkShader.shader.updateUBO(engine.window, &this->uboPos, 0);
-		chunkShader.shader.updateUBO(engine.window, &this->uboCubes, 1);
-		engine.window.drawMesh(this->mesh, chunkShader.shader, this->descriptorSets);
+		this->shaderParam.updateUBO(engine.window, &this->uboPos, 0);
+		this->shaderParam.updateUBO(engine.window, &this->uboCubes, 1);
+		engine.window.drawMesh(this->mesh, chunkShader.shader, this->shaderParam);
 	}
 	else
 	{
-		chunkShader.shaderFdf.updateUBO(engine.window, &this->uboPos, 0);
-		chunkShader.shaderFdf.updateUBO(engine.window, &this->uboCubes, 1);
-		engine.window.drawMesh(this->mesh, chunkShader.shaderFdf, this->descriptorSetsFdf);
+		this->shaderParamFdf.updateUBO(engine.window, &this->uboPos, 0);
+		this->shaderParamFdf.updateUBO(engine.window, &this->uboCubes, 1);
+		engine.window.drawMesh(this->mesh, chunkShader.shaderFdf, this->shaderParamFdf);
 	}
 }
 
 
-void	Chunk::destroy(void)
+void	Chunk::destroy(Engine &engine)
 {
+	this->shaderParam.destroy(engine);
+	this->shaderParamFdf.destroy(engine);
 	this->mesh.destroy();
 }
 

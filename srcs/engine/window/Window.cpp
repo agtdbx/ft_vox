@@ -603,10 +603,13 @@ void	Window::destroySwapChain(void)
 void	Window::getShaderInfo(
 				VkPipelineLayout &pipelineLayout,
 				VkPipeline &graphicsPipeline,
-				Shader &shader)
+				std::vector<VkDescriptorSet> &descriptorSets,
+				Shader &shader,
+				ShaderParam &shaderParam)
 {
 	pipelineLayout = shader.getPipelineLayout();
 	graphicsPipeline = shader.getGraphicsPipeline();
+	descriptorSets = shaderParam.getDescriptorSets();
 }
 
 //**** FUNCTIONS ***************************************************************

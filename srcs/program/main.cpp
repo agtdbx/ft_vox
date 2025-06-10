@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 15:33:15 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/10 11:37:45 by gugus            ###   ########.fr       */
+/*   Updated: 2025/06/10 12:41:30 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ int	main(void)
 		vkDeviceWaitIdle(engine.context.getDevice());
 
 		// Destroy vulkans attributs
-		map.destroy();
+		map.destroy(engine);
 		chunkShader.shader.destroy(engine);
 		chunkShader.shaderFdf.destroy(engine);
 
@@ -71,7 +71,7 @@ int	main(void)
 	vkDeviceWaitIdle(engine.context.getDevice());
 
 	// Destroy vulkans attributs
-	map.destroy();
+	map.destroy(engine);
 	chunkShader.shader.destroy(engine);
 	chunkShader.shaderFdf.destroy(engine);
 

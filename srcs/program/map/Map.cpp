@@ -79,10 +79,10 @@ void	Map::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 }
 
 
-void	Map::destroy(void)
+void	Map::destroy(Engine &engine)
 {
 	for (int i = 0; i < NB_CHUNK; i++)
-		this->chunks[i].destroy();
+		this->chunks[i].destroy(engine);
 }
 
 //**** STATIC METHODS **********************************************************

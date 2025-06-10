@@ -5,6 +5,7 @@
 # include <engine/engine.hpp>
 # include <engine/window/Window.hpp>
 # include <engine/textures/TextureManager.hpp>
+# include <engine/shader/ShaderParam.hpp>
 
 # include <string>
 # include <fstream>
@@ -17,7 +18,6 @@ enum FaceCulling
 	FCUL_COUNTER,
 };
 
-
 enum DrawMode
 {
 	DRAW_POLYGON,
@@ -25,24 +25,8 @@ enum DrawMode
 	DRAW_POINT,
 };
 
-
-enum UBOLocation
-{
-	UBO_VERTEX,
-	UBO_FRAGMENT,
-};
-
-
-struct UBOType
-{
-	size_t		size;
-	UBOLocation	location;
-};
-
-
 //**** STATIC DEFINE FUNCTIONS *************************************************
 
-static inline std::vector<const Image *>	getImages(const TextureManager &textureManager, const std::vector<std::string> &imageIds);
 static inline std::vector<char>	readFile(const std::string &filename);
 static inline VkShaderModule	createShaderModule(VkDevice device, const std::vector<char> &code);
 
@@ -90,12 +74,6 @@ public:
 	 * @return The graphic pipeline.
 	 */
 	VkPipeline	getGraphicsPipeline(void);
-	/**
-	 * @brief Getter of descriptor sets.
-	 *
-	 * @return The descriptor sets.
-	 */
-	std::vector<VkDescriptorSet>	&getDescriptorSets(void);
 
 //---- Setters -----------------------------------------------------------------
 //---- Operators ---------------------------------------------------------------
@@ -123,14 +101,10 @@ public:
 				std::string vertexPath, std::string fragmentPath)
 	{
 		VkDevice	device = engine.context.getDevice();
-		VkPhysicalDevice	physicalDevice = engine.context.getPhysicalDevice();
 
 		this->createDescriptorSetLayout(device, 0);
 		this->createGraphicsPipeline<VertexType>(device, engine.window, vertexPath, fragmentPath,
 										faceCulling, drawMode);
-		this->createUniformBuffers(device, physicalDevice);
-		this->createDescriptorPool(device, 0);
-		this->createDescriptorSets(device, {});
 	}
 	/**
 	 * @brief Init shader from parameters.
@@ -148,16 +122,12 @@ public:
 				const std::vector<UBOType> &uboTypes)
 	{
 		VkDevice	device = engine.context.getDevice();
-		VkPhysicalDevice	physicalDevice = engine.context.getPhysicalDevice();
 
 		this->uboTypes = uboTypes;
 
 		this->createDescriptorSetLayout(device, 0);
 		this->createGraphicsPipeline<VertexType>(device, engine.window, vertexPath, fragmentPath,
 										faceCulling, drawMode);
-		this->createUniformBuffers(device, physicalDevice);
-		this->createDescriptorPool(device, 0);
-		this->createDescriptorSets(device, {});
 	}
 	/**
 	 * @brief Init shader from parameters.
@@ -167,52 +137,40 @@ public:
 	 * @param vertexPath Path to compile vertex shader file.
 	 * @param fragmentPath Path to compile fragment shader file.
 	 * @param uboTypes Vector of ubo types.
-	 * @param imageIds Vector of image id to used in shader.
+	 * @param nbImages Number of image id to used in shader.
 	 */
 	template<typename VertexType>
 	void	init(
 				Engine &engine, FaceCulling faceCulling, DrawMode drawMode,
 				std::string vertexPath, std::string fragmentPath,
 				const std::vector<UBOType> &uboTypes,
-				const std::vector<std::string> &imageIds)
+				size_t nbImages)
 	{
 		VkDevice	device = engine.context.getDevice();
-		VkPhysicalDevice	physicalDevice = engine.context.getPhysicalDevice();
 
 		this->uboTypes = uboTypes;
 
-		std::vector<const Image *> images = getImages(engine.textureManager, imageIds);
-
-		this->createDescriptorSetLayout(device, images.size());
+		this->createDescriptorSetLayout(device, nbImages);
 		this->createGraphicsPipeline<VertexType>(device, engine.window, vertexPath, fragmentPath,
 										faceCulling, drawMode);
-		this->createUniformBuffers(device, physicalDevice);
-		this->createDescriptorPool(device, images.size());
-		this->createDescriptorSets(device, images);
 	}
 	/**
-	 * @brief Create new descriptor sets.
+	 * @brief Init a shaderParam
 	 *
 	 * @param engine The engine struct.
-	 * @param images The vector of image that will be used in shader.
+	 * @param shaderParam The shaderParam to init.
+	 * @param imageIds Vector of image id to used in shader.
 	 */
-	std::vector<VkDescriptorSet>	createNewDescriptorSets(
-										Engine &engine,
-										const std::vector<std::string> &imageIds);
+	void	initShaderParam(
+				Engine &engine,
+				ShaderParam &shaderParam,
+				const std::vector<std::string> &imageIds);
 	/**
 	 * @brief Destroy vulkan's allocate attributs.
 	 *
 	 * @param engine The engine struct.
 	 */
 	void	destroy(Engine &engine);
-	/**
-	 * @brief Update uniform values used by shader.destroy
-	 *
- 	 * @param window Window class of the engine.
-	 * @param ubo Pointer of uniform values struct used for update.
-	 * @param uboId Id of ubo in init vector. Id isn't check for speed, will crash if pass an incorect id.
-	 */
-	void	updateUBO(Window &window, void *ubo, int uboId);
 
 //**** STATIC METHODS **********************************************************
 
@@ -222,11 +180,6 @@ private:
 	VkDescriptorSetLayout			descriptorSetLayout;
 	VkPipelineLayout				pipelineLayout;
 	VkPipeline						graphicsPipeline;
-	std::vector<VkBuffer>			uniformBuffers;
-	std::vector<VkDeviceMemory>		uniformBuffersMemory;
-	std::vector<void*>				uniformBuffersMapped;
-	VkDescriptorPool				descriptorPool;
-	std::vector<VkDescriptorSet>	descriptorSets;
 
 //**** PRIVATE METHODS *********************************************************
 	/**
@@ -421,29 +374,6 @@ private:
 		vkDestroyShaderModule(device, fragShaderModule, nullptr);
 		vkDestroyShaderModule(device, vertShaderModule, nullptr);
 	}
-	/**
-	 * @brief Create uniform buffers to store uniform values used by shader.
-	 *
-	 * @param device The device of VulkanContext class.
-	 * @param physicalDevice The physical device of VulkanContext class.
-	 */
-	void	createUniformBuffers(VkDevice device, VkPhysicalDevice physicalDevice);
-	/**
-	 * @brief Create descriptor pool.
-	 *
-	 * @param device The device of VulkanContext class.
-	 * @param nbImages The number of image used in shader.
-	 */
-	void	createDescriptorPool(VkDevice device, size_t nbImages);
-	/**
-	 * @brief Create descriptor sets.
-	 *
-	 * @param device The device of VulkanContext class.
-	 * @param images The vector of image that will be used in shader.
-	 */
-	void	createDescriptorSets(
-				VkDevice device,
-				const std::vector<const Image *> &images);
 };
 
 //**** FUNCTIONS ***************************************************************
@@ -483,21 +413,6 @@ static inline VkShaderModule	createShaderModule(VkDevice device, const std::vect
 		throw std::runtime_error("Shader creation failed");
 
 	return (shaderModule);
-}
-
-
-static inline std::vector<const Image *>	getImages(const TextureManager &textureManager, const std::vector<std::string> &imageIds)
-{
-	std::vector<const Image *>	images;
-	for (const std::string &imageId : imageIds)
-	{
-		const Image *image = textureManager.getImage(imageId);
-		if (!image)
-			throw std::runtime_error("Invalid image id '" + imageId + "'");
-		images.push_back(image);
-	}
-
-	return (images);
 }
 
 #endif

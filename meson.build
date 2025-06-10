@@ -17,6 +17,7 @@ srcs = [
   'srcs/program/loop/events.cpp',
   'srcs/engine/window/Window.cpp',
   'srcs/engine/shader/Shader.cpp',
+  'srcs/engine/shader/ShaderParam.cpp',
   'srcs/engine/inputs/InputManager.cpp',
   'srcs/engine/inputs/Key.cpp',
   'srcs/engine/inputs/Mouse.cpp',

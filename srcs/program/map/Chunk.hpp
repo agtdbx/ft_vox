@@ -94,8 +94,9 @@ public:
 	/**
 	 * @brief Init the chunk meshes.
 	 *
-	 * @param commandPool The engine command pool.
+	 * @param engine Engine struct.
 	 * @param camera The camera.
+	 * @param chunkShader Shaders used to draw meshes.
 	 * @param position The chunk position.
 	 */
 	void	init(
@@ -108,13 +109,13 @@ public:
 	 *
 	 * @param engine Engine struct.
 	 * @param camera The camera.
-	 * @param chunkShader Shader used to draw meshes.
+	 * @param chunkShader Shaders used to draw meshes.
 	 */
 	void	draw(Engine &engine, Camera &camera, ChunkShader &chunkShader);
 	/**
 	 * @brief Destroy chunk.
 	 */
-	void	destroy(void);
+	void	destroy(Engine &engine);
 
 //**** STATIC METHODS **********************************************************
 
@@ -126,7 +127,7 @@ private:
 	ChunkMesh		mesh;
 	UBO3DChunkPos	uboPos;
 	UBO3DChunkCubes	uboCubes;
-	std::vector<VkDescriptorSet>	descriptorSets, descriptorSetsFdf;
+	ShaderParam		shaderParam, shaderParamFdf;
 //---- Copy --------------------------------------------------------------------
 	VulkanCommandPool	*copyCommandPool;
 
