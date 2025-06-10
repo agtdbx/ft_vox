@@ -191,6 +191,15 @@ public:
 		this->createDescriptorSets(device, images);
 	}
 	/**
+	 * @brief Create new descriptor sets.
+	 *
+	 * @param engine The engine struct.
+	 * @param images The vector of image that will be used in shader.
+	 */
+	std::vector<VkDescriptorSet>	createNewDescriptorSets(
+										Engine &engine,
+										const std::vector<std::string> &imageIds);
+	/**
 	 * @brief Destroy vulkan's allocate attributs.
 	 *
 	 * @param engine The engine struct.

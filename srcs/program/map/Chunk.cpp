@@ -111,11 +111,12 @@ Chunk	&Chunk::operator=(const Chunk &obj)
 //**** PUBLIC METHODS **********************************************************
 
 void	Chunk::init(
-				VulkanCommandPool &commandPool,
+				Engine &engine,
 				Camera &camera,
+				ChunkShader &chunkShader,
 				const gm::Vec3f &position)
 {
-	this->copyCommandPool = &commandPool;
+	this->copyCommandPool = &engine.commandPool;
 	this->createMeshes();
 
 	this->mesh.setPosition(position);
@@ -127,6 +128,11 @@ void	Chunk::init(
 
 	for (int i = 0; i < CHUNK_SIZE3; i++)
 		this->uboCubes.cubes[i] = this->cubes[i];
+
+	this->descriptorSets = chunkShader.shader.getDescriptorSets();
+	// this->descriptorSets = chunkShader.shader.createNewDescriptorSets(engine, CUBE_TEXTURES);
+	this->descriptorSetsFdf = chunkShader.shaderFdf.getDescriptorSets();
+	// this->descriptorSetsFdf = chunkShader.shaderFdf.createNewDescriptorSets(engine, CUBE_TEXTURES);
 }
 
 
@@ -139,13 +145,13 @@ void	Chunk::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 	{
 		chunkShader.shader.updateUBO(engine.window, &this->uboPos, 0);
 		chunkShader.shader.updateUBO(engine.window, &this->uboCubes, 1);
-		engine.window.drawMesh(this->mesh, chunkShader.shader);
+		engine.window.drawMesh(this->mesh, chunkShader.shader, this->descriptorSets);
 	}
 	else
 	{
 		chunkShader.shaderFdf.updateUBO(engine.window, &this->uboPos, 0);
 		chunkShader.shaderFdf.updateUBO(engine.window, &this->uboCubes, 1);
-		engine.window.drawMesh(this->mesh, chunkShader.shaderFdf);
+		engine.window.drawMesh(this->mesh, chunkShader.shaderFdf, this->descriptorSetsFdf);
 	}
 }
 

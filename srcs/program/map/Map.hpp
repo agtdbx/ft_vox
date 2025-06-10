@@ -4,7 +4,7 @@
 # include <program/map/Chunk.hpp>
 # include <program/map/Cluster.hpp>
 
-# define NB_CHUNK 2 // TODO : REMOVE
+# define NB_CHUNK 1 // TODO : REMOVE
 
 /**
  * @brief Map class.
@@ -56,7 +56,10 @@ public:
 	 * @param commandPool The engine command pool.
 	 * @param camera The camera.
 	 */
-	void	init(VulkanCommandPool &commandPool, Camera &camera);
+	void	init(
+				Engine &engine,
+				Camera &camera,
+				ChunkShader &chunkShader);
 	/**
 	 * @brief Draw chunks.
 	 *

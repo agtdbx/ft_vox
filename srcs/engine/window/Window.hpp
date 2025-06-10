@@ -144,16 +144,16 @@ public:
 	 *
 	 * @param mesh Mesh to draw.
 	 * @param shader Shader used to draw mesh.
+	 * @param descriptorSets . // TODO : doc
 	 */
 	template<typename VertexType>
-	void	drawMesh(Mesh<VertexType> &mesh, Shader &shader)
+	void	drawMesh(Mesh<VertexType> &mesh, Shader &shader, std::vector<VkDescriptorSet> &descriptorSets)
 	{
 		VkCommandBuffer commandBuffer = this->copyCommandBuffers[this->currentFrame];
 		VkPipelineLayout pipelineLayout;
 		VkPipeline graphicsPipeline;
-		std::vector<VkDescriptorSet> descriptorSets;
 
-		getShaderInfo(pipelineLayout, graphicsPipeline, descriptorSets, shader);
+		getShaderInfo(pipelineLayout, graphicsPipeline, shader);
 
 		// Bind shader
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
@@ -245,7 +245,6 @@ private:
 	void	getShaderInfo(
 				VkPipelineLayout &pipelineLayout,
 				VkPipeline &graphicsPipeline,
-				std::vector<VkDescriptorSet> &descriptorSets,
 				Shader &shader);
 };
 

@@ -45,7 +45,10 @@ Map	&Map::operator=(const Map &obj)
 
 //**** PUBLIC METHODS **********************************************************
 
-void	Map::init(VulkanCommandPool &commandPool, Camera &camera)
+void	Map::init(
+				Engine &engine,
+				Camera &camera,
+				ChunkShader &chunkShader)
 {
 	// Init chunks
 	std::vector<gm::Vec3f>	chunksPos = {
@@ -61,7 +64,7 @@ void	Map::init(VulkanCommandPool &commandPool, Camera &camera)
 	};
 
 	for (int i = 0; i < NB_CHUNK; i++)
-		this->chunks[i].init(commandPool, camera, chunksPos[i]);
+		this->chunks[i].init(engine, camera, chunkShader, chunksPos[i]);
 
 	// Init cluster
 	for (int i = 0; i < NB_CHUNK; i++)

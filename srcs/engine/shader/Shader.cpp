@@ -64,6 +64,90 @@ Shader	&Shader::operator=(const Shader &obj)
 
 //**** PUBLIC METHODS **********************************************************
 
+std::vector<VkDescriptorSet>	Shader::createNewDescriptorSets(
+									Engine &engine,
+									const std::vector<std::string> &imageIds)
+{
+	std::vector<VkDescriptorSet>	descriptorSets;
+
+	// Get images
+	std::vector<const Image *>	images;
+	for (const std::string &imageId : imageIds)
+	{
+		const Image *image = engine.textureManager.getImage(imageId);
+		if (!image)
+			throw std::runtime_error("Invalid image id '" + imageId + "'");
+		images.push_back(image);
+	}
+
+	std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, this->descriptorSetLayout);
+	VkDescriptorSetAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = this->descriptorPool;
+	allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+	allocInfo.pSetLayouts = layouts.data();
+
+	descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+	if (vkAllocateDescriptorSets(engine.context.getDevice(), &allocInfo, descriptorSets.data()) != VK_SUCCESS)
+		throw std::runtime_error("Allocate descriptor sets failed");
+
+	// Get images
+	uint32_t nbUbo = this->uboTypes.size();
+	uint32_t nbImages = images.size();
+
+	// Create images struct
+	std::vector<VkDescriptorImageInfo>	imagesInfo(nbImages);
+	for (uint32_t i = 0; i < nbImages; i++)
+	{
+		imagesInfo[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imagesInfo[i].imageView = images[i]->view;
+		imagesInfo[i].sampler = images[i]->sampler;
+	}
+
+	// Init sets for each frame
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+	{
+		// Create ubo struct
+		std::vector<VkDescriptorBufferInfo>	buffersInfo(nbUbo);
+		for (uint32_t j = 0; j < nbUbo; j++)
+		{
+			buffersInfo[j].buffer = this->uniformBuffers[i * nbUbo + j];
+			buffersInfo[j].offset = 0;
+			buffersInfo[j].range = this->uboTypes[j].size;
+		}
+
+		std::vector<VkWriteDescriptorSet> descriptorWrites(nbUbo + nbImages);
+		for (uint32_t j = 0; j < nbUbo; j++)
+		{
+			descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[j].dstSet = descriptorSets[i];
+			descriptorWrites[j].dstBinding = j;
+			descriptorWrites[j].dstArrayElement = 0;
+			descriptorWrites[j].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			descriptorWrites[j].descriptorCount = 1;
+			descriptorWrites[j].pBufferInfo = &buffersInfo[j];
+		}
+
+		for (uint32_t j = 0; j < nbImages; j++)
+		{
+			uint32_t	id = nbUbo + j;
+
+			descriptorWrites[id].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[id].dstSet = descriptorSets[i];
+			descriptorWrites[id].dstBinding = id;
+			descriptorWrites[id].dstArrayElement = 0;
+			descriptorWrites[id].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			descriptorWrites[id].descriptorCount = 1;
+			descriptorWrites[id].pImageInfo = &imagesInfo[j];
+		}
+
+		vkUpdateDescriptorSets(engine.context.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+	}
+
+	return (descriptorSets);
+}
+
+
 void	Shader::destroy(Engine &engine)
 {
 	VkDevice	device = engine.context.getDevice();

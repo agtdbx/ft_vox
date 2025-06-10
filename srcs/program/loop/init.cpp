@@ -27,8 +27,8 @@ bool init(
 		// Vulkan attributs creation
 		engine.textureManager.createAllImages(engine);
 
-		map.init(engine.commandPool, camera);
 		loadShaders(engine, chunkShader);
+		map.init(engine, camera, chunkShader);
 	}
 	catch(const std::exception& e)
 	{

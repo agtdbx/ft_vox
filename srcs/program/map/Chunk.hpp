@@ -99,8 +99,9 @@ public:
 	 * @param position The chunk position.
 	 */
 	void	init(
-				VulkanCommandPool &commandPool,
+				Engine &engine,
 				Camera &camera,
+				ChunkShader &chunkShader,
 				const gm::Vec3f &position);
 	/**
 	 * @brief Draw chunk meshes.
@@ -125,6 +126,7 @@ private:
 	ChunkMesh		mesh;
 	UBO3DChunkPos	uboPos;
 	UBO3DChunkCubes	uboCubes;
+	std::vector<VkDescriptorSet>	descriptorSets, descriptorSetsFdf;
 //---- Copy --------------------------------------------------------------------
 	VulkanCommandPool	*copyCommandPool;
 
