@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 15:33:15 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/08 12:40:54 by gugus            ###   ########.fr       */
+/*   Updated: 2025/06/10 11:37:45 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,21 +22,20 @@ int	main(void)
 		return (1);
 	}
 
-	Engine	engine;
-	Camera	camera;
-	Shader	chunkShader, chunkFdfShader;
-	bool	enableFdfShader = false;
-	Map		map;
+	Engine		engine;
+	Camera		camera;
+	ChunkShader	chunkShader;
+	Map			map;
 
-	if (!init(engine, map, chunkShader, chunkFdfShader, camera))
+	if (!init(engine, map, chunkShader, camera))
 	{
 		// Wait all vulkan tasks
 		vkDeviceWaitIdle(engine.context.getDevice());
 
 		// Destroy vulkans attributs
 		map.destroy();
-		chunkShader.destroy(engine);
-		chunkFdfShader.destroy(engine);
+		chunkShader.shader.destroy(engine);
+		chunkShader.shaderFdf.destroy(engine);
 
 		// Terminate engine and glfw
 		destroyEngine(engine);
@@ -62,10 +61,10 @@ int	main(void)
 			break;
 
 		// Compute part
-		computation(engine, map, camera, enableFdfShader, delta);
+		computation(engine, map, camera, chunkShader, delta);
 
 		// Drawing part
-		draw(engine, map, chunkShader, chunkFdfShader, enableFdfShader, camera);
+		draw(engine, map, chunkShader, camera);
 	}
 
 	// Wait all vulkan tasks
@@ -73,8 +72,8 @@ int	main(void)
 
 	// Destroy vulkans attributs
 	map.destroy();
-	chunkShader.destroy(engine);
-	chunkFdfShader.destroy(engine);
+	chunkShader.shader.destroy(engine);
+	chunkShader.shaderFdf.destroy(engine);
 
 	// Terminate engine and glfw
 	destroyEngine(engine);

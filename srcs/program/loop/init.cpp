@@ -4,15 +4,13 @@
 static void	loadTextures(Engine &engine);
 static void loadShaders(
 				Engine &engine,
-				Shader &chunkShader,
-				Shader &chunkFdfShader);
+				ChunkShader &chunkShader);
 
 
 bool init(
 		Engine &engine,
 		Map &map,
-		Shader &chunkShader,
-		Shader &chunkFdfShader,
+		ChunkShader &chunkShader,
 		Camera &camera)
 {
 	camera.setPosition(gm::Vec3f(7.65f, 15.89f, 24.78f));
@@ -30,7 +28,7 @@ bool init(
 		engine.textureManager.createAllImages(engine);
 
 		map.init(engine.commandPool, camera);
-		loadShaders(engine, chunkShader, chunkFdfShader);
+		loadShaders(engine, chunkShader);
 	}
 	catch(const std::exception& e)
 	{
@@ -61,23 +59,17 @@ static void	loadTextures(Engine &engine)
 
 static void loadShaders(
 				Engine &engine,
-				Shader &chunkShader,
-				Shader &chunkFdfShader)
+				ChunkShader &chunkShader)
 {
 	std::vector<UBOType>	uboTypes = {{sizeof(UBO3DChunkPos), UBO_VERTEX},
 										{sizeof(UBO3DChunkCubes), UBO_FRAGMENT}};
-	std::vector<std::string>	textures = {"grass-up", "dirt-up", "stone-up", "water-up", "snow-up",
-											"ice-up", "sand-up", "lava-up", "iron-up", "diamond-up",
-											"grass-side", "dirt-side", "stone-side", "water-side", "snow-side",
-											"ice-side", "sand-side", "lava-side", "iron-side", "diamond-side",
-											"grass-down", "dirt-down", "stone-down", "water-down", "snow-down",
-											"ice-down", "sand-down", "lava-down", "iron-down", "diamond-down"};
-	chunkShader.init<VertexPos>(
-					engine, FCUL_COUNTER, DRAW_POLYGON,
-					"shadersbin/mesh_vert.spv", "shadersbin/mesh_frag.spv",
-					uboTypes, textures);
-	chunkFdfShader.init<VertexPos>(
-					engine, FCUL_NONE, DRAW_LINE,
-					"shadersbin/mesh_vert.spv", "shadersbin/fdf_frag.spv",
-					uboTypes);
+
+	chunkShader.shader.init<VertexPos>(
+						engine, FCUL_COUNTER, DRAW_POLYGON,
+						"shadersbin/mesh_vert.spv", "shadersbin/mesh_frag.spv",
+						uboTypes, CUBE_TEXTURES);
+	chunkShader.shaderFdf.init<VertexPos>(
+						engine, FCUL_NONE, DRAW_LINE,
+						"shadersbin/mesh_vert.spv", "shadersbin/fdf_frag.spv",
+						uboTypes);
 }

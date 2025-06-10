@@ -53,10 +53,10 @@ public:
 	 * @brief Draw chunks.
 	 *
 	 * @param engine Engine struct.
-	 * @param chunkShader Shader used to draw chunk meshes.
 	 * @param camera The camera.
+	 * @param chunkShader Shader used to draw chunk meshes.
 	 */
-	void	draw(Engine &engine, Camera &camera, Shader &chunkShader);
+	void	draw(Engine &engine, Camera &camera, ChunkShader &chunkShader);
 
 //**** STATIC METHODS **********************************************************
 

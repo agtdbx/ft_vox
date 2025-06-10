@@ -42,7 +42,7 @@ Cluster	&Cluster::operator=(const Cluster &obj)
 
 //**** PUBLIC METHODS **********************************************************
 
-void	Cluster::draw(Engine &engine, Camera &camera, Shader &chunkShader)
+void	Cluster::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 {
 	for (int i = 0; i <  CLUSTER_SIZE3; i++)
 	{

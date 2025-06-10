@@ -11,6 +11,13 @@
 
 using ChunkMesh = Mesh<VertexPos>;
 
+struct ChunkShader
+{
+	Shader	shader;
+	Shader	shaderFdf;
+	bool	shaderFdfEnable;
+};
+
 /**
  * @brief Chunk class.
  */
@@ -99,10 +106,10 @@ public:
 	 * @brief Draw chunk meshes.
 	 *
 	 * @param engine Engine struct.
-	 * @param chunkShader Shader used to draw meshes.
 	 * @param camera The camera.
+	 * @param chunkShader Shader used to draw meshes.
 	 */
-	void	draw(Engine &engine, Camera &camera, Shader &chunkShader);
+	void	draw(Engine &engine, Camera &camera, ChunkShader &chunkShader);
 	/**
 	 * @brief Destroy chunk.
 	 */

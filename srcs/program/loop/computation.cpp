@@ -14,7 +14,7 @@ void	computation(
 			Engine &engine,
 			Map &map,
 			Camera &camera,
-			bool &enableFdfShader,
+			ChunkShader &chunkShader,
 			double delta)
 {
 	InputManager &inputManager = engine.inputManager;
@@ -24,7 +24,7 @@ void	computation(
 	cameraMovements(inputManager, camera, delta);
 
 	if (inputManager.tab.isPressed())
-		enableFdfShader = !enableFdfShader;
+		chunkShader.shaderFdfEnable = !chunkShader.shaderFdfEnable;
 }
 
 

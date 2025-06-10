@@ -6,12 +6,16 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/09 15:28:20 by gugus            ###   ########.fr       */
+/*   Updated: 2025/06/10 11:40:42 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef DEFINE_HPP
 # define DEFINE_HPP
+
+// Standar libs
+# include <string>
+# include <vector>
 
 // GLFW and Vulkan
 # define VK_USE_PLATFORM_XCB_KHR
@@ -43,6 +47,15 @@ const int MAX_FRAMES_IN_FLIGHT = 2;
 # define CHUNK_SIZE 32
 const int	CHUNK_SIZE2 = CHUNK_SIZE * CHUNK_SIZE;
 const int	CHUNK_SIZE3 = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
+
+const std::vector<std::string>	CUBE_TEXTURES = {
+	"grass-up", "dirt-up", "stone-up", "water-up", "snow-up",
+	"ice-up", "sand-up", "lava-up", "iron-up", "diamond-up",
+	"grass-side", "dirt-side", "stone-side", "water-side", "snow-side",
+	"ice-side", "sand-side", "lava-side", "iron-side", "diamond-side",
+	"grass-down", "dirt-down", "stone-down", "water-down", "snow-down",
+	"ice-down", "sand-down", "lava-down", "iron-down", "diamond-down"
+};
 
 // Cluster defines
 # define CLUSTER_SIZE 8
