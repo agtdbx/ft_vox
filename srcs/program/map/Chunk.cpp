@@ -304,50 +304,66 @@ void	Chunk::createFace(
 	indices.push_back(RU_id);
 }
 
+//TODO laissez se générer des chunk sous le chunk
 
 void	Chunk::initBlocks(void)
 {
-	if (this->chunkId.y < 4)
+	float maxSize = 0;
+	float perlinX = 0;
+	float perlinZ = 0;
+	float tmpX = 0;
+	float tmpZ = 0;
+	if (this->chunkId.y > 0)
+		return ;
+	for (int x = 0; x < CHUNK_SIZE; x++)
 	{
-		for (int i = 0; i < CHUNK_SIZE3; i++)
-			this->cubes[i] = CUBE_STONE;
-		this->empty = false;
-	}
-	else if (this->chunkId.y == 4)
-	{
-		for (int x = 0; x < CHUNK_SIZE; x++)
+		for (int z = 0; z < CHUNK_SIZE; z++)
 		{
+			//TODO replacer 0 par les coordonés du vecteur pos
+			tmpX = ((float)this->chunkId.x);
+			if (tmpX < 0)
+			{
+				tmpX = tmpX * -1;
+				perlinX = tmpX - ((float)x / 32);
+			}
+			else
+				perlinX = tmpX + ((float)x / 32);
+			tmpZ = ((float)this->chunkId.z);
+			if (tmpZ < 0)
+			{
+				tmpZ = tmpZ * -1;
+				perlinZ = tmpZ - ((float)z / 32);
+			}
+			else
+				perlinZ = tmpZ + ((float)z / 32);
+
+			//std::cout << "perlinZ : " << perlinZ << std::endl;
+			maxSize = perlin(perlinX, perlinZ, 666);
+			//std::cout << "maxSize : " << maxSize << std::endl;
 			for (int y = 0; y < CHUNK_SIZE; y++)
 			{
-				for (int z = 0; z < CHUNK_SIZE; z++)
+				int	id = x + y * CHUNK_SIZE + z * CHUNK_SIZE2;
+				if (y > (int)maxSize && y > 8)
+					this->cubes[id] = CUBE_AIR;
+				else if (y > (int)maxSize && y <= 8)
 				{
-					int	id = x + y * CHUNK_SIZE + z * CHUNK_SIZE2;
-					if (y > 8)
-						this->cubes[id] = CUBE_AIR;
+					this->empty = false;
+					this->cubes[id] = CUBE_WATER;
+				}
+				else
+				{
+					this->empty = false;
+					if (y > 4 && y == (int)maxSize)
+						this->cubes[id] = CUBE_GRASS;
+					else if (y > 4 && y < (int)maxSize)
+						this->cubes[id] = CUBE_DIRT;
+					else if (y <= 4 && y != 0)
+						this->cubes[id] = CUBE_STONE;
 					else
-					{
-						if (x % 2 == 0 && z % 2 == 0)
-							this->cubes[id] = CUBE_GRASS;
-						else if (x % 2 == 0 && z % 2 == 1)
-							this->cubes[id] = CUBE_DIRT;
-						else if (x % 2 == 1 && z % 2 == 0)
-							this->cubes[id] = CUBE_STONE;
-						else
-							this->cubes[id] = CUBE_WATER;
-					}
+						this->cubes[id] = CUBE_DIAMOND;
 				}
 			}
 		}
-		this->setCube(8, 9, 8, CUBE_LAVA);
-		this->setCube(6, 12, 6, CUBE_DIAMOND);
-		this->setCube(20, 16, 12, CUBE_GRASS);
-		this->empty = false;
-	}
-	else
-	{
-		for (int i = 0; i < CHUNK_SIZE3; i++)
-			this->cubes[i] = CUBE_AIR;
-		this->empty = true;
 	}
 }
 

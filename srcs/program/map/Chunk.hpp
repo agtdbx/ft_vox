@@ -9,6 +9,7 @@
 # include <engine/camera/Camera.hpp>
 # include <program/map/Cube.hpp>
 # include <program/shaderStruct.hpp>
+# include <program/map/Perlin.hpp>
 
 using ChunkMesh = Mesh<VertexPosNrm>;
 using ChunkBorderMesh = Mesh<VertexPos>;
