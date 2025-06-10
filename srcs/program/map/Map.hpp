@@ -79,6 +79,7 @@ public:
 
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
+	// gm::Vec3i	minChunk, maxChunk;
 	std::vector<Chunk>	chunks;
 	Cluster	cluster;
 //**** PRIVATE METHODS *********************************************************

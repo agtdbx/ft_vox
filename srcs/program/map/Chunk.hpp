@@ -118,8 +118,12 @@ public:
 	void	init(
 				Engine &engine,
 				Camera &camera,
-				ChunkShader &chunkShader,
-				const gm::Vec3i &chunkId);
+				ChunkShader &chunkShader);
+	/**
+	 * @brief Init blocks in chunk.
+	 */
+	void	generate(const gm::Vec2i &chunkId);
+	void	updateMeshes(void);
 	/**
 	 * @brief Draw chunk meshes.
 	 *
@@ -138,11 +142,10 @@ public:
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
 //---- Chunk properties --------------------------------------------------------
-	bool			empty;
-	gm::Vec3i		chunkId;
+	gm::Vec2i		chunkId;
 	gm::Vec3f		chunkPosition;
 	std::vector<gm::Vec3f>	positions;
-	Cube			cubes[CHUNK_SIZE3]; // id = x + y * SIZE + z * SIZE2
+	Cube			cubes[CHUNK_TOTAL_SIZE]; // id = x + z * SIZE + y * SIZE2
 	ChunkMesh		mesh;
 	ChunkBorderMesh	borderMesh;
 	UBO3DChunkPos	uboPos;
@@ -174,10 +177,6 @@ private:
 				const gm::Vec3f &posRD,
 				const gm::Vec3f &posRU,
 				const gm::Vec3f &normal);
-	/**
-	 * @brief Init blocks in chunk.
-	 */
-	void	initBlocks(void);
 };
 
 //**** FUNCTIONS ***************************************************************

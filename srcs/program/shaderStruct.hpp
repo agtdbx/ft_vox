@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/10 11:24:04 by gugus            ###   ########.fr       */
+/*   Updated: 2025/06/10 16:23:00 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ struct UBO3DChunkPos {
 };
 
 struct UBO3DChunkCubes {
-	int	cubes[CHUNK_SIZE3];
+	int	cubes[CHUNK_TOTAL_SIZE];
 };
 
 #endif

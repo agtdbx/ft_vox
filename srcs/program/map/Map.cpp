@@ -6,8 +6,8 @@
 
 Map::Map(void)
 {
-	this->chunks.resize(CLUSTER_SIZE3);
-	for (int i = 0; i < CLUSTER_SIZE3; i++)
+	this->chunks.resize(CLUSTER_SIZE2);
+	for (int i = 0; i < CLUSTER_SIZE2; i++)
 		this->chunks[i] = Chunk();
 	this->cluster = Cluster();
 }
@@ -15,8 +15,8 @@ Map::Map(void)
 
 Map::Map(const Map &obj)
 {
-	this->chunks.resize(CLUSTER_SIZE3);
-	for (int i = 0; i < CLUSTER_SIZE3; i++)
+	this->chunks.resize(CLUSTER_SIZE2);
+	for (int i = 0; i < CLUSTER_SIZE2; i++)
 		this->chunks[i] = obj.chunks[i];
 	this->cluster = obj.cluster;
 }
@@ -38,7 +38,7 @@ Map	&Map::operator=(const Map &obj)
 	if (this == &obj)
 		return (*this);
 
-	for (int i = 0; i < CLUSTER_SIZE3; i++)
+	for (int i = 0; i < CLUSTER_SIZE2; i++)
 		this->chunks[i] = obj.chunks[i];
 	this->cluster = obj.cluster;
 
@@ -54,38 +54,40 @@ void	Map::init(
 {
 	int	id;
 	int	halfClusterSize = CLUSTER_SIZE / 2;
-	gm::Vec3i	chunkId;
+	gm::Vec2i	chunkId;
 
+	// Generate chunks
 	for (int x = 0; x < CLUSTER_SIZE; x++)
 	{
 		for (int y = 0; y < CLUSTER_SIZE; y++)
 		{
-			for (int z = 0; z < CLUSTER_SIZE; z++)
-			{
-				id = x + y * CLUSTER_SIZE + z * CLUSTER_SIZE2;
+			id = x + y * CLUSTER_SIZE;
 
-				chunkId.x = x - halfClusterSize;
-				chunkId.y = y;
-				chunkId.z = z - halfClusterSize;
+			chunkId.x = x - halfClusterSize;
+			chunkId.y = y - halfClusterSize;
 
-				this->chunks[id].init(engine, camera, chunkShader, chunkId);
-				this->cluster.chunks[id] = &this->chunks[id];
-			}
+			this->chunks[id].init(engine, camera, chunkShader);
+			this->chunks[id].generate(chunkId);
+			this->cluster.chunks[id] = &this->chunks[id];
 		}
 	}
+
+	// Create chunks meshes
+	for (int i = 0; i < CLUSTER_SIZE2; i++)
+		this->chunks[i].updateMeshes();
 }
 
 
 void	Map::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 {
-	// this->chunks[0].draw(engine, camera, chunkShader);
-	this->cluster.draw(engine, camera, chunkShader);
+	for (int i = 0; i < CLUSTER_SIZE2; i++)
+		this->chunks[i].draw(engine, camera, chunkShader);
 }
 
 
 void	Map::destroy(Engine &engine)
 {
-	for (int i = 0; i < CLUSTER_SIZE3; i++)
+	for (int i = 0; i < CLUSTER_SIZE2; i++)
 		this->chunks[i].destroy(engine);
 }
 

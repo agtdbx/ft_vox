@@ -6,14 +6,14 @@
 
 Cluster::Cluster(void)
 {
-	for (int i = 0; i <  CLUSTER_SIZE3; i++)
+	for (int i = 0; i <  CLUSTER_SIZE2; i++)
 		this->chunks[i] = NULL;
 }
 
 
 Cluster::Cluster(const Cluster &obj)
 {
-	for (int i = 0; i <  CLUSTER_SIZE3; i++)
+	for (int i = 0; i <  CLUSTER_SIZE2; i++)
 		this->chunks[i] = obj.chunks[i];
 }
 
@@ -34,7 +34,7 @@ Cluster	&Cluster::operator=(const Cluster &obj)
 	if (this == &obj)
 		return (*this);
 
-	for (int i = 0; i <  CLUSTER_SIZE3; i++)
+	for (int i = 0; i <  CLUSTER_SIZE2; i++)
 		this->chunks[i] = obj.chunks[i];
 
 	return (*this);
@@ -44,7 +44,7 @@ Cluster	&Cluster::operator=(const Cluster &obj)
 
 void	Cluster::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 {
-	for (int i = 0; i <  CLUSTER_SIZE3; i++)
+	for (int i = 0; i <  CLUSTER_SIZE2; i++)
 	{
 		if (this->chunks[i] != NULL)
 			this->chunks[i]->draw(engine, camera, chunkShader);

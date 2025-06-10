@@ -10,7 +10,7 @@ class Cluster
 {
 public:
 //**** PUBLIC ATTRIBUTS ********************************************************
-	Chunk	*chunks[CLUSTER_SIZE3];
+	Chunk	*chunks[CLUSTER_SIZE2];
 
 //**** INITIALISION ************************************************************
 //---- Constructors ------------------------------------------------------------

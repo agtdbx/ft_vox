@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/10 14:16:04 by gugus            ###   ########.fr       */
+/*   Updated: 2025/06/10 16:25:19 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,8 +45,9 @@ const int MAX_FRAMES_IN_FLIGHT = 2;
 
 // Chunk defines
 # define CHUNK_SIZE 32
+# define CHUNK_HEIGHT 256
 const int	CHUNK_SIZE2 = CHUNK_SIZE * CHUNK_SIZE;
-const int	CHUNK_SIZE3 = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
+const int	CHUNK_TOTAL_SIZE = CHUNK_SIZE2 * CHUNK_HEIGHT;
 
 const std::vector<std::string>	CUBE_TEXTURES = {
 	"grass-up", "dirt-up", "stone-up", "water-up", "snow-up",
@@ -60,6 +61,5 @@ const std::vector<std::string>	CUBE_TEXTURES = {
 // Cluster defines
 # define CLUSTER_SIZE 8
 const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
-const int	CLUSTER_SIZE3 = CLUSTER_SIZE * CLUSTER_SIZE * CLUSTER_SIZE;
 
 #endif
