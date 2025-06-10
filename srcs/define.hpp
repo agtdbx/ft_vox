@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/10 11:40:42 by gugus            ###   ########.fr       */
+/*   Updated: 2025/06/10 14:16:04 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@
 # define NEAR 0.1f
 # define FAR 1000.0f
 # define SPEED 3.0f // TODO Put it to 1
-# define SPRINT 5.0f // TODO Put it to x20
+# define SPRINT 20.0f
 # define ROTATE 45.0f
 
 const int MAX_FRAMES_IN_FLIGHT = 2;

@@ -17,18 +17,24 @@ static void	printChunkSlide(Cube *cubes, int z); // TODO Remove
 
 Chunk::Chunk(void)
 {
+	this->chunkId = gm::Vec3i(0);
+	this->chunkPosition = gm::Vec3f(0);
 	for (int i = 0; i < CHUNK_SIZE3; i++)
 		this->cubes[i] = CUBE_AIR;
 	this->copyCommandPool = NULL;
+	this->empty = true;
 }
 
 
 Chunk::Chunk(const Chunk &obj)
 {
+	this->chunkId = obj.chunkId;
+	this->chunkPosition = obj.chunkPosition;
 	for (int i = 0; i < CHUNK_SIZE3; i++)
 		this->cubes[i] = obj.cubes[i];
 	this->copyCommandPool = obj.copyCommandPool;
 	this->mesh = obj.mesh;
+	this->empty = obj.empty;
 }
 
 //---- Destructor --------------------------------------------------------------
@@ -72,6 +78,9 @@ Chunk	&Chunk::operator=(const Chunk &obj)
 	if (this == &obj)
 		return (*this);
 
+	this->chunkId = obj.chunkId;
+	this->chunkPosition = obj.chunkPosition;
+
 	for (int i = 0; i < CHUNK_SIZE3; i++)
 		this->cubes[i] = obj.cubes[i];
 
@@ -79,6 +88,7 @@ Chunk	&Chunk::operator=(const Chunk &obj)
 		this->copyCommandPool = obj.copyCommandPool;
 
 	this->mesh = obj.mesh;
+	this->empty = obj.empty;
 
 	return (*this);
 }
@@ -89,15 +99,20 @@ void	Chunk::init(
 				Engine &engine,
 				Camera &camera,
 				ChunkShader &chunkShader,
-				const gm::Vec3f &position)
+				const gm::Vec3i &chunkId)
 {
-	this->initBlocks(position);
+	this->chunkId = chunkId;
+	this->chunkPosition.x = this->chunkId.x * CHUNK_SIZE;
+	this->chunkPosition.y = this->chunkId.y * CHUNK_SIZE;
+	this->chunkPosition.z = this->chunkId.z * CHUNK_SIZE;
+
+	this->initBlocks();
 
 	this->copyCommandPool = &engine.commandPool;
 	this->createBorderMesh();
 	this->createMesh();
 
-	this->mesh.setPosition(position);
+	this->mesh.setPosition(this->chunkPosition);
 
 	this->uboPos.proj = camera.getProjection();
 	this->uboPos.proj.at(1, 1) *= -1;
@@ -118,16 +133,19 @@ void	Chunk::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 	this->uboPos.view = camera.getView();
 
 	// Draw mesh
-	if (!chunkShader.shaderFdfEnable)
+	if (!this->empty)
 	{
-		this->shaderParam.updateUBO(engine.window, &this->uboPos, 0);
-		this->shaderParam.updateUBO(engine.window, &this->uboCubes, 1);
-		engine.window.drawMesh(this->mesh, chunkShader.shader, this->shaderParam);
-	}
-	else
-	{
-		this->shaderParamFdf.updateUBO(engine.window, &this->uboPos, 0);
-		engine.window.drawMesh(this->mesh, chunkShader.shaderFdf, this->shaderParamFdf);
+		if (!chunkShader.shaderFdfEnable)
+		{
+			this->shaderParam.updateUBO(engine.window, &this->uboPos, 0);
+			this->shaderParam.updateUBO(engine.window, &this->uboCubes, 1);
+			engine.window.drawMesh(this->mesh, chunkShader.shader, this->shaderParam);
+		}
+		else
+		{
+			this->shaderParamFdf.updateUBO(engine.window, &this->uboPos, 0);
+			engine.window.drawMesh(this->mesh, chunkShader.shaderFdf, this->shaderParamFdf);
+		}
 	}
 
 	if (chunkShader.shaderBorderEnable)
@@ -187,6 +205,9 @@ void	Chunk::createBorderMesh(void)
 
 void	Chunk::createMesh(void)
 {
+	if (this->empty)
+		return ;
+
 	std::unordered_map<std::size_t, uint32_t>	vertexIndex;
 	std::vector<VertexPosNrm>	vertices;
 	std::vector<uint32_t>	indices;
@@ -284,34 +305,50 @@ void	Chunk::createFace(
 }
 
 
-void	Chunk::initBlocks(const gm::Vec3f &position)
+void	Chunk::initBlocks(void)
 {
-	for (int x = 0; x < CHUNK_SIZE; x++)
+	if (this->chunkId.y < 4)
 	{
-		for (int y = 0; y < CHUNK_SIZE; y++)
+		for (int i = 0; i < CHUNK_SIZE3; i++)
+			this->cubes[i] = CUBE_STONE;
+		this->empty = false;
+	}
+	else if (this->chunkId.y == 4)
+	{
+		for (int x = 0; x < CHUNK_SIZE; x++)
 		{
-			for (int z = 0; z < CHUNK_SIZE; z++)
+			for (int y = 0; y < CHUNK_SIZE; y++)
 			{
-				int	id = x + y * CHUNK_SIZE + z * CHUNK_SIZE2;
-				if (y > 8)
-					this->cubes[id] = CUBE_AIR;
-				else
+				for (int z = 0; z < CHUNK_SIZE; z++)
 				{
-					if (x % 2 == 0 && z % 2 == 0)
-						this->cubes[id] = CUBE_GRASS;
-					else if (x % 2 == 0 && z % 2 == 1)
-						this->cubes[id] = CUBE_DIRT;
-					else if (x % 2 == 1 && z % 2 == 0)
-						this->cubes[id] = CUBE_STONE;
+					int	id = x + y * CHUNK_SIZE + z * CHUNK_SIZE2;
+					if (y > 8)
+						this->cubes[id] = CUBE_AIR;
 					else
-						this->cubes[id] = CUBE_WATER;
+					{
+						if (x % 2 == 0 && z % 2 == 0)
+							this->cubes[id] = CUBE_GRASS;
+						else if (x % 2 == 0 && z % 2 == 1)
+							this->cubes[id] = CUBE_DIRT;
+						else if (x % 2 == 1 && z % 2 == 0)
+							this->cubes[id] = CUBE_STONE;
+						else
+							this->cubes[id] = CUBE_WATER;
+					}
 				}
 			}
 		}
+		this->setCube(8, 9, 8, CUBE_LAVA);
+		this->setCube(6, 12, 6, CUBE_DIAMOND);
+		this->setCube(20, 16, 12, CUBE_GRASS);
+		this->empty = false;
 	}
-	this->setCube(8, 9, 8, CUBE_LAVA);
-	this->setCube(6, 12, 6, CUBE_DIAMOND);
-	this->setCube(20, 16, 12, CUBE_GRASS);
+	else
+	{
+		for (int i = 0; i < CHUNK_SIZE3; i++)
+			this->cubes[i] = CUBE_AIR;
+		this->empty = true;
+	}
 }
 
 //**** FUNCTIONS ***************************************************************

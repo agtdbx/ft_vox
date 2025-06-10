@@ -6,7 +6,8 @@
 
 Map::Map(void)
 {
-	for (int i = 0; i < NB_CHUNK; i++)
+	this->chunks.resize(CLUSTER_SIZE3);
+	for (int i = 0; i < CLUSTER_SIZE3; i++)
 		this->chunks[i] = Chunk();
 	this->cluster = Cluster();
 }
@@ -14,7 +15,8 @@ Map::Map(void)
 
 Map::Map(const Map &obj)
 {
-	for (int i = 0; i < NB_CHUNK; i++)
+	this->chunks.resize(CLUSTER_SIZE3);
+	for (int i = 0; i < CLUSTER_SIZE3; i++)
 		this->chunks[i] = obj.chunks[i];
 	this->cluster = obj.cluster;
 }
@@ -36,7 +38,7 @@ Map	&Map::operator=(const Map &obj)
 	if (this == &obj)
 		return (*this);
 
-	for (int i = 0; i < NB_CHUNK; i++)
+	for (int i = 0; i < CLUSTER_SIZE3; i++)
 		this->chunks[i] = obj.chunks[i];
 	this->cluster = obj.cluster;
 
@@ -50,25 +52,27 @@ void	Map::init(
 				Camera &camera,
 				ChunkShader &chunkShader)
 {
-	// Init chunks
-	std::vector<gm::Vec3f>	chunksPos = {
-		{  0,  0,  0},
-		{ 32,  0,  0},
-		{-32,  0,  0},
-		{  0,  0, 32},
-		{ 32,  0, 32},
-		{-32,  0, 32},
-		{  0,  0,-32},
-		{ 32,  0,-32},
-		{-32,  0,-32},
-	};
+	int	id;
+	int	halfClusterSize = CLUSTER_SIZE / 2;
+	gm::Vec3i	chunkId;
 
-	for (int i = 0; i < NB_CHUNK; i++)
-		this->chunks[i].init(engine, camera, chunkShader, chunksPos[i]);
+	for (int x = 0; x < CLUSTER_SIZE; x++)
+	{
+		for (int y = 0; y < CLUSTER_SIZE; y++)
+		{
+			for (int z = 0; z < CLUSTER_SIZE; z++)
+			{
+				id = x + y * CLUSTER_SIZE + z * CLUSTER_SIZE2;
 
-	// Init cluster
-	for (int i = 0; i < NB_CHUNK; i++)
-		this->cluster.chunks[i] = &this->chunks[i];
+				chunkId.x = x - halfClusterSize;
+				chunkId.y = y;
+				chunkId.z = z - halfClusterSize;
+
+				this->chunks[id].init(engine, camera, chunkShader, chunkId);
+				this->cluster.chunks[id] = &this->chunks[id];
+			}
+		}
+	}
 }
 
 
@@ -81,7 +85,7 @@ void	Map::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 
 void	Map::destroy(Engine &engine)
 {
-	for (int i = 0; i < NB_CHUNK; i++)
+	for (int i = 0; i < CLUSTER_SIZE3; i++)
 		this->chunks[i].destroy(engine);
 }
 

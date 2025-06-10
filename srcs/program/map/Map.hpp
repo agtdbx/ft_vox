@@ -4,8 +4,6 @@
 # include <program/map/Chunk.hpp>
 # include <program/map/Cluster.hpp>
 
-# define NB_CHUNK 9 // TODO : REMOVE
-
 /**
  * @brief Map class.
  */
@@ -81,7 +79,7 @@ public:
 
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
-	Chunk	chunks[NB_CHUNK];
+	std::vector<Chunk>	chunks;
 	Cluster	cluster;
 //**** PRIVATE METHODS *********************************************************
 };

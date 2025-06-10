@@ -376,7 +376,7 @@ private:
 	 */
 	void	createVertexBuffer(void)
 	{
-		if (this->commandPool == NULL)
+		if (this->commandPool == NULL || this->nbVertex == 0)
 			return ;
 
 		VkDevice			copyDevice = this->commandPool->getCopyDevice();
@@ -416,7 +416,7 @@ private:
 	 */
 	void	createIndexBuffer(void)
 	{
-		if (this->commandPool == NULL)
+		if (this->commandPool == NULL || this->nbIndex == 0)
 			return ;
 
 		VkDevice			copyDevice = this->commandPool->getCopyDevice();

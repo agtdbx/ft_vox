@@ -113,13 +113,13 @@ public:
 	 * @param engine Engine struct.
 	 * @param camera The camera.
 	 * @param chunkShader Shaders used to draw meshes.
-	 * @param position The chunk position.
+	 * @param chunkId The chunk  id.
 	 */
 	void	init(
 				Engine &engine,
 				Camera &camera,
 				ChunkShader &chunkShader,
-				const gm::Vec3f &position);
+				const gm::Vec3i &chunkId);
 	/**
 	 * @brief Draw chunk meshes.
 	 *
@@ -138,6 +138,9 @@ public:
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
 //---- Chunk properties --------------------------------------------------------
+	bool			empty;
+	gm::Vec3i		chunkId;
+	gm::Vec3f		chunkPosition;
 	std::vector<gm::Vec3f>	positions;
 	Cube			cubes[CHUNK_SIZE3]; // id = x + y * SIZE + z * SIZE2
 	ChunkMesh		mesh;
@@ -173,10 +176,8 @@ private:
 				const gm::Vec3f &normal);
 	/**
 	 * @brief Init blocks in chunk.
-	 *
-	 * @param position Chunk position.
 	 */
-	void	initBlocks(const gm::Vec3f &position);
+	void	initBlocks(void);
 };
 
 //**** FUNCTIONS ***************************************************************
