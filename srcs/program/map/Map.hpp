@@ -4,6 +4,10 @@
 # include <program/map/Chunk.hpp>
 # include <program/map/Cluster.hpp>
 
+# include <unordered_map>
+
+using ChunkMap = std::unordered_map<std::size_t, Chunk>;
+
 /**
  * @brief Map class.
  */
@@ -36,6 +40,15 @@ public:
 
 //**** ACCESSORS ***************************************************************
 //---- Getters -----------------------------------------------------------------
+	/**
+	 * @brief Get chunk by id.
+	 *
+	 * @param x Id x.
+	 * @param y Id y.
+	 *
+	 * @return Pointer on chunk at this id, or NULL if the chunk doesn't exist.
+	 */
+	Chunk	*getChunk(int x, int y);
 //---- Setters -----------------------------------------------------------------
 //---- Operators ---------------------------------------------------------------
 	/**
@@ -79,9 +92,8 @@ public:
 
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
-	// gm::Vec3i	minChunk, maxChunk;
-	std::vector<Chunk>	chunks;
-	Cluster	cluster;
+	ChunkMap	chunks;
+	Cluster		cluster;
 //**** PRIVATE METHODS *********************************************************
 };
 

@@ -6,18 +6,13 @@
 
 Map::Map(void)
 {
-	this->chunks.resize(CLUSTER_SIZE2);
-	for (int i = 0; i < CLUSTER_SIZE2; i++)
-		this->chunks[i] = Chunk();
 	this->cluster = Cluster();
 }
 
 
 Map::Map(const Map &obj)
 {
-	this->chunks.resize(CLUSTER_SIZE2);
-	for (int i = 0; i < CLUSTER_SIZE2; i++)
-		this->chunks[i] = obj.chunks[i];
+	this->chunks = obj.chunks;
 	this->cluster = obj.cluster;
 }
 
@@ -30,6 +25,19 @@ Map::~Map()
 
 //**** ACCESSORS ***************************************************************
 //---- Getters -----------------------------------------------------------------
+
+Chunk	*Map::getChunk(int x, int y)
+{
+	std::size_t	hash = gm::hash(gm::Vec2i(x, y));
+
+	ChunkMap::iterator	chunkFind = this->chunks.find(hash);
+
+	if (chunkFind != this->chunks.end())
+		return (&chunkFind->second);
+
+	return (NULL);
+}
+
 //---- Setters -----------------------------------------------------------------
 //---- Operators ---------------------------------------------------------------
 
@@ -38,8 +46,7 @@ Map	&Map::operator=(const Map &obj)
 	if (this == &obj)
 		return (*this);
 
-	for (int i = 0; i < CLUSTER_SIZE2; i++)
-		this->chunks[i] = obj.chunks[i];
+	this->chunks = obj.chunks;
 	this->cluster = obj.cluster;
 
 	return (*this);
@@ -52,36 +59,39 @@ void	Map::init(
 				Camera &camera,
 				ChunkShader &chunkShader)
 {
-	int	id;
-	int	halfClusterSize = CLUSTER_SIZE / 2;
-	gm::Vec2i	chunkId;
+	gm::Vec3i minChunk = gm::Vec2i(-4, -4);
+	gm::Vec3i maxChunk = gm::Vec2i(4, 4);
+	std::size_t	hash;
 
 	// Generate chunks
-	for (int x = 0; x < CLUSTER_SIZE; x++)
+	for (int x = minChunk.x; x < maxChunk.x; x++)
 	{
-		for (int y = 0; y < CLUSTER_SIZE; y++)
+		for (int y = minChunk.y; y < maxChunk.y; y++)
 		{
-			id = x + y * CLUSTER_SIZE;
-
-			chunkId.x = x - halfClusterSize;
-			chunkId.y = y - halfClusterSize;
-
-			this->chunks[id].init(engine, camera, chunkShader);
-			this->chunks[id].generate(chunkId);
-			this->cluster.chunks[id] = &this->chunks[id];
+			hash = gm::hash(gm::Vec2i(x, y));
+			this->chunks[hash] = Chunk();
+			this->chunks[hash].init(engine, camera, chunkShader);
+			this->chunks[hash].generate(gm::Vec2i(x, y));
 		}
 	}
 
 	// Create chunks meshes
-	for (int i = 0; i < CLUSTER_SIZE2; i++)
-		this->chunks[i].updateMeshes();
+	for (int x = minChunk.x; x < maxChunk.x; x++)
+	{
+		for (int y = minChunk.y; y < maxChunk.y; y++)
+		{
+			hash = gm::hash(gm::Vec2i(x, y));
+			this->chunks[hash].updateMeshes(*this);
+		}
+	}
+
+	this->cluster.setChunks(*this, gm::Vec2i(0, 0));
 }
 
 
 void	Map::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 {
-	for (int i = 0; i < CLUSTER_SIZE2; i++)
-		this->chunks[i].draw(engine, camera, chunkShader);
+	this->cluster.draw(engine, camera, chunkShader);
 }
 
 

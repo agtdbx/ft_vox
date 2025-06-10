@@ -1,5 +1,7 @@
 #include <program/map/Chunk.hpp>
 
+#include <program/map/Map.hpp>
+
 #include <unordered_map>
 
 //**** STATIC FUNCTIONS DEFINE *************************************************
@@ -43,26 +45,32 @@ Chunk::~Chunk()
 //**** ACCESSORS ***************************************************************
 //---- Getters -----------------------------------------------------------------
 
-Cube	Chunk::getCube(unsigned int x, unsigned int y, unsigned int z)
+Cube	Chunk::getCube(int x, int y, int z)
 {
-	if (x >= CHUNK_SIZE || y >= CHUNK_HEIGHT || z >= CHUNK_SIZE)
+	if (x < 0 || x >= CHUNK_SIZE
+		|| y < 0 || y >= CHUNK_HEIGHT
+		|| z < 0 || z >= CHUNK_SIZE)
 		return (CUBE_AIR);
 	return (this->cubes[x + z * CHUNK_SIZE + y * CHUNK_SIZE2]);
 }
 
 
-Cube	Chunk::getCube(const gm::Vec3u &pos)
+Cube	Chunk::getCube(const gm::Vec3i &pos)
 {
-	if (pos.x >= CHUNK_SIZE || pos.y >= CHUNK_HEIGHT || pos.z >= CHUNK_SIZE)
+	if (pos.x < 0 || pos.x >= CHUNK_SIZE
+		|| pos.y < 0 || pos.y >= CHUNK_HEIGHT
+		|| pos.z < 0 || pos.z >= CHUNK_SIZE)
 		return (CUBE_AIR);
 	return (this->cubes[pos.x + pos.z * CHUNK_SIZE + pos.y * CHUNK_SIZE2]);
 }
 
 //---- Setters -----------------------------------------------------------------
 
-void	Chunk::setCube(unsigned int x, unsigned int y, unsigned int z, Cube cube)
+void	Chunk::setCube(int x, int y, int z, Cube cube)
 {
-	if (x >= CHUNK_SIZE || y >= CHUNK_HEIGHT || z >= CHUNK_SIZE)
+	if (x < 0 || x >= CHUNK_SIZE
+		|| y < 0 || y >= CHUNK_HEIGHT
+		|| z < 0 || z >= CHUNK_SIZE)
 		return ;
 	this->cubes[x + z * CHUNK_SIZE + y * CHUNK_SIZE2] = cube;
 }
@@ -142,9 +150,9 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 }
 
 
-void	Chunk::updateMeshes(void)
+void	Chunk::updateMeshes(Map &map)
 {
-	this->createMesh();
+	this->createMesh(map);
 	this->mesh.setPosition(this->chunkPosition);
 	this->uboPos.model = this->mesh.getModel();
 	this->uboPos.pos = gm::Vec4f(this->mesh.getPosition());
@@ -228,7 +236,7 @@ void	Chunk::createBorderMesh(void)
 }
 
 
-void	Chunk::createMesh(void)
+void	Chunk::createMesh(Map &map)
 {
 	std::unordered_map<std::size_t, uint32_t>	vertexIndex;
 	std::vector<VertexPosNrm>	vertices;
@@ -240,18 +248,22 @@ void	Chunk::createMesh(void)
 	const gm::Vec3f			normalBack(0, 0, -1);
 	const gm::Vec3f			normalLeft(-1, 0, 0);
 	const gm::Vec3f			normalRight(1, 0, 0);
+	Chunk	*leftChunk = map.getChunk(this->chunkId.x - 1, this->chunkId.y);
+	Chunk	*rightChunk = map.getChunk(this->chunkId.x + 1, this->chunkId.y);
+	Chunk	*frontChunk = map.getChunk(this->chunkId.x, this->chunkId.y + 1);
+	Chunk	*backChunk = map.getChunk(this->chunkId.x, this->chunkId.y - 1);
 
 	int			id, idY, idZ;
 	gm::Vec3f	pointLUF, pointLDF, pointRUF, pointRDF,
 				pointLUB, pointLDB, pointRUB, pointRDB;
 
-	for (unsigned int y = 0; y < CHUNK_HEIGHT; y++)
+	for (int y = 0; y < CHUNK_HEIGHT; y++)
 	{
 		idY = y * CHUNK_SIZE2;
-		for (unsigned int z = 0; z < CHUNK_SIZE; z++)
+		for (int z = 0; z < CHUNK_SIZE; z++)
 		{
 			idZ = z * CHUNK_SIZE;
-			for (unsigned int x = 0; x < CHUNK_SIZE; x++)
+			for (int x = 0; x < CHUNK_SIZE; x++)
 			{
 				id = x + idZ + idY;
 				if (this->cubes[id] == CUBE_AIR)
@@ -269,21 +281,27 @@ void	Chunk::createMesh(void)
 
 				// Face up
 				this->createFace(vertexIndex, vertices, indices, nbVertex, {x, y + 1, z},
+									leftChunk, rightChunk, frontChunk, backChunk,
 									pointLUB, pointLUF, pointRUF, pointRUB, normalUp);
 				// Face down
 				this->createFace(vertexIndex, vertices, indices, nbVertex, {x, y - 1, z},
+									leftChunk, rightChunk, frontChunk, backChunk,
 									pointLDF, pointLDB, pointRDB, pointRDF, normalDown);
 				// Face front
 				this->createFace(vertexIndex, vertices, indices, nbVertex, {x, y, z + 1},
+									leftChunk, rightChunk, frontChunk, backChunk,
 									pointLUF, pointLDF, pointRDF, pointRUF, normalFront);
 				// Face back
 				this->createFace(vertexIndex, vertices, indices, nbVertex, {x, y, z - 1},
+									leftChunk, rightChunk, frontChunk, backChunk,
 									pointRUB, pointRDB, pointLDB, pointLUB, normalBack);
 				// Face right
 				this->createFace(vertexIndex, vertices, indices, nbVertex, {x + 1, y, z},
+									leftChunk, rightChunk, frontChunk, backChunk,
 									pointRUF, pointRDF, pointRDB, pointRUB, normalRight);
 				// Face left
 				this->createFace(vertexIndex, vertices, indices, nbVertex, {x - 1, y, z},
+									leftChunk, rightChunk, frontChunk, backChunk,
 									pointLUB, pointLDB, pointLDF, pointLUF, normalLeft);
 			}
 		}
@@ -299,14 +317,54 @@ void	Chunk::createFace(
 				std::vector<VertexPosNrm> &vertices,
 				std::vector<uint32_t> &indices,
 				int &nbVertex,
-				const gm::Vec3u &posCheck,
+				gm::Vec3i posCheck,
+				Chunk *leftChunk,
+				Chunk *rightChunk,
+				Chunk *frontChunk,
+				Chunk *backChunk,
 				const gm::Vec3f &posLU,
 				const gm::Vec3f &posLD,
 				const gm::Vec3f &posRD,
 				const gm::Vec3f &posRU,
 				const gm::Vec3f &normal)
 {
-	if (this->getCube(posCheck) != CUBE_AIR)
+	if (posCheck.x < 0)
+	{
+		if (leftChunk)
+		{
+			posCheck.x += CHUNK_SIZE;
+			if (leftChunk->getCube(posCheck) != CUBE_AIR)
+				return ;
+		}
+	}
+	else if (posCheck.x >= CHUNK_SIZE)
+	{
+		if (rightChunk)
+		{
+			posCheck.x -= CHUNK_SIZE;
+			if (rightChunk->getCube(posCheck) != CUBE_AIR)
+				return ;
+		}
+	}
+	else if (posCheck.z < 0)
+	{
+		if (backChunk)
+		{
+			posCheck.z += CHUNK_SIZE;
+			if (backChunk->getCube(posCheck) != CUBE_AIR)
+				return ;
+		}
+	}
+	else if (posCheck.z >= CHUNK_SIZE)
+	{
+		if (frontChunk)
+		{
+			posCheck.z -= CHUNK_SIZE;
+			if (frontChunk->getCube(posCheck) != CUBE_AIR)
+				return ;
+		}
+	}
+	else if (this->getCube(posCheck) != CUBE_AIR)
 		return ;
 
 	VertexPosNrm pointLU(posLU, normal);

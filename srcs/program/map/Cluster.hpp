@@ -3,6 +3,8 @@
 
 # include <program/map/Chunk.hpp>
 
+class	Map;
+
 /**
  * @brief Cluster class.
  */
@@ -10,8 +12,6 @@ class Cluster
 {
 public:
 //**** PUBLIC ATTRIBUTS ********************************************************
-	Chunk	*chunks[CLUSTER_SIZE2];
-
 //**** INITIALISION ************************************************************
 //---- Constructors ------------------------------------------------------------
 	/**
@@ -50,6 +50,13 @@ public:
 
 //**** PUBLIC METHODS **********************************************************
 	/**
+	 * @brief Set all chunks into cluster.
+	 *
+	 * @param map Map containing chunks.
+	 * @param middle Middle position of the cluster.
+	 */
+	void	setChunks(Map &map, const gm::Vec2i &middle);
+	/**
 	 * @brief Draw chunks.
 	 *
 	 * @param engine Engine struct.
@@ -62,6 +69,8 @@ public:
 
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
+	gm::Vec2i	minChunk, maxChunk;
+	Chunk	*chunks[CLUSTER_SIZE2];
 //**** PRIVATE METHODS *********************************************************
 };
 

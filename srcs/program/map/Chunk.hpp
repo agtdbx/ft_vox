@@ -13,6 +13,8 @@
 using ChunkMesh = Mesh<VertexPosNrm>;
 using ChunkBorderMesh = Mesh<VertexPos>;
 
+class Map;
+
 struct ChunkShader
 {
 	Shader	shader;
@@ -75,7 +77,7 @@ public:
 	 *
 	 * @return The cube at the coordonate, or air in case of invalid coordonates.
 	 */
-	Cube	getCube(unsigned int x, unsigned int y, unsigned int z);
+	Cube	getCube(int x, int y, int z);
 	/**
 	 * @brief Getter of cube in a chunk.
 	 *
@@ -83,7 +85,7 @@ public:
 	 *
 	 * @return The cube at the coordonate, or air in case of invalid coordonates.
 	 */
-	Cube	getCube(const gm::Vec3u &pos);
+	Cube	getCube(const gm::Vec3i &pos);
 
 //---- Setters -----------------------------------------------------------------
 	/**
@@ -94,7 +96,7 @@ public:
 	 * @param z Z coordonate of the cube in the chunk.
 	 * @param cube The new cube to set.
 	 */
-	void	setCube(unsigned int x, unsigned int y, unsigned int z, Cube cube);
+	void	setCube(int x, int y, int z, Cube cube);
 
 //---- Operators ---------------------------------------------------------------
 	/**
@@ -113,7 +115,7 @@ public:
 	 * @param engine Engine struct.
 	 * @param camera The camera.
 	 * @param chunkShader Shaders used to draw meshes.
-	 * @param chunkId The chunk  id.
+	 * @param chunkId The chunk id.
 	 */
 	void	init(
 				Engine &engine,
@@ -121,9 +123,16 @@ public:
 				ChunkShader &chunkShader);
 	/**
 	 * @brief Init blocks in chunk.
+	 *
+	 * @param chunkId Id of the chunk.
 	 */
 	void	generate(const gm::Vec2i &chunkId);
-	void	updateMeshes(void);
+	/**
+	 * @brief Update chunk meshs.
+	 *
+	 * @param map Map containing other chunks.
+	 */
+	void	updateMeshes(Map &map);
 	/**
 	 * @brief Draw chunk meshes.
 	 *
@@ -161,17 +170,38 @@ private:
 	void	createBorderMesh(void);
 	/**
 	 * @brief Create meshes.
+	 *
+	 * @param map Map that contain chunks.
 	 */
-	void	createMesh(void);
+	void	createMesh(Map &map);
 	/**
 	 * @brief Create face up mesh.
+	 *
+	 * @param vertexIndex Hash map of vertex for avoid vertex duplication.
+	 * @param vertices Vector of vertex.
+	 * @param indices Vector of index.
+	 * @param nbVertex Number of vertex.
+	 * @param posCheck Position of check if there is air here.
+	 * @param leftChunk Chunk at the left.
+	 * @param rightChunk Chunk at the right.
+	 * @param frontChunk Chunk at the front.
+	 * @param backChunk Chunk at the back.
+	 * @param posLU Position of top left vertex of face.
+	 * @param posLD Position of bottom left vertex of face.
+	 * @param posRD Position of bottom right vertex of face.
+	 * @param posRU Position of top right vertex of face.
+	 * @param normal Normal of face.
 	 */
 	void	createFace(
 				std::unordered_map<std::size_t, uint32_t> &vertexIndex,
 				std::vector<VertexPosNrm> &vertices,
 				std::vector<uint32_t> &indices,
 				int &nbVertex,
-				const gm::Vec3u &posCheck,
+				gm::Vec3i posCheck,
+				Chunk *leftChunk,
+				Chunk *rightChunk,
+				Chunk *frontChunk,
+				Chunk *backChunk,
 				const gm::Vec3f &posLU,
 				const gm::Vec3f &posLD,
 				const gm::Vec3f &posRD,

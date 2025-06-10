@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/10 16:25:19 by gugus            ###   ########.fr       */
+/*   Updated: 2025/06/10 17:42:12 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@
 # define PRINT_FPS_TIME 1.0
 
 // Window defines
-# define WIN_TITLE "scop"
+# define WIN_TITLE "vox"
 # define ENGINE_TITLE "gvEngine"
 # define WIN_W 1600 // TODO: CHANGE TO FULL SCREEN
 # define WIN_H 900
