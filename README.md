@@ -43,4 +43,5 @@ cd release
 
 \
 **Camera** :
-- enable/disable fdf view	tab
+- enable/disable fdf view			tab
+- enable/disable chunk border view	c

@@ -1,5 +1,5 @@
-#ifndef VERTEX_POS_HPP
-# define VERTEX_POS_HPP
+#ifndef VERTEX_POS_NRM_HPP
+# define VERTEX_POS_NRM_HPP
 
 # include <define.hpp>
 
@@ -9,7 +9,7 @@
 /**
  * @brief Class for 3D vertex with a position and a normal. Made to work with Vulkan.
  */
-class VertexPos
+class VertexPosNrm
 {
 public:
 //**** PUBLIC ATTRIBUTS ********************************************************
@@ -17,50 +17,55 @@ public:
 	 * @brief Position of vertex.
 	 */
 	gm::Vec3f	pos;
+	/**
+	 * @brief Normal of vertex.
+	 */
+	gm::Vec3f	nrm;
 
 //**** INITIALISION ************************************************************
 //---- Constructors ------------------------------------------------------------
 	/**
-	 * @brief Default contructor of VertexPos class.
+	 * @brief Default contructor of VertexPosNrm class.
 	 *
-	 * @return The default VertexPos.
+	 * @return The default VertexPosNrm.
 	 */
-	VertexPos(void);
+	VertexPosNrm(void);
 	/**
-	 * @brief Copy constructor of VertexPos class.
+	 * @brief Copy constructor of VertexPosNrm class.
 	 *
-	 * @param obj The VertexPos to copy.
+	 * @param obj The VertexPosNrm to copy.
 	 *
-	 * @return The VertexPos copied from parameter.
+	 * @return The VertexPosNrm copied from parameter.
 	 */
-	VertexPos(const VertexPos &obj);
+	VertexPosNrm(const VertexPosNrm &obj);
 	/**
-	 * @brief Constructor of VertexPos class.
+	 * @brief Constructor of VertexPosNrm class.
 	 *
-	 * @param pos The position of VertexPos.
+	 * @param pos The position of VertexPosNrm.
+	 * @param nrm The normal of VertexPosNrm.
 	 *
-	 * @return The VertexPos create from parameter.
+	 * @return The VertexPosNrm create from parameter.
 	 */
-	VertexPos(const gm::Vec3f &pos);
+	VertexPosNrm(const gm::Vec3f &pos, const gm::Vec3f &nrm);
 
 //---- Destructor --------------------------------------------------------------
 	/**
-	 * @brief Destructor of VertexPos class.
+	 * @brief Destructor of VertexPosNrm class.
 	 */
-	~VertexPos();
+	~VertexPosNrm();
 
 //**** ACCESSORS ***************************************************************
 //---- Getters -----------------------------------------------------------------
 //---- Setters -----------------------------------------------------------------
 //---- Operators ---------------------------------------------------------------
 	/**
-	 * @brief Copy operator of VertexPos class.
+	 * @brief Copy operator of VertexPosNrm class.
 	 *
-	 * @param obj The VertexPos to copy.
+	 * @param obj The VertexPosNrm to copy.
 	 *
-	 * @return The VertexPos copied from parameter.
+	 * @return The VertexPosNrm copied from parameter.
 	 */
-	VertexPos	&operator=(const VertexPos &obj);
+	VertexPosNrm	&operator=(const VertexPosNrm &obj);
 
 //**** PUBLIC METHODS **********************************************************
 	/**
@@ -74,15 +79,15 @@ public:
 	/**
 	 * @brief Get binding description for Vulkan.
 	 *
-	 * @return The VkVertexInputBindingDescription for VertexPos class.
+	 * @return The VkVertexInputBindingDescription for VertexPosNrm class.
 	 */
 	static VkVertexInputBindingDescription	getBindingDescription(void);
 	/**
 	 * @brief Get attribute description for Vulkan.
 	 *
-	 * @return The VkVertexInputAttributeDescription for VertexPos class.
+	 * @return The VkVertexInputAttributeDescription for VertexPosNrm class.
 	 */
-	static std::array<VkVertexInputAttributeDescription, 1>	getAttributeDescriptions(void);
+	static std::array<VkVertexInputAttributeDescription, 2>	getAttributeDescriptions(void);
 
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************

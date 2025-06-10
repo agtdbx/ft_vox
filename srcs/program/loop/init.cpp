@@ -61,15 +61,23 @@ static void loadShaders(
 				Engine &engine,
 				ChunkShader &chunkShader)
 {
-	std::vector<UBOType>	uboTypes = {{sizeof(UBO3DChunkPos), UBO_VERTEX},
-										{sizeof(UBO3DChunkCubes), UBO_FRAGMENT}};
+	std::vector<UBOType>	uboTypesChunk = {{sizeof(UBO3DChunkPos), UBO_VERTEX},
+											{sizeof(UBO3DChunkCubes), UBO_FRAGMENT}};
+	std::vector<UBOType>	uboTypesChunkFdf = {{sizeof(UBO3DChunkPos), UBO_VERTEX}};
 
-	chunkShader.shader.init<VertexPos>(
+	chunkShader.shaderFdfEnable = false;
+	chunkShader.shaderBorderEnable = false;
+
+	chunkShader.shader.init<VertexPosNrm>(
 						engine, FCUL_COUNTER, DRAW_POLYGON,
-						"shadersbin/mesh_vert.spv", "shadersbin/mesh_frag.spv",
-						uboTypes, CUBE_TEXTURES.size());
-	chunkShader.shaderFdf.init<VertexPos>(
+						"shadersbin/chunk_vert.spv", "shadersbin/chunk_frag.spv",
+						uboTypesChunk, CUBE_TEXTURES.size());
+	chunkShader.shaderFdf.init<VertexPosNrm>(
 						engine, FCUL_NONE, DRAW_LINE,
-						"shadersbin/mesh_vert.spv", "shadersbin/fdf_frag.spv",
-						uboTypes);
+						"shadersbin/chunk_vert.spv", "shadersbin/chunkFdf_frag.spv",
+						uboTypesChunkFdf);
+	chunkShader.shaderBorder.init<VertexPos>(
+						engine, FCUL_NONE, DRAW_LINE,
+						"shadersbin/chunkBorder_vert.spv", "shadersbin/chunkBorder_frag.spv",
+						uboTypesChunkFdf);
 }

@@ -27,6 +27,7 @@ srcs = [
   'srcs/engine/vulkan/VulkanContext.cpp',
   'srcs/engine/vulkan/VulkanUtils.cpp',
   'srcs/engine/textures/TextureManager.cpp',
+  'srcs/engine/mesh/VertexPosNrm.cpp',
   'srcs/engine/mesh/VertexPos.cpp',
   'srcs/engine/mesh/Vertex.cpp',
 ]

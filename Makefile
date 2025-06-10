@@ -15,8 +15,8 @@ S_DIR				:= shaders
 S_BUILD				:= shadersbin
 
 #====================================TARGETS===================================#
-VS_SRCS	:=	shaders/mesh.vert
-FS_SRCS	:=	shaders/mesh.frag shaders/fdf.frag
+VS_SRCS	:=	shaders/chunk.vert shaders/chunkBorder.vert
+FS_SRCS	:=	shaders/chunk.frag shaders/chunkFdf.frag shaders/chunkBorder.frag
 
 VS_OBJS	:= ${VS_SRCS:$(S_DIR)/%.vert=$(S_BUILD)/%_vert.spv}
 FS_OBJS	:= ${FS_SRCS:$(S_DIR)/%.frag=$(S_BUILD)/%_frag.spv}

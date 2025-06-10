@@ -6,8 +6,8 @@
 
 static uint32_t	getVetrexId(
 					std::unordered_map<std::size_t, uint32_t> &vertexIndex,
-					std::vector<VertexPos> &vertices,
-					VertexPos &vertex,
+					std::vector<VertexPosNrm> &vertices,
+					VertexPosNrm &vertex,
 					int &nbVertex);
 static char	cubeToChar(Cube cube); // TODO Remove
 static void	printChunkSlide(Cube *cubes, int z); // TODO Remove
@@ -17,34 +17,9 @@ static void	printChunkSlide(Cube *cubes, int z); // TODO Remove
 
 Chunk::Chunk(void)
 {
-	for (int x = 0; x < CHUNK_SIZE; x++)
-	{
-		for (int y = 0; y < CHUNK_SIZE; y++)
-		{
-			for (int z = 0; z < CHUNK_SIZE; z++)
-			{
-				int	id = x + y * CHUNK_SIZE + z * CHUNK_SIZE2;
-				if (y > 8)
-					this->cubes[id] = CUBE_AIR;
-				else
-				{
-					if (x % 2 == 0 && z % 2 == 0)
-						this->cubes[id] = CUBE_GRASS;
-					else if (x % 2 == 0 && z % 2 == 1)
-						this->cubes[id] = CUBE_DIRT;
-					else if (x % 2 == 1 && z % 2 == 0)
-						this->cubes[id] = CUBE_STONE;
-					else
-						this->cubes[id] = CUBE_WATER;
-				}
-			}
-		}
-	}
+	for (int i = 0; i < CHUNK_SIZE3; i++)
+		this->cubes[i] = CUBE_AIR;
 	this->copyCommandPool = NULL;
-
-	this->setCube(8, 9, 8, CUBE_LAVA);
-	this->setCube(6, 12, 6, CUBE_DIAMOND);
-	this->setCube(20, 16, 12, CUBE_GRASS);
 }
 
 
@@ -116,8 +91,11 @@ void	Chunk::init(
 				ChunkShader &chunkShader,
 				const gm::Vec3f &position)
 {
+	this->initBlocks(position);
+
 	this->copyCommandPool = &engine.commandPool;
-	this->createMeshes();
+	this->createBorderMesh();
+	this->createMesh();
 
 	this->mesh.setPosition(position);
 
@@ -131,6 +109,7 @@ void	Chunk::init(
 
 	chunkShader.shader.initShaderParam(engine, this->shaderParam, CUBE_TEXTURES);
 	chunkShader.shaderFdf.initShaderParam(engine, this->shaderParamFdf, {});
+	chunkShader.shaderBorder.initShaderParam(engine, this->shaderParamBorder, {});
 }
 
 
@@ -148,8 +127,13 @@ void	Chunk::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 	else
 	{
 		this->shaderParamFdf.updateUBO(engine.window, &this->uboPos, 0);
-		this->shaderParamFdf.updateUBO(engine.window, &this->uboCubes, 1);
 		engine.window.drawMesh(this->mesh, chunkShader.shaderFdf, this->shaderParamFdf);
+	}
+
+	if (chunkShader.shaderBorderEnable)
+	{
+		this->shaderParamBorder.updateUBO(engine.window, &this->uboPos, 0);
+		engine.window.drawMesh(this->borderMesh, chunkShader.shaderBorder, this->shaderParamBorder);
 	}
 }
 
@@ -164,10 +148,47 @@ void	Chunk::destroy(Engine &engine)
 //**** STATIC METHODS **********************************************************
 //**** PRIVATE METHODS *********************************************************
 
-void	Chunk::createMeshes(void)
+void	Chunk::createBorderMesh(void)
+{
+	std::vector<VertexPos>	vertices = {
+		{{0,          CHUNK_SIZE, CHUNK_SIZE}}, // LUF 0
+		{{0,          0,          CHUNK_SIZE}}, // LDF 1
+		{{CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE}}, // RUF 2
+		{{CHUNK_SIZE, 0,          CHUNK_SIZE}}, // RDF 3
+		{{0,          CHUNK_SIZE, 0         }}, // LUB 4
+		{{0,          0,          0         }}, // LDB 5
+		{{CHUNK_SIZE, CHUNK_SIZE, 0         }}, // RUB 6
+		{{CHUNK_SIZE, 0,          0         }}, // RDB 7
+	};
+	std::vector<uint32_t>	indices = {
+		// Front face
+		0, 1, 2,
+		0, 2, 3,
+		// Back face
+		6, 7, 5,
+		6, 5, 4,
+		// Left face
+		4, 5, 1,
+		4, 1, 0,
+		// Right face
+		2, 3, 7,
+		2, 7, 6,
+		// Up face
+		4, 0, 2,
+		4, 2, 6,
+		// Down face
+		1, 4, 7,
+		1, 7, 3,
+	};
+
+	this->borderMesh = ChunkBorderMesh(vertices, indices);
+	this->borderMesh.createBuffers(*this->copyCommandPool);
+}
+
+void	Chunk::createMesh(void)
 {
 	std::unordered_map<std::size_t, uint32_t>	vertexIndex;
-	std::vector<VertexPos>	vertices;
+	std::vector<VertexPosNrm>	vertices;
 	std::vector<uint32_t>	indices;
 	int						nbVertex = 0;
 	const gm::Vec3f			normalUp(0, 1, 0);
@@ -230,7 +251,7 @@ void	Chunk::createMeshes(void)
 
 void	Chunk::createFace(
 				std::unordered_map<std::size_t, uint32_t> &vertexIndex,
-				std::vector<VertexPos> &vertices,
+				std::vector<VertexPosNrm> &vertices,
 				std::vector<uint32_t> &indices,
 				int &nbVertex,
 				const gm::Vec3u &posCheck,
@@ -243,10 +264,10 @@ void	Chunk::createFace(
 	if (this->getCube(posCheck) != CUBE_AIR)
 		return ;
 
-	VertexPos pointLU(posLU, normal);
-	VertexPos pointLD(posLD, normal);
-	VertexPos pointRD(posRD, normal);
-	VertexPos pointRU(posRU, normal);
+	VertexPosNrm pointLU(posLU, normal);
+	VertexPosNrm pointLD(posLD, normal);
+	VertexPosNrm pointRD(posRD, normal);
+	VertexPosNrm pointRU(posRU, normal);
 
 	uint32_t	LU_id = getVetrexId(vertexIndex, vertices, pointLU, nbVertex);
 	uint32_t	LD_id = getVetrexId(vertexIndex, vertices, pointLD, nbVertex);
@@ -262,13 +283,44 @@ void	Chunk::createFace(
 	indices.push_back(RU_id);
 }
 
+
+void	Chunk::initBlocks(const gm::Vec3f &position)
+{
+	for (int x = 0; x < CHUNK_SIZE; x++)
+	{
+		for (int y = 0; y < CHUNK_SIZE; y++)
+		{
+			for (int z = 0; z < CHUNK_SIZE; z++)
+			{
+				int	id = x + y * CHUNK_SIZE + z * CHUNK_SIZE2;
+				if (y > 8)
+					this->cubes[id] = CUBE_AIR;
+				else
+				{
+					if (x % 2 == 0 && z % 2 == 0)
+						this->cubes[id] = CUBE_GRASS;
+					else if (x % 2 == 0 && z % 2 == 1)
+						this->cubes[id] = CUBE_DIRT;
+					else if (x % 2 == 1 && z % 2 == 0)
+						this->cubes[id] = CUBE_STONE;
+					else
+						this->cubes[id] = CUBE_WATER;
+				}
+			}
+		}
+	}
+	this->setCube(8, 9, 8, CUBE_LAVA);
+	this->setCube(6, 12, 6, CUBE_DIAMOND);
+	this->setCube(20, 16, 12, CUBE_GRASS);
+}
+
 //**** FUNCTIONS ***************************************************************
 //**** STATIC FUNCTIONS ********************************************************
 
 static uint32_t	getVetrexId(
 					std::unordered_map<std::size_t, uint32_t> &vertexIndex,
-					std::vector<VertexPos> &vertices,
-					VertexPos &vertex,
+					std::vector<VertexPosNrm> &vertices,
+					VertexPosNrm &vertex,
 					int &nbVertex)
 {
 	std::size_t	hash = vertex.getHash();

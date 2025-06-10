@@ -25,6 +25,9 @@ void	computation(
 
 	if (inputManager.tab.isPressed())
 		chunkShader.shaderFdfEnable = !chunkShader.shaderFdfEnable;
+
+	if (inputManager.c.isPressed())
+		chunkShader.shaderBorderEnable = !chunkShader.shaderBorderEnable;
 }
 
 

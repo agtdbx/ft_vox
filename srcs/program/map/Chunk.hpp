@@ -4,18 +4,34 @@
 # include <engine/engine.hpp>
 # include <engine/mesh/Mesh.hpp>
 # include <engine/mesh/VertexPos.hpp>
+# include <engine/mesh/VertexPosNrm.hpp>
 # include <engine/shader/Shader.hpp>
 # include <engine/camera/Camera.hpp>
 # include <program/map/Cube.hpp>
 # include <program/shaderStruct.hpp>
 
-using ChunkMesh = Mesh<VertexPos>;
+using ChunkMesh = Mesh<VertexPosNrm>;
+using ChunkBorderMesh = Mesh<VertexPos>;
 
 struct ChunkShader
 {
 	Shader	shader;
 	Shader	shaderFdf;
+	Shader	shaderBorder;
 	bool	shaderFdfEnable;
+	bool	shaderBorderEnable;
+
+	/**
+	 * @brief Destroy chunk shaders
+	 *
+	 * @param engine Engine struct.
+	 */
+	void	destroy(Engine &engine)
+	{
+		this->shader.destroy(engine);
+		this->shaderFdf.destroy(engine);
+		this->shaderBorder.destroy(engine);
+	}
 };
 
 /**
@@ -125,23 +141,28 @@ private:
 	std::vector<gm::Vec3f>	positions;
 	Cube			cubes[CHUNK_SIZE3]; // id = x + y * SIZE + z * SIZE2
 	ChunkMesh		mesh;
+	ChunkBorderMesh	borderMesh;
 	UBO3DChunkPos	uboPos;
 	UBO3DChunkCubes	uboCubes;
-	ShaderParam		shaderParam, shaderParamFdf;
+	ShaderParam		shaderParam, shaderParamFdf, shaderParamBorder;
 //---- Copy --------------------------------------------------------------------
 	VulkanCommandPool	*copyCommandPool;
 
 //**** PRIVATE METHODS *********************************************************
 	/**
+	 * @brief Create borderMesh.
+	 */
+	void	createBorderMesh(void);
+	/**
 	 * @brief Create meshes.
 	 */
-	void	createMeshes(void);
+	void	createMesh(void);
 	/**
 	 * @brief Create face up mesh.
 	 */
 	void	createFace(
 				std::unordered_map<std::size_t, uint32_t> &vertexIndex,
-				std::vector<VertexPos> &vertices,
+				std::vector<VertexPosNrm> &vertices,
 				std::vector<uint32_t> &indices,
 				int &nbVertex,
 				const gm::Vec3u &posCheck,
@@ -150,7 +171,12 @@ private:
 				const gm::Vec3f &posRD,
 				const gm::Vec3f &posRU,
 				const gm::Vec3f &normal);
-
+	/**
+	 * @brief Init blocks in chunk.
+	 *
+	 * @param position Chunk position.
+	 */
+	void	initBlocks(const gm::Vec3f &position);
 };
 
 //**** FUNCTIONS ***************************************************************
