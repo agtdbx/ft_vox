@@ -61,9 +61,9 @@ static void loadShaders(
 				Engine &engine,
 				ChunkShader &chunkShader)
 {
-	std::vector<UBOType>	uboTypesChunk = {{sizeof(UBO3DChunkPos), UBO_VERTEX},
-											{sizeof(UBO3DChunkCubes), UBO_FRAGMENT}};
-	std::vector<UBOType>	uboTypesChunkFdf = {{sizeof(UBO3DChunkPos), UBO_VERTEX}};
+	std::vector<BufferInfo>	uboTypesChunk = {{sizeof(UBO3DChunkPos), BUFFER_UBO, STAGE_VERTEX},
+											{sizeof(UBO3DChunkCubes), BUFFER_SSBO, STAGE_FRAGMENT}};
+	std::vector<BufferInfo>	uboTypesChunkFdf = {{sizeof(UBO3DChunkPos), BUFFER_UBO, STAGE_VERTEX}};
 
 	chunkShader.shaderFdfEnable = false;
 	chunkShader.shaderBorderEnable = false;

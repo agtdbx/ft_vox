@@ -1,9 +1,10 @@
 #version 450
 
+// Cubes array input
+layout(std430, binding = 1) buffer cubesBuffer {
+    int cubes[262144];
+};
 // Images input
-layout(binding = 1) uniform UniformBufferObject {
-    ivec4 cubes[65536]; // 65536 * 4 = 262144
-} ubo;
 layout(binding = 2)  uniform sampler2D sampleGrassUp;
 layout(binding = 3)  uniform sampler2D sampleDirtUp;
 layout(binding = 4)  uniform sampler2D sampleStoneUp;
@@ -134,7 +135,7 @@ vec4    getUpColor()
     int y = int(fragPosition.y - 0.01);
     int z = int(fragPosition.z);
     int cubeId = x + z * 32 + y * 1024;
-    int cubeType = ubo.cubes[cubeId >> 2][cubeId % 4]; // >> 2 = / 4
+    int cubeType = cubes[cubeId];
 
     return (getCubeTextureUp(texCoord, cubeType));
 }
@@ -148,7 +149,7 @@ vec4    getDownColor()
     int y = int(fragPosition.y + 0.01);
     int z = int(fragPosition.z);
     int cubeId = x + z * 32 + y * 1024;
-    int cubeType = ubo.cubes[cubeId >> 2][cubeId % 4]; // >> 2 = / 4
+    int cubeType = cubes[cubeId];
 
     return (getCubeTextureDown(texCoord, cubeType));
 }
@@ -162,7 +163,7 @@ vec4    getLeftColor()
     int y = int(fragPosition.y);
     int z = int(fragPosition.z);
     int cubeId = x + z * 32 + y * 1024;
-    int cubeType = ubo.cubes[cubeId >> 2][cubeId % 4]; // >> 2 = / 4
+    int cubeType = cubes[cubeId];
 
     return (getCubeTextureSide(texCoord, cubeType));
 }
@@ -176,7 +177,7 @@ vec4    getRightColor()
     int y = int(fragPosition.y);
     int z = int(fragPosition.z);
     int cubeId = x + z * 32 + y * 1024;
-    int cubeType = ubo.cubes[cubeId >> 2][cubeId % 4]; // >> 2 = / 4
+    int cubeType = cubes[cubeId];
 
     return (getCubeTextureSide(texCoord, cubeType));
 }
@@ -190,7 +191,7 @@ vec4    getFrontColor()
     int y = int(fragPosition.y);
     int z = int(fragPosition.z - 0.01);
     int cubeId = x + z * 32 + y * 1024;
-    int cubeType = ubo.cubes[cubeId >> 2][cubeId % 4]; // >> 2 = / 4
+    int cubeType = cubes[cubeId];
 
     return (getCubeTextureSide(texCoord, cubeType));
 }
@@ -204,7 +205,7 @@ vec4    getBackColor()
     int y = int(fragPosition.y);
     int z = int(fragPosition.z + 0.01);
     int cubeId = x + z * 32 + y * 1024;
-    int cubeType = ubo.cubes[cubeId >> 2][cubeId % 4]; // >> 2 = / 4
+    int cubeType = cubes[cubeId];
 
     return (getCubeTextureSide(texCoord, cubeType));
 }

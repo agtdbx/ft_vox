@@ -52,13 +52,13 @@ ShaderParam	&ShaderParam::operator=(const ShaderParam &obj)
 void	ShaderParam::init(
 			Engine &engine,
 			VkDescriptorSetLayout descriptorSetLayout,
-			const std::vector<UBOType> &uboTypes,
+			const std::vector<BufferInfo> &bufferInfos,
 			const std::vector<std::string> &imageIds)
 {
 	VkDevice	device = engine.context.getDevice();
 	VkPhysicalDevice	physicalDevice = engine.context.getPhysicalDevice();
 
-	this->uboTypes = uboTypes;
+	this->bufferInfos = bufferInfos;
 
 	std::vector<const Image *> images = getImages(engine.textureManager, imageIds);
 
@@ -90,8 +90,8 @@ void	ShaderParam::destroy(Engine &engine)
 
 void	ShaderParam::updateUBO(Window &window, void *ubo, int uboId)
 {
-	int	bufferId = window.getCurrentFrame() * this->uboTypes.size() + uboId;
-	memcpy(this->uniformBuffersMapped[bufferId], ubo, this->uboTypes[uboId].size);
+	int	bufferId = window.getCurrentFrame() * this->bufferInfos.size() + uboId;
+	memcpy(this->uniformBuffersMapped[bufferId], ubo, this->bufferInfos[uboId].size);
 }
 
 //**** STATIC METHODS **********************************************************
@@ -99,7 +99,7 @@ void	ShaderParam::updateUBO(Window &window, void *ubo, int uboId)
 
 void	ShaderParam::createUniformBuffers(VkDevice device, VkPhysicalDevice physicalDevice)
 {
-	int	nbUbo = this->uboTypes.size();
+	int	nbUbo = this->bufferInfos.size();
 	int	nbBuffers = MAX_FRAMES_IN_FLIGHT * nbUbo;
 
 	this->uniformBuffers.resize(nbBuffers);
@@ -108,16 +108,21 @@ void	ShaderParam::createUniformBuffers(VkDevice device, VkPhysicalDevice physica
 
 	int	bufferId;
 	int	bufferOffset = 0;
+	VkBufferUsageFlags	bufferUsage;
 	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
 		for (int j = 0; j < nbUbo; j++)
 		{
+			if (this->bufferInfos[j].type == BUFFER_UBO)
+				bufferUsage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+			else // SSBO
+				bufferUsage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 			bufferId = bufferOffset + j;
 			createVulkanBuffer(device, physicalDevice,
-								this->uboTypes[j].size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+								this->bufferInfos[j].size, bufferUsage,
 								VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 								this->uniformBuffers[bufferId], this->uniformBuffersMemory[bufferId]);
-			vkMapMemory(device, this->uniformBuffersMemory[bufferId], 0, this->uboTypes[j].size, 0, &this->uniformBuffersMapped[bufferId]);
+			vkMapMemory(device, this->uniformBuffersMemory[bufferId], 0, this->bufferInfos[j].size, 0, &this->uniformBuffersMapped[bufferId]);
 		}
 		bufferOffset += nbUbo;
 	}
@@ -127,12 +132,15 @@ void	ShaderParam::createUniformBuffers(VkDevice device, VkPhysicalDevice physica
 void	ShaderParam::createDescriptorPool(VkDevice device, size_t nbImages)
 {
 	uint32_t maxFramesInFlight = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-	size_t nbUbo = this->uboTypes.size();
+	size_t nbUbo = this->bufferInfos.size();
 
 	std::vector<VkDescriptorPoolSize> poolSizes(nbUbo + nbImages);
 	for (size_t i = 0; i < nbUbo; i++)
 	{
-		poolSizes[i].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		if (this->bufferInfos[i].type == BUFFER_UBO)
+			poolSizes[i].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		else // SSBO
+			poolSizes[i].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 		poolSizes[i].descriptorCount = maxFramesInFlight;
 	}
 	for (size_t i = 0; i < nbImages; i++)
@@ -169,7 +177,7 @@ void	ShaderParam::createDescriptorSets(
 		throw std::runtime_error("Allocate descriptor sets failed");
 
 	// Get images
-	uint32_t nbUbo = this->uboTypes.size();
+	uint32_t nbUbo = this->bufferInfos.size();
 	uint32_t nbImages = images.size();
 
 	// Create images struct
@@ -190,7 +198,7 @@ void	ShaderParam::createDescriptorSets(
 		{
 			buffersInfo[j].buffer = this->uniformBuffers[i * nbUbo + j];
 			buffersInfo[j].offset = 0;
-			buffersInfo[j].range = this->uboTypes[j].size;
+			buffersInfo[j].range = this->bufferInfos[j].size;
 		}
 
 		std::vector<VkWriteDescriptorSet> descriptorWrites(nbUbo + nbImages);
@@ -200,7 +208,10 @@ void	ShaderParam::createDescriptorSets(
 			descriptorWrites[j].dstSet = this->descriptorSets[i];
 			descriptorWrites[j].dstBinding = j;
 			descriptorWrites[j].dstArrayElement = 0;
-			descriptorWrites[j].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			if (this->bufferInfos[j].type == BUFFER_UBO)
+				descriptorWrites[j].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			else // SSBO
+				descriptorWrites[j].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 			descriptorWrites[j].descriptorCount = 1;
 			descriptorWrites[j].pBufferInfo = &buffersInfo[j];
 		}

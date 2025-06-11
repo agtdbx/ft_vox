@@ -10,16 +10,30 @@
 # include <fstream>
 # include <gmath.hpp>
 
-enum UBOLocation
+enum BufferStage
 {
-	UBO_VERTEX,
-	UBO_FRAGMENT,
+	STAGE_COMPUTE = 0b100,
+	STAGE_VERTEX = 0b010,
+	STAGE_FRAGMENT = 0b001,
+	STAGE_COMPUTE_VERTEX = 0b110,
+	STAGE_COMPUTE_FRAGMENT = 0b101,
+	STAGE_VERTEX_FRAGMENT = 0b011,
+	STAGE_COMPUTE_VERTEX_FRAGMENT = 0b111,
 };
 
-struct UBOType
+
+enum BufferType
+{
+	BUFFER_UBO,
+	BUFFER_SSBO,
+};
+
+
+struct BufferInfo
 {
 	size_t		size;
-	UBOLocation	location;
+	BufferType	type;
+	BufferStage	stage;
 };
 
 //**** STATIC DEFINE FUNCTIONS *************************************************
@@ -85,7 +99,7 @@ public:
 	void	init(
 				Engine &engine,
 				VkDescriptorSetLayout descriptorSetLayout,
-				const std::vector<UBOType> &uboTypes,
+				const std::vector<BufferInfo> &bufferInfos,
 				const std::vector<std::string> &imageIds);
 	/**
 	 * @brief Destroy vulkan's allocate attributs.
@@ -106,7 +120,7 @@ public:
 
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
-	std::vector<UBOType>			uboTypes;
+	std::vector<BufferInfo>			bufferInfos;
 	std::vector<VkBuffer>			uniformBuffers;
 	std::vector<VkDeviceMemory>		uniformBuffersMemory;
 	std::vector<void*>				uniformBuffersMapped;

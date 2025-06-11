@@ -61,7 +61,7 @@ void	Shader::initShaderParam(
 					ShaderParam &shaderParam,
 					const std::vector<std::string> &imageIds)
 {
-	shaderParam.init(engine, this->descriptorSetLayout, this->uboTypes, imageIds);
+	shaderParam.init(engine, this->descriptorSetLayout, this->bufferInfos, imageIds);
 }
 
 
@@ -85,7 +85,7 @@ void	Shader::destroy(Engine &engine)
 
 void	Shader::createDescriptorSetLayout(VkDevice device, size_t nbImages)
 {
-	int	nbUbo = this->uboTypes.size();
+	int	nbUbo = this->bufferInfos.size();
 
 	std::vector<VkDescriptorSetLayoutBinding> bindings(nbUbo + nbImages);
 
@@ -95,12 +95,18 @@ void	Shader::createDescriptorSetLayout(VkDevice device, size_t nbImages)
 	{
 		uboLayoutBindings[i].binding = i;
 		uboLayoutBindings[i].descriptorCount = 1;
-		uboLayoutBindings[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		if (this->bufferInfos[i].type == BUFFER_UBO)
+			uboLayoutBindings[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		else // SSBO
+			uboLayoutBindings[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 		uboLayoutBindings[i].pImmutableSamplers = nullptr; // Optional
-		if (this->uboTypes[i].location == UBO_VERTEX)
-			uboLayoutBindings[i].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-		else
-			uboLayoutBindings[i].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		uboLayoutBindings[i].stageFlags = 0;
+		if (this->bufferInfos[i].stage & STAGE_COMPUTE)
+			uboLayoutBindings[i].stageFlags = uboLayoutBindings[i].stageFlags | VK_SHADER_STAGE_COMPUTE_BIT;
+		if (this->bufferInfos[i].stage & STAGE_VERTEX)
+			uboLayoutBindings[i].stageFlags = uboLayoutBindings[i].stageFlags | VK_SHADER_STAGE_VERTEX_BIT;
+		if (this->bufferInfos[i].stage & STAGE_FRAGMENT)
+			uboLayoutBindings[i].stageFlags = uboLayoutBindings[i].stageFlags | VK_SHADER_STAGE_FRAGMENT_BIT;
 
 		bindings[i] = uboLayoutBindings[i];
 	}

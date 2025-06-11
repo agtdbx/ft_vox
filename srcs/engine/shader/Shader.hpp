@@ -113,17 +113,17 @@ public:
 	 * @param faceCulling How do face culling. Clock wise, counter or disable it.
 	 * @param vertexPath Path to compile vertex shader file.
 	 * @param fragmentPath Path to compile fragment shader file.
-	 * @param uboTypes Vector of ubo types.
+	 * @param bufferInfos Vector of buffer info.
 	 */
 	template<typename VertexType>
 	void	init(
 				Engine &engine, FaceCulling faceCulling, DrawMode drawMode,
 				std::string vertexPath, std::string fragmentPath,
-				const std::vector<UBOType> &uboTypes)
+				const std::vector<BufferInfo> &bufferInfos)
 	{
 		VkDevice	device = engine.context.getDevice();
 
-		this->uboTypes = uboTypes;
+		this->bufferInfos = bufferInfos;
 
 		this->createDescriptorSetLayout(device, 0);
 		this->createGraphicsPipeline<VertexType>(device, engine.window, vertexPath, fragmentPath,
@@ -136,19 +136,19 @@ public:
 	 * @param faceCulling How do face culling. Clock wise, counter or disable it.
 	 * @param vertexPath Path to compile vertex shader file.
 	 * @param fragmentPath Path to compile fragment shader file.
-	 * @param uboTypes Vector of ubo types.
+	 * @param bufferInfos Vector of buffer info.
 	 * @param nbImages Number of image id to used in shader.
 	 */
 	template<typename VertexType>
 	void	init(
 				Engine &engine, FaceCulling faceCulling, DrawMode drawMode,
 				std::string vertexPath, std::string fragmentPath,
-				const std::vector<UBOType> &uboTypes,
+				const std::vector<BufferInfo> &bufferInfos,
 				size_t nbImages)
 	{
 		VkDevice	device = engine.context.getDevice();
 
-		this->uboTypes = uboTypes;
+		this->bufferInfos = bufferInfos;
 
 		this->createDescriptorSetLayout(device, nbImages);
 		this->createGraphicsPipeline<VertexType>(device, engine.window, vertexPath, fragmentPath,
@@ -176,7 +176,7 @@ public:
 
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
-	std::vector<UBOType>			uboTypes;
+	std::vector<BufferInfo>			bufferInfos;
 	VkDescriptorSetLayout			descriptorSetLayout;
 	VkPipelineLayout				pipelineLayout;
 	VkPipeline						graphicsPipeline;
