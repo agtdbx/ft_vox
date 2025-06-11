@@ -1,8 +1,10 @@
 #include <program/map/Perlin.hpp>
 
-static gm::Vec2f randomGradient(int ix, int iy, int seed)
+
+//TODO add more random to perlin noise
+static gm::Vec2f randomGradient(int ix, int iy)
 {
-	 // No precomputed gradients mean this works for any number of grid coordinates
+	// No precomputed gradients mean this works for any number of grid coordinates
     const unsigned w = 8 * sizeof(unsigned);
     const unsigned s = w / 2; 
     unsigned a = ix, b = iy;
@@ -16,16 +18,15 @@ static gm::Vec2f randomGradient(int ix, int iy, int seed)
     float random = a * (3.14159265 / ~(~0u >> 1)); // in [0, 2*Pi]
 	gm::Vec2f v;
     // Create the vector from the angle
-	//TODO random pourra prendre la seed
-    v.x = sin(random + seed);
-    v.y = cos(random + seed);
+    v.x = sin(random);
+    v.y = cos(random);
     return v;
 }
 
-static float dotGridGradient(int ix, int iy, float x, float y, int seed)
+static float dotGridGradient(int ix, int iy, float x, float y)
 {
     // Get gradient from integer coordinates
-    gm::Vec2f gradient = randomGradient(ix, iy, seed);
+    gm::Vec2f gradient = randomGradient(ix, iy);
  
     // Compute the distance vector
     float dx = x - (float)ix;
@@ -40,7 +41,7 @@ static float interpolate(float a0, float a1, float w)
     return (a1 - a0) * (3.0 - w * 2.0) * w * w + a0;
 }
 
-float perlin(float x, float y, int seed)
+float perlin(float x, float y)
 {
     
     // Determine grid cell corner coordinates
@@ -54,13 +55,13 @@ float perlin(float x, float y, int seed)
     float sy = y - (float)y0;
     
     // Compute and interpolate top two corners
-    float n0 = dotGridGradient(x0, y0, x, y, seed);
-    float n1 = dotGridGradient(x1, y0, x, y, seed);
+    float n0 = dotGridGradient(x0, y0, x, y);
+    float n1 = dotGridGradient(x1, y0, x, y);
     float ix0 = interpolate(n0, n1, sx);
  
     // Compute and interpolate bottom two corners
-    n0 = dotGridGradient(x0, y1, x, y, seed);
-    n1 = dotGridGradient(x1, y1, x, y, seed);
+    n0 = dotGridGradient(x0, y1, x, y);
+    n1 = dotGridGradient(x1, y1, x, y);
     float ix1 = interpolate(n0, n1, sx);
  
     // Final step: interpolate between the two previously interpolated values, now in y

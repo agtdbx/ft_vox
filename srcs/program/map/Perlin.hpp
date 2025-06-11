@@ -13,6 +13,6 @@
     *
     * @return The max height of the column
     */
-    float perlin(float x, float y, int seed);
+    float perlin(float x, float y);
 
 #endif

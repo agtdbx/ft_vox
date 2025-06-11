@@ -319,7 +319,6 @@ void	Chunk::initBlocks(void)
 	{
 		for (int z = 0; z < CHUNK_SIZE; z++)
 		{
-			//TODO replacer 0 par les coordonés du vecteur pos
 			tmpX = ((float)this->chunkId.x);
 			if (tmpX < 0)
 			{
@@ -336,10 +335,11 @@ void	Chunk::initBlocks(void)
 			}
 			else
 				perlinZ = tmpZ + ((float)z / 32);
-
-			//std::cout << "perlinZ : " << perlinZ << std::endl;
-			maxSize = perlin(perlinX, perlinZ, 666);
-			//std::cout << "maxSize : " << maxSize << std::endl;
+			maxSize = perlin(perlinX, perlinZ);
+			//TODO seed here maybe ?
+			perlinX = perlinX + SEED;
+			perlinZ = perlinZ + SEED;
+			maxSize = maxSize + (perlin(perlinX, perlinZ) / 2.5);
 			for (int y = 0; y < CHUNK_SIZE; y++)
 			{
 				int	id = x + y * CHUNK_SIZE + z * CHUNK_SIZE2;
