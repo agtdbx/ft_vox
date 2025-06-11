@@ -62,4 +62,7 @@ const std::vector<std::string>	CUBE_TEXTURES = {
 # define CLUSTER_SIZE 8
 const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
 
+// Map defines
+# define MAP_SIZE 4096
+
 #endif

@@ -126,47 +126,43 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 	float maxSize = 0;
 	float perlinX = 0;
 	float perlinZ = 0;
-	float tmpX = 0;
-	float tmpZ = 0;
+	int tmpX = 0;
+	int tmpZ = 0;
+	float Biome = 0;
 	for (int x = 0; x < CHUNK_SIZE; x++)
 	{
 		for (int z = 0; z < CHUNK_SIZE; z++)
 		{
-			tmpX = ((float)this->chunkId.x);
+			tmpX = ((int)this->chunkPosition.x + x) % MAP_SIZE;
+			tmpZ = ((int)this->chunkPosition.z + z) % MAP_SIZE;
 			if (tmpX < 0)
-			{
-				tmpX = tmpX * -1;
-				perlinX = tmpX - ((float)x / CHUNK_SIZE);
-			}
-			else
-				perlinX = tmpX + ((float)x / CHUNK_SIZE);
-			tmpZ = ((float)this->chunkId.y);
+				tmpX = MAP_SIZE + tmpX;
 			if (tmpZ < 0)
-			{
-				tmpZ = tmpZ * -1;
-				perlinZ = tmpZ - ((float)z / CHUNK_SIZE);
-			}
-			else
-				perlinZ = tmpZ + ((float)z / CHUNK_SIZE);
+				tmpZ = MAP_SIZE + tmpZ;
+			perlinX = (float)tmpX / (float)MAP_SIZE;
+			perlinZ = (float)tmpZ / (float)MAP_SIZE;
 			maxSize = perlin(perlinX, perlinZ);
-			//TODO seed here maybe ?
-			perlinX = perlinX + (SEED & 0xff);
-			perlinZ = perlinZ + ((SEED >> 16) & 0xff);
-			maxSize = maxSize + (perlin(perlinX, perlinZ) / 2.5);
+			Biome = 30;
 			for (int y = 0; y < CHUNK_HEIGHT; y++)
 			{
 				int	id = x + z * CHUNK_SIZE + y * CHUNK_SIZE2;
-				//Basic plaine
 				//TODO change blocType with perlin noise for different biome
-				if (y > (int)maxSize && y > 40)
+				if (y > (int)maxSize && y > 58)
 					this->cubes[id] = CUBE_AIR;
-				else if (y > (int)maxSize && y <= 40)
+				else if (y > (int)maxSize && y <= 58)
 					this->cubes[id] = CUBE_WATER;
 				else
 				{
-					if (y > 40 && y == (int)maxSize)
-						this->cubes[id] = CUBE_GRASS;
-					else if (y > 40 && y > (int)maxSize - 3 && y < (int)maxSize)
+					if (y > 57 && y == (int)maxSize)
+					{
+						if (Biome > 58)
+							this->cubes[id] = CUBE_SAND;
+						else if (Biome < 20)
+							this->cubes[id] = CUBE_SNOW;
+						else
+							this->cubes[id] = CUBE_GRASS;
+					}
+					else if (y > 58 && y > (int)maxSize - 3 && y < (int)maxSize)
 						this->cubes[id] = CUBE_DIRT;
 					else if (y != 0)
 						this->cubes[id] = CUBE_STONE;
