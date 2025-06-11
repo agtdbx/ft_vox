@@ -337,12 +337,16 @@ void	Chunk::initBlocks(void)
 				perlinZ = tmpZ + ((float)z / 32);
 			maxSize = perlin(perlinX, perlinZ);
 			//TODO seed here maybe ?
-			perlinX = perlinX + SEED;
-			perlinZ = perlinZ + SEED;
+			perlinX = perlinX + (SEED & 0xff);
+			perlinZ = perlinZ + ((SEED >> 16) & 0xff);
 			maxSize = maxSize + (perlin(perlinX, perlinZ) / 2.5);
 			for (int y = 0; y < CHUNK_SIZE; y++)
 			{
 				int	id = x + y * CHUNK_SIZE + z * CHUNK_SIZE2;
+
+
+				//Basic plaine
+				//TODO change blocType with perlin noise for different biome
 				if (y > (int)maxSize && y > 8)
 					this->cubes[id] = CUBE_AIR;
 				else if (y > (int)maxSize && y <= 8)
