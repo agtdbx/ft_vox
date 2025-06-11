@@ -11,6 +11,8 @@
 # include <program/shaderStruct.hpp>
 # include <program/map/Perlin.hpp>
 
+#include <chrono>
+
 using ChunkMesh = Mesh<VertexPosNrm>;
 using ChunkBorderMesh = Mesh<VertexPos>;
 
@@ -37,6 +39,34 @@ struct ChunkShader
 		this->shaderBorder.destroy(engine);
 	}
 };
+
+
+// struct Face
+// {
+// 	gm::Vec3f	pos;
+// 	gm::Vec3f	size;
+// };
+
+
+// TODO : REMOVE
+struct PerfField
+{
+	std::clock_t	start;
+	int				total;
+	int				nbCall;
+};
+
+void	startLog(PerfField &perfField);
+void	endLog(PerfField &perfField);
+void	resetLog(PerfField &perfField);
+void	printLog(PerfField &perfField, const char *msg);
+
+struct PerfLogger
+{
+	PerfField	generation;
+	PerfField	createMesh;
+};
+
 
 /**
  * @brief Chunk class.
@@ -128,13 +158,13 @@ public:
 	 *
 	 * @param chunkId Id of the chunk.
 	 */
-	void	generate(const gm::Vec2i &chunkId);
+	void	generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger);
 	/**
 	 * @brief Update chunk meshs.
 	 *
 	 * @param map Map containing other chunks.
 	 */
-	void	updateMeshes(Map &map);
+	void	updateMeshes(Map &map, PerfLogger &perfLogger);
 	/**
 	 * @brief Draw chunk meshes.
 	 *
@@ -157,6 +187,7 @@ private:
 	gm::Vec3f		chunkPosition;
 	std::vector<gm::Vec3f>	positions;
 	Cube			cubes[CHUNK_TOTAL_SIZE]; // id = x + z * SIZE + y * SIZE2
+	int32_t			cubesMask[CHUNK_MASK_SIZE];
 	ChunkMesh		mesh;
 	ChunkBorderMesh	borderMesh;
 	UBO3DChunkPos	uboPos;

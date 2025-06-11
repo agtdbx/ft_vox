@@ -63,6 +63,10 @@ void	Map::init(
 	gm::Vec3i maxChunk = gm::Vec2i(4, 4);
 	std::size_t	hash;
 
+	PerfLogger	perfLogger;
+	resetLog(perfLogger.generation);
+	resetLog(perfLogger.createMesh);
+
 	// Generate chunks
 	for (int x = minChunk.x; x < maxChunk.x; x++)
 	{
@@ -71,7 +75,7 @@ void	Map::init(
 			hash = gm::hash(gm::Vec2i(x, y));
 			this->chunks[hash] = Chunk();
 			this->chunks[hash].init(engine, camera, chunkShader);
-			this->chunks[hash].generate(gm::Vec2i(x, y));
+			this->chunks[hash].generate(gm::Vec2i(x, y), perfLogger);
 		}
 	}
 
@@ -81,9 +85,12 @@ void	Map::init(
 		for (int y = minChunk.y; y < maxChunk.y; y++)
 		{
 			hash = gm::hash(gm::Vec2i(x, y));
-			this->chunks[hash].updateMeshes(*this);
+			this->chunks[hash].updateMeshes(*this, perfLogger);
 		}
 	}
+
+	printLog(perfLogger.generation, "Chunk generation");
+	printLog(perfLogger.createMesh, "Mesh creation");
 
 	this->cluster.setChunks(*this, gm::Vec2i(0, 0));
 }

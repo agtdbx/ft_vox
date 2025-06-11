@@ -6,11 +6,46 @@
 
 //**** STATIC FUNCTIONS DEFINE *************************************************
 
+const double	INV_CLOCKS_PER_USEC = 1.0 / (double)CLOCKS_PER_SEC * 1000000.0;
+const gm::Vec3f	normalUp(0, 1, 0);
+const gm::Vec3f	normalDown(0, -1, 0);
+const gm::Vec3f	normalFront(0, 0, 1);
+const gm::Vec3f	normalBack(0, 0, -1);
+const gm::Vec3f	normalLeft(-1, 0, 0);
+const gm::Vec3f	normalRight(1, 0, 0);
+
 static uint32_t	getVetrexId(
 					std::unordered_map<std::size_t, uint32_t> &vertexIndex,
 					std::vector<VertexPosNrm> &vertices,
 					VertexPosNrm &vertex,
 					int &nbVertex);
+
+// TODO : Remove
+void	startLog(PerfField &perfField)
+{
+	perfField.start = std::clock();
+}
+
+void	endLog(PerfField &perfField)
+{
+	perfField.total += (std::clock() - perfField.start) * INV_CLOCKS_PER_USEC;
+	perfField.nbCall++;
+}
+
+void	resetLog(PerfField &perfField)
+{
+	perfField.start = 0.0;
+	perfField.total = 0.0;
+	perfField.nbCall = 0;
+}
+
+void	printLog(PerfField &perfField, const char *msg)
+{
+	int	avg = perfField.total / perfField.nbCall;
+
+	printf("%s : total %i us, nb call %i, avg %i us\n",
+			msg, perfField.total, perfField.nbCall, avg);
+}
 
 //**** INITIALISION ************************************************************
 //---- Constructors ------------------------------------------------------------
@@ -21,6 +56,8 @@ Chunk::Chunk(void)
 	this->chunkPosition = gm::Vec3f(0);
 	for (int i = 0; i < CHUNK_TOTAL_SIZE; i++)
 		this->cubes[i] = CUBE_AIR;
+	for (int i = 0; i < CHUNK_MASK_SIZE; i++)
+		this->cubesMask[i] = 0;
 	this->copyCommandPool = NULL;
 }
 
@@ -31,6 +68,8 @@ Chunk::Chunk(const Chunk &obj)
 	this->chunkPosition = obj.chunkPosition;
 	for (int i = 0; i < CHUNK_TOTAL_SIZE; i++)
 		this->cubes[i] = obj.cubes[i];
+	for (int i = 0; i < CHUNK_MASK_SIZE; i++)
+		this->cubesMask[i] = obj.cubesMask[i];
 	this->copyCommandPool = obj.copyCommandPool;
 	this->mesh = obj.mesh;
 }
@@ -116,21 +155,25 @@ void	Chunk::init(
 }
 
 
-void	Chunk::generate(const gm::Vec2i &chunkId)
+void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 {
 	this->chunkId = chunkId;
 	this->chunkPosition.x = this->chunkId.x * CHUNK_SIZE;
 	this->chunkPosition.y = 0.0f;
 	this->chunkPosition.z = this->chunkId.y * CHUNK_SIZE;
 
+	startLog(perfLogger.generation);
+
 	float maxSize = 0;
 	float perlinX = 0;
 	float perlinZ = 0;
 	float tmpX = 0;
 	float tmpZ = 0;
-	for (int x = 0; x < CHUNK_SIZE; x++)
+	int		idZ, id, idMask;
+	for (int z = 0; z < CHUNK_SIZE; z++)
 	{
-		for (int z = 0; z < CHUNK_SIZE; z++)
+		idZ = z * CHUNK_SIZE;
+		for (int x = 0; x < CHUNK_SIZE; x++)
 		{
 			tmpX = ((float)this->chunkId.x);
 			if (tmpX < 0)
@@ -155,12 +198,16 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 			maxSize = maxSize + (perlin(perlinX, perlinZ) / 2.5);
 			for (int y = 0; y < CHUNK_HEIGHT; y++)
 			{
-				int	id = x + z * CHUNK_SIZE + y * CHUNK_SIZE2;
 				//Basic plaine
 				//TODO change blocType with perlin noise for different biome
 				if (y > (int)maxSize && y > 40)
-					this->cubes[id] = CUBE_AIR;
-				else if (y > (int)maxSize && y <= 40)
+					break;
+
+				id = x + idZ + y * CHUNK_SIZE2;
+				idMask = x + y * CHUNK_SIZE;
+				this->cubesMask[idMask] |= (0b1 << z);
+
+				if (y > (int)maxSize && y <= 40)
 					this->cubes[id] = CUBE_WATER;
 				else
 				{
@@ -177,14 +224,19 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 		}
 	}
 
+	endLog(perfLogger.generation);
+
 	for (int i = 0; i < CHUNK_TOTAL_SIZE; i++)
 		this->uboCubes.cubes[i] = this->cubes[i];
 }
 
 
-void	Chunk::updateMeshes(Map &map)
+void	Chunk::updateMeshes(Map &map, PerfLogger &perfLogger)
 {
+	startLog(perfLogger.createMesh);
 	this->createMesh(map);
+	endLog(perfLogger.createMesh);
+
 	this->mesh.setPosition(this->chunkPosition);
 	this->uboPos.model = this->mesh.getModel();
 	this->uboPos.pos = gm::Vec4f(this->mesh.getPosition());
@@ -271,34 +323,35 @@ void	Chunk::createBorderMesh(void)
 void	Chunk::createMesh(Map &map)
 {
 	std::unordered_map<std::size_t, uint32_t>	vertexIndex;
+	// std::vector<Face>			faces; // TODO : Continue greedy meshing
 	std::vector<VertexPosNrm>	vertices;
-	std::vector<uint32_t>	indices;
+	std::vector<uint32_t>		indices;
 	int						nbVertex = 0;
-	const gm::Vec3f			normalUp(0, 1, 0);
-	const gm::Vec3f			normalDown(0, -1, 0);
-	const gm::Vec3f			normalFront(0, 0, 1);
-	const gm::Vec3f			normalBack(0, 0, -1);
-	const gm::Vec3f			normalLeft(-1, 0, 0);
-	const gm::Vec3f			normalRight(1, 0, 0);
 	Chunk	*leftChunk = map.getChunk(this->chunkId.x - 1, this->chunkId.y);
 	Chunk	*rightChunk = map.getChunk(this->chunkId.x + 1, this->chunkId.y);
 	Chunk	*frontChunk = map.getChunk(this->chunkId.x, this->chunkId.y + 1);
 	Chunk	*backChunk = map.getChunk(this->chunkId.x, this->chunkId.y - 1);
 
-	int			id, idY, idZ;
+	int			id;
 	gm::Vec3f	pointLUF, pointLDF, pointRUF, pointRDF,
 				pointLUB, pointLDB, pointRUB, pointRDB;
 
+	int	blocksMask[CHUNK_MASK_SIZE];
+	for (int i = 0; i < CHUNK_MASK_SIZE; i++)
+		blocksMask[i] = this->cubesMask[i];
+
+	int	zMasks[CHUNK_SIZE];
+	for (int i = 0; i < CHUNK_SIZE; i++)
+		zMasks[i] = 0b1 << i;
+
 	for (int y = 0; y < CHUNK_HEIGHT; y++)
 	{
-		idY = y * CHUNK_SIZE2;
-		for (int z = 0; z < CHUNK_SIZE; z++)
+		for (int x = 0; x < CHUNK_SIZE; x++)
 		{
-			idZ = z * CHUNK_SIZE;
-			for (int x = 0; x < CHUNK_SIZE; x++)
+			for (int z = 0; z < CHUNK_SIZE; z++)
 			{
-				id = x + idZ + idY;
-				if (this->cubes[id] == CUBE_AIR)
+				id = x + y * CHUNK_SIZE;
+				if ((blocksMask[id] & zMasks[z]) == 0)
 					continue;
 
 				// Points

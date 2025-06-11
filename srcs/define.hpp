@@ -6,7 +6,7 @@
 /*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/11 11:14:30 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/06/11 16:45:32 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ const int MAX_FRAMES_IN_FLIGHT = 2;
 # define CHUNK_HEIGHT 256
 const int	CHUNK_SIZE2 = CHUNK_SIZE * CHUNK_SIZE;
 const int	CHUNK_TOTAL_SIZE = CHUNK_SIZE2 * CHUNK_HEIGHT;
+const int	CHUNK_MASK_SIZE = CHUNK_SIZE * CHUNK_HEIGHT;
 
 const std::vector<std::string>	CUBE_TEXTURES = {
 	"grass-up", "dirt-up", "stone-up", "water-up", "snow-up",
