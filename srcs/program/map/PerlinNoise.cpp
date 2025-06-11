@@ -1,5 +1,12 @@
 #include <program/map/PerlinNoise.hpp>
 
+//TODO faire une classe = 1 seul bruit de perlin
+//TODO check si sa marche apres est si oui la mettre en mode jolie comme auguste
+
+const gm::Vec2f	vecLeftTop = {1.0, 1.0};
+const gm::Vec2f	vecRightTop = {-1.0, 1.0};
+const gm::Vec2f	vecRightBot = {-1.0, -1.0};
+const gm::Vec2f	vecLeftBot = {1.0, -1.0};
 
 static void	generate_perlin_noise(
 				int *perlin_noise,
@@ -23,29 +30,6 @@ static void	generate_perlin_noise(
 		perlin_noise[i + PERLIN_NOISE_SIZE] = perlin_noise[i];
 }
 
-static float   dot(const gm::Vec2f &v1, const gm::Vec2f &v2)
-{
-    return (v1.x * v2.x + v1.y * v2.y);
-}
-
-static gm::Vec2f	get_constant_vector(
-					int value)
-{
-	static	gm::Vec2f	vecLeftTop = {1.0, 1.0};
-	static	gm::Vec2f	vecRightTop = {-1.0, 1.0};
-	static	gm::Vec2f	vecRightBot = {-1.0, -1.0};
-	static	gm::Vec2f	vecLeftBot = {1.0, -1.0};
-	int				height;
-
-	height = value & 3;
-	if (height == 0)
-		return (vecLeftTop);
-	else if (height == 1)
-		return (vecRightTop);
-	else if (height == 2)
-		return (vecRightBot);
-	return (vecLeftBot);
-}
 
 static float	fade(
 					float value)
@@ -61,6 +45,7 @@ static float	lerp(
 	return (start + (end - start) * ratio);
 }
 
+// ########################## CLASS #################################################3
 
 PerlinNoise::PerlinNoise(void)
 {
@@ -74,26 +59,26 @@ PerlinNoise::~PerlinNoise()
 
 }
 
-float getNoise(float x, float y, int perlin_noisef[PERLIN_NOISE_LIST_SIZE])
+float PerlinNoise::goToNoise(float x, float y, int type)
+{
+    if (type == GENERATION)
+        return (getNoise(x, y, this->perlin_noiseGeneration));
+    else if (type == BIOME)
+        return (getNoise(x, y, this->perlin_noiseBiome));
+    else if (type == TERRAIN)
+        return (getNoise(x, y, this->perlin_noiseTerrain));
+    else
+        return(-1);
+}
+
+float PerlinNoise::getNoise(float x, float y, int perlin_noisef[PERLIN_NOISE_LIST_SIZE])
 {  
-	int			pnX;
-	int			pnY;
-	float		x_ratio;
-	float		y_ratio;
-	gm::Vec2f		vecLeftTop;
-	gm::Vec2f		vecRightTop;
-	gm::Vec2f		vecLeftBot;
-	gm::Vec2f		vecRightBot;
-	float		valueLeftTop;
-	float		valueRightTop;
-	float		valueLeftBot;
-	float		valueRightBot;
-	float		dotLeftTop;
-	float		dotRightTop;
-	float		dotLeftBot;
-	float		dotRightBot;
-	float		topValue;
-	float		botValue;
+	int			pnX, pnY;
+	float		x_ratio, y_ratio;
+	gm::Vec2f		vecLeftTop, vecRightTop, vecLeftBot, vecRightBot;
+	float		valueLeftTop, valueRightTop, valueLeftBot, valueRightBot,
+                dotLeftTop, dotRightTop, dotLeftBot, dotRightBot,
+                topValue, botValue;
 
     x *= PERLIN_NOISE_SIZE;
 	y *= PERLIN_NOISE_SIZE;
@@ -114,10 +99,10 @@ float getNoise(float x, float y, int perlin_noisef[PERLIN_NOISE_LIST_SIZE])
 	valueLeftBot = perlin_noisef[perlin_noisef[pnX] + pnY];
 	valueRightBot = perlin_noisef[perlin_noisef[pnX + 1] + pnY];
 
-	dotLeftTop = dot(vecLeftTop, get_constant_vector(valueLeftTop));
-	dotRightTop = dot(vecRightTop, get_constant_vector(valueRightTop));
-	dotLeftBot = dot(vecLeftBot, get_constant_vector(valueLeftBot));
-	dotRightBot = dot(vecRightBot, get_constant_vector(valueRightBot));
+	dotLeftTop = gm::dot(vecLeftTop, this->get_constant_vector(valueLeftTop));
+	dotRightTop = gm::dot(vecRightTop, this->get_constant_vector(valueRightTop));
+	dotLeftBot = gm::dot(vecLeftBot, this->get_constant_vector(valueLeftBot));
+	dotRightBot = gm::dot(vecRightBot, this->get_constant_vector(valueRightBot));
 
 	x_ratio = fade(x_ratio);
 	y_ratio = fade(y_ratio);
@@ -131,14 +116,18 @@ float getNoise(float x, float y, int perlin_noisef[PERLIN_NOISE_LIST_SIZE])
 	return (perlinNormalize * 32.0f + 48.0f);
 }
 
-float PerlinNoise::goToNoise(float x, float y, int type)
+
+gm::Vec2f	PerlinNoise::get_constant_vector(
+					int value)
 {
-    if (type == GENERATION)
-        return (getNoise(x, y, this->perlin_noiseGeneration));
-    else if (type == BIOME)
-        return (getNoise(x, y, this->perlin_noiseBiome));
-    else if (type == TERRAIN)
-        return (getNoise(x, y, this->perlin_noiseTerrain));
-    else
-        return(-1);
+	int				height;
+
+	height = value & 3;
+	if (height == 0)
+		return (vecLeftTop);
+	else if (height == 1)
+		return (vecRightTop);
+	else if (height == 2)
+		return (vecRightBot);
+	return (vecLeftBot);
 }
