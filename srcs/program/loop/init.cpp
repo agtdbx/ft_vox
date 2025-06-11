@@ -41,18 +41,9 @@ bool init(
 
 static void	loadTextures(Engine &engine)
 {
-	std::vector<std::string>	names = {
-		"grass", "dirt", "stone", "water", "snow",
-		"ice", "sand", "lava", "iron", "diamond",
-	};
-
-	engine.textureManager.addTexture("test", "data/textures/test.png");
-
-	for (std::string &name : names)
+	for (const std::string &name : CUBE_TEXTURES)
 	{
-		engine.textureManager.addTexture(name + "-up", "data/textures/" + name +"-up.png");
-		engine.textureManager.addTexture(name + "-side", "data/textures/" + name +"-side.png");
-		engine.textureManager.addTexture(name + "-down", "data/textures/" + name +"-down.png");
+		engine.textureManager.addTexture(name, "data/textures/" + name +".png");
 	}
 }
 
