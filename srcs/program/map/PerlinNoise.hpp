@@ -40,7 +40,7 @@ public:
 
 //**** PUBLIC METHODS **********************************************************
 
-    float getNoise(float x, float y, int type);
+    float goToNoise(float x, float y, int type);
 
 //**** STATIC METHODS **********************************************************
 

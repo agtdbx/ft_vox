@@ -3,6 +3,7 @@
 
 # include <program/map/Chunk.hpp>
 # include <program/map/Cluster.hpp>
+# include <program/map/PerlinNoise.hpp>
 
 # include <unordered_map>
 
@@ -94,6 +95,7 @@ private:
 //**** PRIVATE ATTRIBUTS *******************************************************
 	ChunkMap	chunks;
 	Cluster		cluster;
+	PerlinNoise perlin;
 //**** PRIVATE METHODS *********************************************************
 };
 

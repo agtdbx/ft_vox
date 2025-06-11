@@ -10,6 +10,7 @@
 # include <program/map/Cube.hpp>
 # include <program/shaderStruct.hpp>
 # include <program/map/Perlin.hpp>
+# include <program/map/PerlinNoise.hpp>
 
 using ChunkMesh = Mesh<VertexPosNrm>;
 using ChunkBorderMesh = Mesh<VertexPos>;
@@ -128,7 +129,7 @@ public:
 	 *
 	 * @param chunkId Id of the chunk.
 	 */
-	void	generate(const gm::Vec2i &chunkId);
+	void	generate(const gm::Vec2i &chunkId, PerlinNoise perlin);
 	/**
 	 * @brief Update chunk meshs.
 	 *

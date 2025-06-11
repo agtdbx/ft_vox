@@ -74,8 +74,7 @@ PerlinNoise::~PerlinNoise()
 
 }
 
-
-float PerlinNoise::getNoise(float x, float y, int type)
+float getNoise(float x, float y, int perlin_noisef[PERLIN_NOISE_LIST_SIZE])
 {  
 	int			pnX;
 	int			pnY;
@@ -95,14 +94,6 @@ float PerlinNoise::getNoise(float x, float y, int type)
 	float		dotRightBot;
 	float		topValue;
 	float		botValue;
-    int	perlin_noisef[PERLIN_NOISE_LIST_SIZE]  = {0};
-
-    if (type == 1)
-        perlin_noisef = this->perlin_noiseGeneration;
-    else if (type == 2)
-        perlin_noisef = this->perlin_noiseTerrain;
-    else
-        perlin_noisef = this->perlin_noiseBiome;
 
     x *= PERLIN_NOISE_SIZE;
 	y *= PERLIN_NOISE_SIZE;
@@ -138,4 +129,16 @@ float PerlinNoise::getNoise(float x, float y, int type)
     float   perlinNormalize = (perlinValue + 1.0f) / 2.0f;
 
 	return (perlinNormalize * 32.0f + 48.0f);
+}
+
+float PerlinNoise::goToNoise(float x, float y, int type)
+{
+    if (type == GENERATION)
+        return (getNoise(x, y, this->perlin_noiseGeneration));
+    else if (type == BIOME)
+        return (getNoise(x, y, this->perlin_noiseBiome));
+    else if (type == TERRAIN)
+        return (getNoise(x, y, this->perlin_noiseTerrain));
+    else
+        return(-1);
 }

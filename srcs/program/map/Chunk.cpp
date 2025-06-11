@@ -116,7 +116,7 @@ void	Chunk::init(
 }
 
 
-void	Chunk::generate(const gm::Vec2i &chunkId)
+void	Chunk::generate(const gm::Vec2i &chunkId, PerlinNoise perlin)
 {
 	this->chunkId = chunkId;
 	this->chunkPosition.x = this->chunkId.x * CHUNK_SIZE;
@@ -141,7 +141,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 				tmpZ = MAP_SIZE + tmpZ;
 			perlinX = (float)tmpX / (float)MAP_SIZE;
 			perlinZ = (float)tmpZ / (float)MAP_SIZE;
-			maxSize = perlin(perlinX, perlinZ);
+			maxSize = perlin.goToNoise(perlinX, perlinZ, 1);
 			Biome = 30;
 			for (int y = 0; y < CHUNK_HEIGHT; y++)
 			{
