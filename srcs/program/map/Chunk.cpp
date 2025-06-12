@@ -29,7 +29,7 @@ static void	createTriangleFace(
 				const gm::Vec3f &posRD,
 				const gm::Vec3f &posRU,
 				const gm::Vec3f &normal);
-static Cube	&get(Cube cubes[CHUNK_TOTAL_SIZE], int x, int y, int z);
+static Cube	&cube(Cube cubes[CHUNK_TOTAL_SIZE], int x, int y, int z);
 
 // TODO : Remove
 void	startLog(PerfField &perfField)
@@ -371,10 +371,10 @@ Chunk generation : total 31567 us, nb call 64, avg 493 us
 Mesh creation : total 338274 us, nb call 64, avg 5285 us
 Number of triangle : 348290
 
-GREEDY MESHING ON Y
-Chunk generation : total 31571 us, nb call 64, avg 493 us
-Mesh creation : total 477987 us, nb call 64, avg 7468 us
-Number of triangle : 115236
+GREEDY MESHING
+Chunk generation : total 32095 us, nb call 64, avg 501 us
+Mesh creation : total 448382 us, nb call 64, avg 7005 us
+Number of triangle : 80876
 */
 
 void	Chunk::createMesh(Map &map)
@@ -393,88 +393,237 @@ void	Chunk::createMesh(Map &map)
 	Chunk	*rightChunk = map.getChunk(this->chunkId.x + 1, this->chunkId.y);
 	Chunk	*frontChunk = map.getChunk(this->chunkId.x, this->chunkId.y + 1);
 	Chunk	*backChunk = map.getChunk(this->chunkId.x, this->chunkId.y - 1);
-	int	x, y, z, tmpX, tmpZ;
+	int	x, y, z, tmpX, tmpY, tmpZ;
 	Cube	cpyCubes[CHUNK_TOTAL_SIZE];
 
 	// Create face front
 	for (int i = 0; i < CHUNK_TOTAL_SIZE; i++)
 		cpyCubes[i] = this->cubes[i];
-	y = 0;
-	while (y < CHUNK_HEIGHT)
+
+	z = 0;
+	while (z < CHUNK_SIZE)
 	{
-		x = 0;
-		while (x < CHUNK_SIZE)
+		y = 0;
+		while (y < CHUNK_HEIGHT)
 		{
-			z = 0;
-			while (z < CHUNK_SIZE)
+			x = 0;
+			while (x < CHUNK_SIZE)
 			{
-				if (this->at(x, y, z) == CUBE_AIR)
+				if (cube(cpyCubes, x, y, z) == CUBE_AIR)
 				{
-					z++;
+					x++;
 					continue;
 				}
 
 				if (z + 1 < CHUNK_SIZE)
 				{
-					if (this->at(x, y, z + 1) == CUBE_AIR)
-						facesFront.push_back({x, y, 1, 1, z + 1});
+					if (this->at(x, y, z + 1) != CUBE_AIR)
+					{
+						x++;
+						continue;
+					}
 				}
-				else if (frontChunk && frontChunk->at(x, y, 0) == CUBE_AIR)
-					facesFront.push_back({x, y, 1, 1, z + 1});
+				else if (frontChunk)
+				{
+					if (frontChunk->at(x, y, 0) != CUBE_AIR)
+					{
+						x++;
+						continue;
+					}
+				}
+				else
+				{
+					x++;
+					continue;
+				}
 
-				z++;
+				Face	face = {x, y, 1, 1, z + 1};
+
+				cube(cpyCubes, x, y, z) = CUBE_AIR;
+
+				// Extend in x
+				tmpX = x + face.w;
+				while (tmpX < CHUNK_SIZE)
+				{
+					if (cube(cpyCubes, tmpX, y, z) == CUBE_AIR)
+						break;
+
+					if (z + 1 >= CHUNK_SIZE)
+					{
+						if (!frontChunk)
+							break;
+						if (frontChunk->at(tmpX, y, 0) != CUBE_AIR)
+							break;
+					}
+					else if (this->at(tmpX, y, z + 1) != CUBE_AIR)
+							break;
+
+					cube(cpyCubes, tmpX, y, z) = CUBE_AIR;
+					face.w++;
+					tmpX = x + face.w;
+				}
+
+				// Extend in y
+				tmpY = y + face.h;
+				while (tmpY < CHUNK_HEIGHT)
+				{
+					tmpX = 0;
+					while (tmpX < face.w)
+					{
+						if (cube(cpyCubes, x + tmpX, tmpY, z) == CUBE_AIR)
+							break;
+
+						if (z + 1 >= CHUNK_SIZE)
+						{
+							if (!frontChunk)
+								break;
+							if (frontChunk->at(x + tmpX, tmpY, 0) != CUBE_AIR)
+								break;
+						}
+						else if (this->at(x + tmpX, tmpY, z + 1) != CUBE_AIR)
+								break;
+
+						tmpX++;
+					}
+
+					if (tmpX != face.w)
+						break;
+
+					for (int i = 0; i < face.w; i++)
+						cube(cpyCubes, x + i, tmpY, z) = CUBE_AIR;
+
+					face.h++;
+					tmpY = y + face.h;
+				}
+
+				facesFront.push_back(face);
+				x += face.w;
 			}
-			x++;
+			y++;
 		}
-		y++;
+		z++;
 	}
 
 	// Create face back
 	for (int i = 0; i < CHUNK_TOTAL_SIZE; i++)
 		cpyCubes[i] = this->cubes[i];
-	y = 0;
-	while (y < CHUNK_HEIGHT)
+	z = 0;
+	while (z < CHUNK_SIZE)
 	{
-		x = 0;
-		while (x < CHUNK_SIZE)
+		y = 0;
+		while (y < CHUNK_HEIGHT)
 		{
-			z = 0;
-			while (z < CHUNK_SIZE)
+			x = 0;
+			while (x < CHUNK_SIZE)
 			{
-				if (this->at(x, y, z) == CUBE_AIR)
+				if (cube(cpyCubes, x, y, z) == CUBE_AIR)
 				{
-					z++;
+					x++;
 					continue;
 				}
 
 				if (z - 1 >= 0)
 				{
-					if (this->at(x, y, z - 1) == CUBE_AIR)
-						facesBack.push_back({x, y, 1, 1, z});
+					if (this->at(x, y, z - 1) != CUBE_AIR)
+					{
+						x++;
+						continue;
+					}
 				}
-				else if (backChunk && backChunk->at(x, y, CHUNK_MAX) == CUBE_AIR)
-					facesBack.push_back({x, y, 1, 1, z});
+				else if (backChunk)
+				{
+					if (backChunk->at(x, y, CHUNK_MAX) != CUBE_AIR)
+					{
+						x++;
+						continue;
+					}
+				}
+				else
+				{
+					x++;
+					continue;
+				}
 
-				z++;
+				Face	face = {x, y, 1, 1, z};
+
+				cube(cpyCubes, x, y, z) = CUBE_AIR;
+
+				// Extend in x
+				tmpX = x + face.w;
+				while (tmpX < CHUNK_SIZE)
+				{
+					if (cube(cpyCubes, tmpX, y, z) == CUBE_AIR)
+						break;
+
+					if (z - 1 < 0)
+					{
+						if (!backChunk)
+							break;
+						if (backChunk->at(tmpX, y, CHUNK_MAX) != CUBE_AIR)
+							break;
+					}
+					else if (this->at(tmpX, y, z - 1) != CUBE_AIR)
+							break;
+
+					cube(cpyCubes, tmpX, y, z) = CUBE_AIR;
+					face.w++;
+					tmpX = x + face.w;
+				}
+
+				// Extend in y
+				tmpY = y + face.h;
+				while (tmpY < CHUNK_HEIGHT)
+				{
+					tmpX = 0;
+					while (tmpX < face.w)
+					{
+						if (cube(cpyCubes, x + tmpX, tmpY, z) == CUBE_AIR)
+							break;
+
+						if (z - 1 < 0)
+						{
+							if (!backChunk)
+								break;
+							if (backChunk->at(x + tmpX, y, CHUNK_MAX) != CUBE_AIR)
+								break;
+						}
+						else if (this->at(x + tmpX, y, z - 1) != CUBE_AIR)
+								break;
+
+						tmpX++;
+					}
+
+					if (tmpX != face.w)
+						break;
+
+					for (int i = 0; i < face.w; i++)
+						cube(cpyCubes, x + i, tmpY, z) = CUBE_AIR;
+
+					face.h++;
+					tmpY = y + face.h;
+				}
+
+				facesBack.push_back(face);
+				x += face.w;
 			}
-			x++;
+			y++;
 		}
-		y++;
+		z++;
 	}
 
 	// Create face right
 	for (int i = 0; i < CHUNK_TOTAL_SIZE; i++)
 		cpyCubes[i] = this->cubes[i];
-	y = 0;
-	while (y < CHUNK_HEIGHT)
+	x = 0;
+	while (x < CHUNK_SIZE)
 	{
-		x = 0;
-		while (x < CHUNK_SIZE)
+		y = 0;
+		while (y < CHUNK_HEIGHT)
 		{
 			z = 0;
 			while (z < CHUNK_SIZE)
 			{
-				if (this->at(x, y, z) == CUBE_AIR)
+				if (cube(cpyCubes, x, y, z) == CUBE_AIR)
 				{
 					z++;
 					continue;
@@ -482,32 +631,107 @@ void	Chunk::createMesh(Map &map)
 
 				if (x + 1 < CHUNK_SIZE)
 				{
-					if (this->at(x + 1, y, z) == CUBE_AIR)
-						facesRight.push_back({z, y, 1, 1, x + 1});
+					if (this->at(x + 1, y, z) != CUBE_AIR)
+					{
+						z++;
+						continue;
+					}
 				}
-				else if (rightChunk && rightChunk->at(0, y, z) == CUBE_AIR)
-					facesRight.push_back({z, y, 1, 1, x + 1});
+				else if (rightChunk)
+				{
+					if (rightChunk->at(0, y, z) != CUBE_AIR)
+					{
+						z++;
+						continue;
+					}
+				}
+				else
+				{
+					z++;
+					continue;
+				}
 
-				z++;
+				Face	face = {z, y, 1, 1, x + 1};
+
+				cube(cpyCubes, x, y, z) = CUBE_AIR;
+
+				// Extend in z
+				tmpZ = z + face.w;
+				while (tmpZ < CHUNK_SIZE)
+				{
+					if (cube(cpyCubes, x, y, tmpZ) == CUBE_AIR)
+						break;
+
+					if (x + 1 >= CHUNK_SIZE)
+					{
+						if (!rightChunk)
+							break;
+						if (rightChunk->at(0, y, tmpZ) != CUBE_AIR)
+							break;
+					}
+					else if (this->at(x + 1, y, tmpZ) != CUBE_AIR)
+							break;
+
+					cube(cpyCubes, x, y, tmpZ) = CUBE_AIR;
+					face.w++;
+					tmpZ = z + face.w;
+				}
+
+				// Extend in y
+				tmpY = y + face.h;
+				while (tmpY < CHUNK_HEIGHT)
+				{
+					tmpZ = 0;
+
+					while (tmpZ < face.w)
+					{
+						if (cube(cpyCubes, x, tmpY, z + tmpZ) == CUBE_AIR)
+							break;
+
+						if (x + 1 >= CHUNK_SIZE)
+						{
+							if (!rightChunk)
+								break;
+							if (rightChunk->at(0, tmpY, z + tmpZ) != CUBE_AIR)
+								break;
+						}
+						else if (this->at(x + 1, tmpY, z + tmpZ) != CUBE_AIR)
+								break;
+
+						tmpZ++;
+					}
+
+					if (tmpZ != face.w)
+						break;
+
+					for (int i = 0; i < face.w; i++)
+						cube(cpyCubes, x, tmpY, z + i) = CUBE_AIR;
+
+					face.h++;
+					tmpY = y + face.h;
+				}
+
+				facesRight.push_back(face);
+				z += face.w;
 			}
-			x++;
+			y++;
 		}
-		y++;
+		x++;
 	}
 
 	// Create face left
 	for (int i = 0; i < CHUNK_TOTAL_SIZE; i++)
 		cpyCubes[i] = this->cubes[i];
-	y = 0;
-	while (y < CHUNK_HEIGHT)
+	x = 0;
+	while (x < CHUNK_SIZE)
 	{
-		x = 0;
-		while (x < CHUNK_SIZE)
+		y = 0;
+		while (y < CHUNK_HEIGHT)
 		{
 			z = 0;
 			while (z < CHUNK_SIZE)
 			{
-				if (this->at(x, y, z) == CUBE_AIR)
+				if (cube(cpyCubes, x, y, z) == CUBE_AIR)
 				{
 					z++;
 					continue;
@@ -515,17 +739,91 @@ void	Chunk::createMesh(Map &map)
 
 				if (x - 1 >= 0)
 				{
-					if (this->at(x - 1, y, z) == CUBE_AIR)
-						facesLeft.push_back({z, y, 1, 1, x});
+					if (this->at(x - 1, y, z) != CUBE_AIR)
+					{
+						z++;
+						continue;
+					}
 				}
-				else if (leftChunk && leftChunk->at(CHUNK_MAX, y, z) == CUBE_AIR)
-					facesLeft.push_back({z, y, 1, 1, x});
+				else if (leftChunk)
+				{
+					if (leftChunk->at(CHUNK_MAX, y, z) != CUBE_AIR)
+					{
+						z++;
+						continue;
+					}
+				}
+				else
+				{
+					z++;
+					continue;
+				}
 
-				z++;
+				Face	face = {z, y, 1, 1, x};
+
+				cube(cpyCubes, x, y, z) = CUBE_AIR;
+
+				// Extend in z
+				tmpZ = z + face.w;
+				while (tmpZ < CHUNK_SIZE)
+				{
+					if (cube(cpyCubes, x, y, tmpZ) == CUBE_AIR)
+						break;
+
+					if (x - 1 < 0)
+					{
+						if (!leftChunk)
+							break;
+						if (leftChunk->at(CHUNK_MAX, y, tmpZ) != CUBE_AIR)
+							break;
+					}
+					else if (this->at(x - 1, y, tmpZ) != CUBE_AIR)
+							break;
+
+					cube(cpyCubes, x, y, tmpZ) = CUBE_AIR;
+					face.w++;
+					tmpZ = z + face.w;
+				}
+
+				// Extend in y
+				tmpY = y + face.h;
+				while (tmpY < CHUNK_HEIGHT)
+				{
+					tmpZ = 0;
+					while (tmpZ < face.w)
+					{
+						if (cube(cpyCubes, x, tmpY, z + tmpZ) == CUBE_AIR)
+							break;
+
+						if (x - 1 < 0)
+						{
+							if (!leftChunk)
+								break;
+							if (leftChunk->at(CHUNK_MAX, tmpY, z + tmpZ) != CUBE_AIR)
+								break;
+						}
+						else if (this->at(x - 1, tmpY, z + tmpZ) != CUBE_AIR)
+								break;
+
+						tmpZ++;
+					}
+
+					if (tmpZ != face.w)
+						break;
+
+					for (int i = 0; i < face.w; i++)
+						cube(cpyCubes, x, tmpY, z + i) = CUBE_AIR;
+
+					face.h++;
+					tmpY = y + face.h;
+				}
+
+				facesLeft.push_back(face);
+				z += face.w;
 			}
-			x++;
+			y++;
 		}
-		y++;
+		x++;
 	}
 
 	// Create face up
@@ -541,7 +839,7 @@ void	Chunk::createMesh(Map &map)
 			while (z < CHUNK_SIZE)
 			{
 				// If cube is air, skip
-				if (get(cpyCubes, x, y, z) == CUBE_AIR)
+				if (cube(cpyCubes, x, y, z) == CUBE_AIR)
 				{
 					z++;
 					continue;
@@ -556,19 +854,19 @@ void	Chunk::createMesh(Map &map)
 
 				Face face = {x, z, 1, 1, y + 1};
 
-				get(cpyCubes, x, y, z) = CUBE_AIR;
+				cube(cpyCubes, x, y, z) = CUBE_AIR;
 
 				// Extend in z
 				tmpZ = z + face.h;
 				while (tmpZ < CHUNK_SIZE)
 				{
-					if (get(cpyCubes, x, y, tmpZ) == CUBE_AIR)
+					if (cube(cpyCubes, x, y, tmpZ) == CUBE_AIR)
 						break;
 
 					if (y + 1 < CHUNK_HEIGHT && this->at(x, y + 1, tmpZ) != CUBE_AIR)
 						break;
 
-					get(cpyCubes, x, y, tmpZ) = CUBE_AIR;
+					cube(cpyCubes, x, y, tmpZ) = CUBE_AIR;
 					face.h++;
 					tmpZ = z + face.h;
 				}
@@ -580,7 +878,7 @@ void	Chunk::createMesh(Map &map)
 					tmpZ = 0;
 					while (tmpZ < face.h)
 					{
-						if (get(cpyCubes, tmpX, y, z + tmpZ) == CUBE_AIR)
+						if (cube(cpyCubes, tmpX, y, z + tmpZ) == CUBE_AIR)
 							break;
 
 						if (y + 1 < CHUNK_HEIGHT && this->at(tmpX, y + 1, z + tmpZ) != CUBE_AIR)
@@ -593,7 +891,7 @@ void	Chunk::createMesh(Map &map)
 						break;
 
 					for (int i = 0; i < face.h; i++)
-						get(cpyCubes, tmpX, y, z + i) = CUBE_AIR;
+						cube(cpyCubes, tmpX, y, z + i) = CUBE_AIR;
 
 					face.w++;
 					tmpX = x + face.w;
@@ -620,7 +918,7 @@ void	Chunk::createMesh(Map &map)
 			while (z < CHUNK_SIZE)
 			{
 				// If cube is air, skip
-				if (get(cpyCubes, x, y, z) == CUBE_AIR)
+				if (cube(cpyCubes, x, y, z) == CUBE_AIR)
 				{
 					z++;
 					continue;
@@ -635,19 +933,19 @@ void	Chunk::createMesh(Map &map)
 
 				Face	face = {x, z, 1, 1, y};
 
-				get(cpyCubes, x, y, z) = CUBE_AIR;
+				cube(cpyCubes, x, y, z) = CUBE_AIR;
 
 				// Extend in z
 				tmpZ = z + face.h;
 				while (tmpZ < CHUNK_SIZE)
 				{
-					if (get(cpyCubes, x, y, tmpZ) == CUBE_AIR)
+					if (cube(cpyCubes, x, y, tmpZ) == CUBE_AIR)
 						break;
 
 					if (y - 1 >= 0 && this->at(x, y - 1, tmpZ) != CUBE_AIR)
 						break;
 
-					get(cpyCubes, x, y, tmpZ) = CUBE_AIR;
+					cube(cpyCubes, x, y, tmpZ) = CUBE_AIR;
 					face.h++;
 					tmpZ = z + face.h;
 				}
@@ -659,7 +957,7 @@ void	Chunk::createMesh(Map &map)
 					tmpZ = 0;
 					while (tmpZ < face.h)
 					{
-						if (get(cpyCubes, tmpX, y, z + tmpZ) == CUBE_AIR)
+						if (cube(cpyCubes, tmpX, y, z + tmpZ) == CUBE_AIR)
 							break;
 
 						if (y - 1 >= 0 && this->at(tmpX, y - 1, z + tmpZ) != CUBE_AIR)
@@ -672,7 +970,7 @@ void	Chunk::createMesh(Map &map)
 						break;
 
 					for (int i = 0; i < face.h; i++)
-						get(cpyCubes, tmpX, y, z + i) = CUBE_AIR;
+						cube(cpyCubes, tmpX, y, z + i) = CUBE_AIR;
 
 					face.w++;
 					tmpX = x + face.w;
@@ -751,7 +1049,7 @@ void	Chunk::createMesh(Map &map)
 		pointRD = gm::Vec3f(f.x + f.w, f.axis, f.y      );
 		pointRU = gm::Vec3f(f.x + f.w, f.axis, f.y + f.h);
 		createTriangleFace(vertexIndex, vertices, indices, nbVertex,
-							pointLU, pointLD, pointRD, pointRU, normalUp);
+							pointLU, pointLD, pointRD, pointRU, normalDown);
 	}
 
 	this->mesh = ChunkMesh(vertices, indices);
@@ -813,7 +1111,7 @@ static void	createTriangleFace(
 }
 
 
-static Cube	&get(Cube cubes[CHUNK_TOTAL_SIZE], int x, int y, int z)
+static Cube	&cube(Cube cubes[CHUNK_TOTAL_SIZE], int x, int y, int z)
 {
 	return (cubes[x + z * CHUNK_SIZE + y * CHUNK_SIZE2]);
 }
