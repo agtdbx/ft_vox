@@ -19,6 +19,16 @@ static uint32_t	getVetrexId(
 					std::vector<VertexPosNrm> &vertices,
 					VertexPosNrm &vertex,
 					int &nbVertex);
+static void	createTriangleFace(
+				std::unordered_map<std::size_t, uint32_t> &vertexIndex,
+				std::vector<VertexPosNrm> &vertices,
+				std::vector<uint32_t> &indices,
+				int &nbVertex,
+				const gm::Vec3f &posLU,
+				const gm::Vec3f &posLD,
+				const gm::Vec3f &posRD,
+				const gm::Vec3f &posRU,
+				const gm::Vec3f &normal);
 
 // TODO : Remove
 void	startLog(PerfField &perfField)
@@ -57,7 +67,12 @@ Chunk::Chunk(void)
 	for (int i = 0; i < CHUNK_TOTAL_SIZE; i++)
 		this->cubes[i] = CUBE_AIR;
 	for (int i = 0; i < CHUNK_MASK_SIZE; i++)
-		this->cubesMask[i] = 0;
+	{
+		this->cubesMaskLeft[i] = 0;
+		this->cubesMaskRight[i] = 0;
+		this->cubesMaskFront[i] = 0;
+		this->cubesMaskBack[i] = 0;
+	}
 	this->copyCommandPool = NULL;
 }
 
@@ -69,7 +84,12 @@ Chunk::Chunk(const Chunk &obj)
 	for (int i = 0; i < CHUNK_TOTAL_SIZE; i++)
 		this->cubes[i] = obj.cubes[i];
 	for (int i = 0; i < CHUNK_MASK_SIZE; i++)
-		this->cubesMask[i] = obj.cubesMask[i];
+	{
+		this->cubesMaskLeft[i] = obj.cubesMaskLeft[i];
+		this->cubesMaskRight[i] = obj.cubesMaskRight[i];
+		this->cubesMaskFront[i] = obj.cubesMaskFront[i];
+		this->cubesMaskBack[i] = obj.cubesMaskBack[i];
+	}
 	this->copyCommandPool = obj.copyCommandPool;
 	this->mesh = obj.mesh;
 }
@@ -84,7 +104,7 @@ Chunk::~Chunk()
 //**** ACCESSORS ***************************************************************
 //---- Getters -----------------------------------------------------------------
 
-Cube	Chunk::getCube(int x, int y, int z)
+Cube	Chunk::getCube(int x, int y, int z) const
 {
 	if (x < 0 || x >= CHUNK_SIZE
 		|| y < 0 || y >= CHUNK_HEIGHT
@@ -94,12 +114,24 @@ Cube	Chunk::getCube(int x, int y, int z)
 }
 
 
-Cube	Chunk::getCube(const gm::Vec3i &pos)
+Cube	Chunk::getCube(const gm::Vec3i &pos) const
 {
 	if (pos.x < 0 || pos.x >= CHUNK_SIZE
 		|| pos.y < 0 || pos.y >= CHUNK_HEIGHT
 		|| pos.z < 0 || pos.z >= CHUNK_SIZE)
 		return (CUBE_AIR);
+	return (this->cubes[pos.x + pos.z * CHUNK_SIZE + pos.y * CHUNK_SIZE2]);
+}
+
+
+const Cube	&Chunk::at(int x, int y, int z) const
+{
+	return (this->cubes[x + z * CHUNK_SIZE + y * CHUNK_SIZE2]);
+}
+
+
+const Cube	&Chunk::at(const gm::Vec3i &pos) const
+{
 	return (this->cubes[pos.x + pos.z * CHUNK_SIZE + pos.y * CHUNK_SIZE2]);
 }
 
@@ -131,6 +163,14 @@ Chunk	&Chunk::operator=(const Chunk &obj)
 		this->copyCommandPool = obj.copyCommandPool;
 
 	this->mesh = obj.mesh;
+
+	for (int i = 0; i < CHUNK_MASK_SIZE; i++)
+	{
+		this->cubesMaskLeft[i] = obj.cubesMaskLeft[i];
+		this->cubesMaskRight[i] = obj.cubesMaskRight[i];
+		this->cubesMaskFront[i] = obj.cubesMaskFront[i];
+		this->cubesMaskBack[i] = obj.cubesMaskBack[i];
+	}
 
 	return (*this);
 }
@@ -169,7 +209,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 	float perlinZ = 0;
 	float tmpX = 0;
 	float tmpZ = 0;
-	int		idZ, id, idMask;
+	int		idZ, id;
 	for (int z = 0; z < CHUNK_SIZE; z++)
 	{
 		idZ = z * CHUNK_SIZE;
@@ -204,8 +244,11 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 					break;
 
 				id = x + idZ + y * CHUNK_SIZE2;
-				idMask = x + y * CHUNK_SIZE;
-				this->cubesMask[idMask] |= (0b1 << z);
+				// maskY = y * CHUNK_SIZE;
+				// this->cubesMaskFront[x + maskY] |= (0b1 << z);
+				// this->cubesMaskBack[x + maskY] |= (0b1 << (CHUNK_MAX - z));
+				// this->cubesMaskLeft[z + maskY] |= (0b1 << x);
+				// this->cubesMaskRight[z + maskY] |= (0b1 << (CHUNK_MAX - x));
 
 				if (y > (int)maxSize && y <= 40)
 					this->cubes[id] = CUBE_WATER;
@@ -236,6 +279,8 @@ void	Chunk::updateMeshes(Map &map, PerfLogger &perfLogger)
 	startLog(perfLogger.createMesh);
 	this->createMesh(map);
 	endLog(perfLogger.createMesh);
+
+	perfLogger.nbTriangles += this->mesh.getNbIndex() / 3;
 
 	this->mesh.setPosition(this->chunkPosition);
 	this->uboPos.model = this->mesh.getModel();
@@ -319,11 +364,23 @@ void	Chunk::createBorderMesh(void)
 	this->borderMesh.createBuffers(*this->copyCommandPool);
 }
 
+/*
+BASIC MESHING
+Chunk generation : total 31567 us, nb call 64, avg 493 us
+Mesh creation : total 338274 us, nb call 64, avg 5285 us
+Number of triangle : 348290
+
+*/
 
 void	Chunk::createMesh(Map &map)
 {
 	std::unordered_map<std::size_t, uint32_t>	vertexIndex;
-	// std::vector<Face>			faces; // TODO : Continue greedy meshing
+	std::vector<Face>			facesFront;
+	std::vector<Face>			facesBack;
+	std::vector<Face>			facesRight;
+	std::vector<Face>			facesLeft;
+	std::vector<Face>			facesUp;
+	std::vector<Face>			facesDown;
 	std::vector<VertexPosNrm>	vertices;
 	std::vector<uint32_t>		indices;
 	int						nbVertex = 0;
@@ -332,143 +389,158 @@ void	Chunk::createMesh(Map &map)
 	Chunk	*frontChunk = map.getChunk(this->chunkId.x, this->chunkId.y + 1);
 	Chunk	*backChunk = map.getChunk(this->chunkId.x, this->chunkId.y - 1);
 
-	int			id;
-	gm::Vec3f	pointLUF, pointLDF, pointRUF, pointRDF,
-				pointLUB, pointLDB, pointRUB, pointRDB;
-
-	int	blocksMask[CHUNK_MASK_SIZE];
-	for (int i = 0; i < CHUNK_MASK_SIZE; i++)
-		blocksMask[i] = this->cubesMask[i];
-
-	int	zMasks[CHUNK_SIZE];
-	for (int i = 0; i < CHUNK_SIZE; i++)
-		zMasks[i] = 0b1 << i;
-
 	for (int y = 0; y < CHUNK_HEIGHT; y++)
 	{
 		for (int x = 0; x < CHUNK_SIZE; x++)
 		{
 			for (int z = 0; z < CHUNK_SIZE; z++)
 			{
-				id = x + y * CHUNK_SIZE;
-				if ((blocksMask[id] & zMasks[z]) == 0)
+				if (this->at(x, y, z) == CUBE_AIR)
 					continue;
 
-				// Points
-				pointLUF = gm::Vec3f(x    , y + 1, z + 1);
-				pointLDF = gm::Vec3f(x    , y    , z + 1);
-				pointRUF = gm::Vec3f(x + 1, y + 1, z + 1);
-				pointRDF = gm::Vec3f(x + 1, y    , z + 1);
-				pointLUB = gm::Vec3f(x    , y + 1, z    );
-				pointLDB = gm::Vec3f(x    , y    , z    );
-				pointRUB = gm::Vec3f(x + 1, y + 1, z    );
-				pointRDB = gm::Vec3f(x + 1, y    , z    );
+				// Create face front
+				if (z + 1 < CHUNK_SIZE)
+				{
+					if (this->at(x, y, z + 1) == CUBE_AIR)
+						facesFront.push_back({x, y, 1, 1, z + 1});
+				}
+				else if (frontChunk)
+				{
+					if (frontChunk->at(x, y, 0) == CUBE_AIR)
+						facesFront.push_back({x, y, 1, 1, z + 1});
+				}
 
-				// Face up
-				this->createFace(vertexIndex, vertices, indices, nbVertex, {x, y + 1, z},
-									leftChunk, rightChunk, frontChunk, backChunk,
-									pointLUB, pointLUF, pointRUF, pointRUB, normalUp);
-				// Face down
-				this->createFace(vertexIndex, vertices, indices, nbVertex, {x, y - 1, z},
-									leftChunk, rightChunk, frontChunk, backChunk,
-									pointLDF, pointLDB, pointRDB, pointRDF, normalDown);
-				// Face front
-				this->createFace(vertexIndex, vertices, indices, nbVertex, {x, y, z + 1},
-									leftChunk, rightChunk, frontChunk, backChunk,
-									pointLUF, pointLDF, pointRDF, pointRUF, normalFront);
-				// Face back
-				this->createFace(vertexIndex, vertices, indices, nbVertex, {x, y, z - 1},
-									leftChunk, rightChunk, frontChunk, backChunk,
-									pointRUB, pointRDB, pointLDB, pointLUB, normalBack);
-				// Face right
-				this->createFace(vertexIndex, vertices, indices, nbVertex, {x + 1, y, z},
-									leftChunk, rightChunk, frontChunk, backChunk,
-									pointRUF, pointRDF, pointRDB, pointRUB, normalRight);
-				// Face left
-				this->createFace(vertexIndex, vertices, indices, nbVertex, {x - 1, y, z},
-									leftChunk, rightChunk, frontChunk, backChunk,
-									pointLUB, pointLDB, pointLDF, pointLUF, normalLeft);
+				// Create face back
+				if (z - 1 >= 0)
+				{
+					if (this->at(x, y, z - 1) == CUBE_AIR)
+						facesBack.push_back({x, y, 1, 1, z});
+				}
+				else if (backChunk)
+				{
+					if (backChunk->at(x, y, CHUNK_MAX) == CUBE_AIR)
+						facesBack.push_back({x, y, 1, 1, z});
+				}
+
+				// Create face right
+				if (x + 1 < CHUNK_SIZE)
+				{
+					if (this->at(x + 1, y, z) == CUBE_AIR)
+						facesRight.push_back({z, y, 1, 1, x + 1});
+				}
+				else if (rightChunk)
+				{
+					if (rightChunk->at(0, y, z) == CUBE_AIR)
+						facesRight.push_back({z, y, 1, 1, x + 1});
+				}
+
+				// Create face left
+				if (x - 1 >= 0)
+				{
+					if (this->at(x - 1, y, z) == CUBE_AIR)
+						facesLeft.push_back({z, y, 1, 1, x});
+				}
+				else if (leftChunk)
+				{
+					if (leftChunk->at(CHUNK_MAX, y, z) == CUBE_AIR)
+						facesLeft.push_back({z, y, 1, 1, x});
+				}
+
+				// Create face up
+				if (y + 1 < CHUNK_HEIGHT)
+				{
+					if (this->at(x, y + 1, z) == CUBE_AIR)
+						facesUp.push_back({x, z, 1, 1, y + 1});
+				}
+				else
+				{
+					facesUp.push_back({x, z, 1, 1, y + 1});
+				}
+
+				// Create face down
+				if (y - 1 >= 0)
+				{
+					if (this->at(x, y - 1, z) == CUBE_AIR)
+						facesDown.push_back({x, z, 1, 1, y});
+				}
+				else
+				{
+					facesDown.push_back({x, z, 1, 1, y});
+				}
 			}
 		}
 	}
 
+	gm::Vec3f	pointLU, pointLD, pointRD, pointRU;
+
+	// Face front
+	for (Face &f : facesFront)
+	{
+		pointLU = gm::Vec3f(f.x      , f.y + f.h, f.axis);
+		pointLD = gm::Vec3f(f.x      , f.y      , f.axis);
+		pointRD = gm::Vec3f(f.x + f.w, f.y      , f.axis);
+		pointRU = gm::Vec3f(f.x + f.w, f.y + f.h, f.axis);
+		createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+							pointLU, pointLD, pointRD, pointRU, normalFront);
+	}
+
+	// Face back
+	for (Face &f : facesBack)
+	{
+		pointLU = gm::Vec3f(f.x + f.w, f.y + f.h, f.axis);
+		pointLD = gm::Vec3f(f.x + f.w, f.y      , f.axis);
+		pointRD = gm::Vec3f(f.x      , f.y      , f.axis);
+		pointRU = gm::Vec3f(f.x      , f.y + f.h, f.axis);
+		createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+							pointLU, pointLD, pointRD, pointRU, normalBack);
+	}
+
+	// Face right
+	for (Face &f : facesRight)
+	{
+		pointLU = gm::Vec3f(f.axis, f.y + f.h, f.x + f.w);
+		pointLD = gm::Vec3f(f.axis, f.y      , f.x + f.w);
+		pointRD = gm::Vec3f(f.axis, f.y      , f.x      );
+		pointRU = gm::Vec3f(f.axis, f.y + f.h, f.x      );
+		createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+							pointLU, pointLD, pointRD, pointRU, normalRight);
+	}
+
+	// Face right
+	for (Face &f : facesLeft)
+	{
+		pointLU = gm::Vec3f(f.axis, f.y + f.h, f.x      );
+		pointLD = gm::Vec3f(f.axis, f.y      , f.x      );
+		pointRD = gm::Vec3f(f.axis, f.y      , f.x + f.w);
+		pointRU = gm::Vec3f(f.axis, f.y + f.h, f.x + f.w);
+		createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+							pointLU, pointLD, pointRD, pointRU, normalLeft);
+	}
+
+	// Face up
+	for (Face &f : facesUp)
+	{
+		pointLU = gm::Vec3f(f.x      , f.axis, f.y      );
+		pointLD = gm::Vec3f(f.x      , f.axis, f.y + f.h);
+		pointRD = gm::Vec3f(f.x + f.w, f.axis, f.y + f.h);
+		pointRU = gm::Vec3f(f.x + f.w, f.axis, f.y      );
+		createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+							pointLU, pointLD, pointRD, pointRU, normalUp);
+	}
+
+	// Face down
+	for (Face &f : facesDown)
+	{
+		pointLU = gm::Vec3f(f.x      , f.axis, f.y + f.h);
+		pointLD = gm::Vec3f(f.x      , f.axis, f.y      );
+		pointRD = gm::Vec3f(f.x + f.w, f.axis, f.y      );
+		pointRU = gm::Vec3f(f.x + f.w, f.axis, f.y + f.h);
+		createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+							pointLU, pointLD, pointRD, pointRU, normalUp);
+	}
+
 	this->mesh = ChunkMesh(vertices, indices);
 	this->mesh.createBuffers(*this->copyCommandPool);
-}
-
-
-void	Chunk::createFace(
-				std::unordered_map<std::size_t, uint32_t> &vertexIndex,
-				std::vector<VertexPosNrm> &vertices,
-				std::vector<uint32_t> &indices,
-				int &nbVertex,
-				gm::Vec3i posCheck,
-				Chunk *leftChunk,
-				Chunk *rightChunk,
-				Chunk *frontChunk,
-				Chunk *backChunk,
-				const gm::Vec3f &posLU,
-				const gm::Vec3f &posLD,
-				const gm::Vec3f &posRD,
-				const gm::Vec3f &posRU,
-				const gm::Vec3f &normal)
-{
-	if (posCheck.x < 0)
-	{
-		if (leftChunk)
-		{
-			posCheck.x += CHUNK_SIZE;
-			if (leftChunk->getCube(posCheck) != CUBE_AIR)
-				return ;
-		}
-	}
-	else if (posCheck.x >= CHUNK_SIZE)
-	{
-		if (rightChunk)
-		{
-			posCheck.x -= CHUNK_SIZE;
-			if (rightChunk->getCube(posCheck) != CUBE_AIR)
-				return ;
-		}
-	}
-	else if (posCheck.z < 0)
-	{
-		if (backChunk)
-		{
-			posCheck.z += CHUNK_SIZE;
-			if (backChunk->getCube(posCheck) != CUBE_AIR)
-				return ;
-		}
-	}
-	else if (posCheck.z >= CHUNK_SIZE)
-	{
-		if (frontChunk)
-		{
-			posCheck.z -= CHUNK_SIZE;
-			if (frontChunk->getCube(posCheck) != CUBE_AIR)
-				return ;
-		}
-	}
-	else if (this->getCube(posCheck) != CUBE_AIR)
-		return ;
-
-	VertexPosNrm pointLU(posLU, normal);
-	VertexPosNrm pointLD(posLD, normal);
-	VertexPosNrm pointRD(posRD, normal);
-	VertexPosNrm pointRU(posRU, normal);
-
-	uint32_t	LU_id = getVetrexId(vertexIndex, vertices, pointLU, nbVertex);
-	uint32_t	LD_id = getVetrexId(vertexIndex, vertices, pointLD, nbVertex);
-	uint32_t	RD_id = getVetrexId(vertexIndex, vertices, pointRD, nbVertex);
-	uint32_t	RU_id = getVetrexId(vertexIndex, vertices, pointRU, nbVertex);
-
-	indices.push_back(LU_id);
-	indices.push_back(LD_id);
-	indices.push_back(RD_id);
-
-	indices.push_back(LU_id);
-	indices.push_back(RD_id);
-	indices.push_back(RU_id);
 }
 
 //**** FUNCTIONS ***************************************************************
@@ -492,4 +564,35 @@ static uint32_t	getVetrexId(
 	vertices.push_back(vertex);
 
 	return (nbVertex++);
+}
+
+
+static void	createTriangleFace(
+				std::unordered_map<std::size_t, uint32_t> &vertexIndex,
+				std::vector<VertexPosNrm> &vertices,
+				std::vector<uint32_t> &indices,
+				int &nbVertex,
+				const gm::Vec3f &posLU,
+				const gm::Vec3f &posLD,
+				const gm::Vec3f &posRD,
+				const gm::Vec3f &posRU,
+				const gm::Vec3f &normal)
+{
+	VertexPosNrm pointLU(posLU, normal);
+	VertexPosNrm pointLD(posLD, normal);
+	VertexPosNrm pointRD(posRD, normal);
+	VertexPosNrm pointRU(posRU, normal);
+
+	uint32_t	LU_id = getVetrexId(vertexIndex, vertices, pointLU, nbVertex);
+	uint32_t	LD_id = getVetrexId(vertexIndex, vertices, pointLD, nbVertex);
+	uint32_t	RD_id = getVetrexId(vertexIndex, vertices, pointRD, nbVertex);
+	uint32_t	RU_id = getVetrexId(vertexIndex, vertices, pointRU, nbVertex);
+
+	indices.push_back(LU_id);
+	indices.push_back(LD_id);
+	indices.push_back(RD_id);
+
+	indices.push_back(LU_id);
+	indices.push_back(RD_id);
+	indices.push_back(RU_id);
 }

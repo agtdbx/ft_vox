@@ -66,6 +66,7 @@ void	Map::init(
 	PerfLogger	perfLogger;
 	resetLog(perfLogger.generation);
 	resetLog(perfLogger.createMesh);
+	perfLogger.nbTriangles = 0;
 
 	// Generate chunks
 	for (int x = minChunk.x; x < maxChunk.x; x++)
@@ -91,6 +92,7 @@ void	Map::init(
 
 	printLog(perfLogger.generation, "Chunk generation");
 	printLog(perfLogger.createMesh, "Mesh creation");
+	printf("Number of triangle : %i\n", perfLogger.nbTriangles);
 
 	this->cluster.setChunks(*this, gm::Vec2i(0, 0));
 }
