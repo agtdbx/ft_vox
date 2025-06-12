@@ -95,7 +95,6 @@ private:
 //**** PRIVATE ATTRIBUTS *******************************************************
 	ChunkMap	chunks;
 	Cluster		cluster;
-	PerlinNoise perlin;
 //**** PRIVATE METHODS *********************************************************
 };
 

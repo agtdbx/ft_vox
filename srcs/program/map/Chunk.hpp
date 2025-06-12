@@ -129,7 +129,7 @@ public:
 	 *
 	 * @param chunkId Id of the chunk.
 	 */
-	void	generate(const gm::Vec2i &chunkId, PerlinNoise perlin);
+	void	generate(const gm::Vec2i &chunkId);
 	/**
 	 * @brief Update chunk meshs.
 	 *

@@ -4,6 +4,10 @@
 
 #include <unordered_map>
 
+PerlinNoise PerlinGeration(42);
+PerlinNoise PerlinTerrain(854);
+PerlinNoise PerlinBiome(654);
+
 //**** STATIC FUNCTIONS DEFINE *************************************************
 
 static uint32_t	getVetrexId(
@@ -116,7 +120,7 @@ void	Chunk::init(
 }
 
 
-void	Chunk::generate(const gm::Vec2i &chunkId, PerlinNoise perlin)
+void	Chunk::generate(const gm::Vec2i &chunkId)
 {
 	this->chunkId = chunkId;
 	this->chunkPosition.x = this->chunkId.x * CHUNK_SIZE;
@@ -134,14 +138,17 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerlinNoise perlin)
 		for (int z = 0; z < CHUNK_SIZE; z++)
 		{
 			tmpX = ((int)this->chunkPosition.x + x) % MAP_SIZE;
-			tmpZ = ((int)this->chunkPosition.z + z) % MAP_SIZE;
 			if (tmpX < 0)
-				tmpX = MAP_SIZE + tmpX;
+				tmpX += MAP_SIZE;
+
+			tmpZ = ((int)this->chunkPosition.z + z) % MAP_SIZE;
 			if (tmpZ < 0)
-				tmpZ = MAP_SIZE + tmpZ;
+				tmpZ += MAP_SIZE;
+
 			perlinX = (float)tmpX / (float)MAP_SIZE;
 			perlinZ = (float)tmpZ / (float)MAP_SIZE;
-			maxSize = perlin.goToNoise(perlinX, perlinZ, 1);
+
+			maxSize = PerlinGeration.getNoise(perlinX, perlinZ);
 			Biome = 30;
 			for (int y = 0; y < CHUNK_HEIGHT; y++)
 			{

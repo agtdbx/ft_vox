@@ -1,6 +1,5 @@
 #include <program/map/PerlinNoise.hpp>
 
-//TODO faire une classe = 1 seul bruit de perlin
 //TODO check si sa marche apres est si oui la mettre en mode jolie comme auguste
 
 const gm::Vec2f	vecLeftTop = {1.0, 1.0};
@@ -49,9 +48,12 @@ static float	lerp(
 
 PerlinNoise::PerlinNoise(void)
 {
-    generate_perlin_noise(this->perlin_noiseGeneration, this->seed);
-    generate_perlin_noise(this->perlin_noiseTerrain, this->seedTerrain);
-    generate_perlin_noise(this->perlin_noiseBiome, this->seedBiome);
+    generate_perlin_noise(this->perlin_noise, SEED);
+}
+
+PerlinNoise::PerlinNoise(int seed)
+{
+    generate_perlin_noise(this->perlin_noise, seed);
 }
 
 PerlinNoise::~PerlinNoise()
@@ -59,19 +61,26 @@ PerlinNoise::~PerlinNoise()
 
 }
 
-float PerlinNoise::goToNoise(float x, float y, int type)
+gm::Vec2f	PerlinNoise::get_constant_vector(
+					int value)
 {
-    if (type == GENERATION)
-        return (getNoise(x, y, this->perlin_noiseGeneration));
-    else if (type == BIOME)
-        return (getNoise(x, y, this->perlin_noiseBiome));
-    else if (type == TERRAIN)
-        return (getNoise(x, y, this->perlin_noiseTerrain));
-    else
-        return(-1);
+	static	gm::Vec2f	vecLeftTop = {1.0, 1.0};
+	static	gm::Vec2f	vecRightTop = {-1.0, 1.0};
+	static	gm::Vec2f	vecRightBot = {-1.0, -1.0};
+	static	gm::Vec2f	vecLeftBot = {1.0, -1.0};
+	int				height;
+
+	height = value & 3;
+	if (height == 0)
+		return (vecLeftTop);
+	else if (height == 1)
+		return (vecRightTop);
+	else if (height == 2)
+		return (vecRightBot);
+	return (vecLeftBot);
 }
 
-float PerlinNoise::getNoise(float x, float y, int perlin_noisef[PERLIN_NOISE_LIST_SIZE])
+float PerlinNoise::getNoise(float x, float y)
 {  
 	int			pnX, pnY;
 	float		x_ratio, y_ratio;
@@ -94,10 +103,10 @@ float PerlinNoise::getNoise(float x, float y, int perlin_noisef[PERLIN_NOISE_LIS
 	vecLeftBot = {x_ratio, y_ratio};
 	vecRightBot = {x_ratio - 1.0f, y_ratio};
 
-	valueLeftTop = perlin_noisef[perlin_noisef[pnX] + pnY + 1];
-	valueRightTop = perlin_noisef[perlin_noisef[pnX + 1] + pnY + 1];
-	valueLeftBot = perlin_noisef[perlin_noisef[pnX] + pnY];
-	valueRightBot = perlin_noisef[perlin_noisef[pnX + 1] + pnY];
+	valueLeftTop = this->perlin_noise[this->perlin_noise[pnX] + pnY + 1];
+	valueRightTop = this->perlin_noise[this->perlin_noise[pnX + 1] + pnY + 1];
+	valueLeftBot = this->perlin_noise[this->perlin_noise[pnX] + pnY];
+	valueRightBot = this->perlin_noise[this->perlin_noise[pnX + 1] + pnY];
 
 	dotLeftTop = gm::dot(vecLeftTop, this->get_constant_vector(valueLeftTop));
 	dotRightTop = gm::dot(vecRightTop, this->get_constant_vector(valueRightTop));
@@ -113,21 +122,6 @@ float PerlinNoise::getNoise(float x, float y, int perlin_noisef[PERLIN_NOISE_LIS
     float   perlinValue = lerp(botValue, topValue, y_ratio);
     float   perlinNormalize = (perlinValue + 1.0f) / 2.0f;
 
+	//TODO faire sa + tard
 	return (perlinNormalize * 32.0f + 48.0f);
-}
-
-
-gm::Vec2f	PerlinNoise::get_constant_vector(
-					int value)
-{
-	int				height;
-
-	height = value & 3;
-	if (height == 0)
-		return (vecLeftTop);
-	else if (height == 1)
-		return (vecRightTop);
-	else if (height == 2)
-		return (vecRightBot);
-	return (vecLeftBot);
 }

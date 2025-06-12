@@ -71,7 +71,7 @@ void	Map::init(
 			hash = gm::hash(gm::Vec2i(x, y));
 			this->chunks[hash] = Chunk();
 			this->chunks[hash].init(engine, camera, chunkShader);
-			this->chunks[hash].generate(gm::Vec2i(x, y), this->perlin);
+			this->chunks[hash].generate(gm::Vec2i(x, y));
 		}
 	}
 
