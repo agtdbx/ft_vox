@@ -213,10 +213,8 @@ private:
 	gm::Vec3f		chunkPosition;
 	std::vector<gm::Vec3f>	positions;
 	Cube			cubes[CHUNK_TOTAL_SIZE]; // id = x + z * SIZE + y * SIZE2
-	int32_t			cubesMaskLeft[CHUNK_MASK_SIZE];  // id = z + y * SIZE, 1 << x
-	int32_t			cubesMaskRight[CHUNK_MASK_SIZE]; // id = z + y * SIZE, 1 << 31 - x
-	int32_t			cubesMaskFront[CHUNK_MASK_SIZE]; // id = x + y * SIZE, 1 << z
-	int32_t			cubesMaskBack[CHUNK_MASK_SIZE];  // id = x + y * SIZE, 1 << 31 - z
+	int32_t			cubesBitmapX[CHUNK_MASK_SIZE]; // id = z + y * SIZE, 1 << x
+	int32_t			cubesBitmapZ[CHUNK_MASK_SIZE]; // id = x + y * SIZE, 1 << z
 	ChunkMesh		mesh;
 	ChunkBorderMesh	borderMesh;
 	UBO3DChunkPos	uboPos;
