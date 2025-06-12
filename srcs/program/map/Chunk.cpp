@@ -33,6 +33,7 @@ static bool	getCubeX(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z);
 static bool	getCubeZ(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z);
 static void	setCubeX(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z, bool cube);
 static void	setCubeZ(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z, bool cube);
+static int32_t	createLengthMask(int length);
 
 // TODO : Remove
 void	startLog(PerfField &perfField)
@@ -362,22 +363,6 @@ void	Chunk::createBorderMesh(void)
 	this->borderMesh.createBuffers(*this->copyCommandPool);
 }
 
-/*
-BASIC MESHING
-Chunk generation : total 31567 us, nb call 64, avg 493 us
-Mesh creation : total 338274 us, nb call 64, avg 5285 us
-Number of triangle : 348290
-
-GREEDY MESHING
-Chunk generation : total 32095 us, nb call 64, avg 501 us
-Mesh creation : total 448382 us, nb call 64, avg 7005 us
-Number of triangle : 80876
-
-GREEDY MESHING BASIC BITS
-Chunk generation : total 37343 us, nb call 64, avg 583 us
-Mesh creation : total 407954 us, nb call 64, avg 6374 us
-Number of triangle : 80876
-*/
 
 void	Chunk::createMesh(Map &map)
 {
@@ -393,6 +378,7 @@ void	Chunk::createMesh(Map &map)
 	Chunk	*backChunk = map.getChunk(this->chunkId.x, this->chunkId.y - 1);
 	int	x, y, z, tmpX, tmpY, tmpZ;
 	int32_t	cpyCubes[CHUNK_MASK_SIZE];
+	int32_t	airMask;
 
 	// Create face front
 	for (int i = 0; i < CHUNK_MASK_SIZE; i++)
@@ -441,47 +427,67 @@ void	Chunk::createMesh(Map &map)
 
 				// Extend in x
 				tmpX = x + face.w;
-				while (tmpX < CHUNK_SIZE)
+				if (z + 1 >= CHUNK_SIZE)
 				{
-					if (getCubeX(cpyCubes, tmpX, y, z) == 0)
+					if (!frontChunk)
 						break;
 
+					while (tmpX < CHUNK_SIZE)
+					{
+						if (getCubeX(cpyCubes, tmpX, y, z) == 0)
+							break;
+
+						if (frontChunk->at(tmpX, y, 0) != CUBE_AIR)
+							break;
+
+						setCubeX(cpyCubes, tmpX, y, z, 0);
+						face.w++;
+						tmpX++;
+					}
+				}
+				else
+				{
+					while (tmpX < CHUNK_SIZE)
+					{
+						if (getCubeX(cpyCubes, tmpX, y, z) == 0)
+							break;
+
+						if (this->at(tmpX, y, z + 1) != CUBE_AIR)
+							break;
+
+						setCubeX(cpyCubes, tmpX, y, z, 0);
+						face.w++;
+						tmpX++;
+					}
+				}
+
+				// Extend in y
+				airMask = createLengthMask(face.w) << face.x;
+				tmpY = y + face.h;
+				while (tmpY < CHUNK_HEIGHT)
+				{
+					// Check if every cubes on the high layer aren't air
+					if ((cpyCubes[z + tmpY * CHUNK_SIZE] & airMask) != airMask)
+						break;
+
+					tmpX = 0;
 					if (z + 1 >= CHUNK_SIZE)
 					{
 						if (!frontChunk)
 							break;
-						if (frontChunk->at(tmpX, y, 0) != CUBE_AIR)
-							break;
-					}
-					else if (this->at(tmpX, y, z + 1) != CUBE_AIR)
-							break;
 
-					setCubeX(cpyCubes, tmpX, y, z, 0);
-					face.w++;
-					tmpX = x + face.w;
-				}
-
-				// Extend in y
-				tmpY = y + face.h;
-				while (tmpY < CHUNK_HEIGHT)
-				{
-					tmpX = 0;
-					while (tmpX < face.w)
-					{
-						if (getCubeX(cpyCubes, x + tmpX, tmpY, z) == 0)
-							break;
-
-						if (z + 1 >= CHUNK_SIZE)
+						while (tmpX < face.w)
 						{
-							if (!frontChunk)
-								break;
 							if (frontChunk->at(x + tmpX, tmpY, 0) != CUBE_AIR)
 								break;
+							tmpX++;
 						}
-						else if (this->at(x + tmpX, tmpY, z + 1) != CUBE_AIR)
-								break;
-
-						tmpX++;
+					}
+					else
+					{
+						// Check if every cubes on the next layer are air
+						if ((cpyCubes[(z + 1) + tmpY * CHUNK_SIZE] & airMask) == 0)
+							tmpX = face.w;
 					}
 
 					if (tmpX != face.w)
@@ -491,7 +497,7 @@ void	Chunk::createMesh(Map &map)
 						setCubeX(cpyCubes, x + i, tmpY, z, 0);
 
 					face.h++;
-					tmpY = y + face.h;
+					tmpY++;
 				}
 
 				facesFront.push_back(face);
@@ -548,47 +554,67 @@ void	Chunk::createMesh(Map &map)
 
 				// Extend in x
 				tmpX = x + face.w;
-				while (tmpX < CHUNK_SIZE)
+				if (z - 1 < 0)
 				{
-					if (getCubeX(cpyCubes, tmpX, y, z) == 0)
+					if (!backChunk)
 						break;
 
+					while (tmpX < CHUNK_SIZE)
+					{
+						if (getCubeX(cpyCubes, tmpX, y, z) == 0)
+							break;
+
+						if (backChunk->at(tmpX, y, CHUNK_MAX) != CUBE_AIR)
+							break;
+
+						setCubeX(cpyCubes, tmpX, y, z, 0);
+						face.w++;
+						tmpX++;
+					}
+				}
+				else
+				{
+					while (tmpX < CHUNK_SIZE)
+					{
+						if (getCubeX(cpyCubes, tmpX, y, z) == 0)
+							break;
+
+						if (this->at(tmpX, y, z - 1) != CUBE_AIR)
+							break;
+
+						setCubeX(cpyCubes, tmpX, y, z, 0);
+						face.w++;
+						tmpX++;
+					}
+				}
+
+				// Extend in y
+				airMask = createLengthMask(face.w) << face.x;
+				tmpY = y + face.h;
+				while (tmpY < CHUNK_HEIGHT)
+				{
+					// Check if every cubes on the high layer aren't air
+					if ((cpyCubes[z + tmpY * CHUNK_SIZE] & airMask) != airMask)
+						break;
+
+					tmpX = 0;
 					if (z - 1 < 0)
 					{
 						if (!backChunk)
 							break;
-						if (backChunk->at(tmpX, y, CHUNK_MAX) != CUBE_AIR)
-							break;
-					}
-					else if (this->at(tmpX, y, z - 1) != CUBE_AIR)
-							break;
 
-					setCubeX(cpyCubes, tmpX, y, z, 0);
-					face.w++;
-					tmpX = x + face.w;
-				}
-
-				// Extend in y
-				tmpY = y + face.h;
-				while (tmpY < CHUNK_HEIGHT)
-				{
-					tmpX = 0;
-					while (tmpX < face.w)
-					{
-						if (getCubeX(cpyCubes, x + tmpX, tmpY, z) == 0)
-							break;
-
-						if (z - 1 < 0)
+						while (tmpX < face.w)
 						{
-							if (!backChunk)
-								break;
 							if (backChunk->at(x + tmpX, y, CHUNK_MAX) != CUBE_AIR)
 								break;
+							tmpX++;
 						}
-						else if (this->at(x + tmpX, y, z - 1) != CUBE_AIR)
-								break;
-
-						tmpX++;
+					}
+					else
+					{
+						// Check if every cubes on the next layer are air
+						if ((cpyCubes[(z - 1) + tmpY * CHUNK_SIZE] & airMask) == 0)
+							tmpX = face.w;
 					}
 
 					if (tmpX != face.w)
@@ -598,7 +624,7 @@ void	Chunk::createMesh(Map &map)
 						setCubeX(cpyCubes, x + i, tmpY, z, 0);
 
 					face.h++;
-					tmpY = y + face.h;
+					tmpY++;
 				}
 
 				facesBack.push_back(face);
@@ -655,48 +681,66 @@ void	Chunk::createMesh(Map &map)
 
 				// Extend in z
 				tmpZ = z + face.w;
-				while (tmpZ < CHUNK_SIZE)
+				if (x + 1 >= CHUNK_SIZE)
 				{
-					if (getCubeZ(cpyCubes, x, y, tmpZ) == 0)
+					if (!rightChunk)
+						break;
+					while (tmpZ < CHUNK_SIZE)
+					{
+						if (getCubeZ(cpyCubes, x, y, tmpZ) == 0)
+							break;
+
+						if (rightChunk->at(0, y, tmpZ) != CUBE_AIR)
+							break;
+
+						setCubeZ(cpyCubes, x, y, tmpZ, 0);
+						face.w++;
+						tmpZ++;
+					}
+				}
+				else
+				{
+					while (tmpZ < CHUNK_SIZE)
+					{
+						if (getCubeZ(cpyCubes, x, y, tmpZ) == 0)
+							break;
+
+						if (this->at(x + 1, y, tmpZ) != CUBE_AIR)
+							break;
+
+						setCubeZ(cpyCubes, x, y, tmpZ, 0);
+						face.w++;
+						tmpZ++;
+					}
+				}
+
+				// Extend in y
+				airMask = createLengthMask(face.w) << face.x;
+				tmpY = y + face.h;
+				while (tmpY < CHUNK_HEIGHT)
+				{
+					// Check if every cubes on the high layer aren't air
+					if ((cpyCubes[x + tmpY * CHUNK_SIZE] & airMask) != airMask)
 						break;
 
+					tmpZ = 0;
 					if (x + 1 >= CHUNK_SIZE)
 					{
 						if (!rightChunk)
 							break;
-						if (rightChunk->at(0, y, tmpZ) != CUBE_AIR)
-							break;
-					}
-					else if (this->at(x + 1, y, tmpZ) != CUBE_AIR)
-							break;
 
-					setCubeZ(cpyCubes, x, y, tmpZ, 0);
-					face.w++;
-					tmpZ = z + face.w;
-				}
-
-				// Extend in y
-				tmpY = y + face.h;
-				while (tmpY < CHUNK_HEIGHT)
-				{
-					tmpZ = 0;
-
-					while (tmpZ < face.w)
-					{
-						if (getCubeZ(cpyCubes, x, tmpY, z + tmpZ) == 0)
-							break;
-
-						if (x + 1 >= CHUNK_SIZE)
+						while (tmpZ < face.w)
 						{
-							if (!rightChunk)
-								break;
 							if (rightChunk->at(0, tmpY, z + tmpZ) != CUBE_AIR)
 								break;
+							tmpZ++;
 						}
-						else if (this->at(x + 1, tmpY, z + tmpZ) != CUBE_AIR)
-								break;
-
-						tmpZ++;
+					}
+					else
+					{
+						// Check if every cubes on the next layer are air
+						if ((cpyCubes[(x + 1) + tmpY * CHUNK_SIZE] & airMask) == 0)
+							tmpZ = face.w;
 					}
 
 					if (tmpZ != face.w)
@@ -706,7 +750,7 @@ void	Chunk::createMesh(Map &map)
 						setCubeZ(cpyCubes, x, tmpY, z + i, 0);
 
 					face.h++;
-					tmpY = y + face.h;
+					tmpY++;
 				}
 
 				facesRight.push_back(face);
@@ -763,47 +807,67 @@ void	Chunk::createMesh(Map &map)
 
 				// Extend in z
 				tmpZ = z + face.w;
-				while (tmpZ < CHUNK_SIZE)
+				if (x - 1 < 0)
 				{
-					if (getCubeZ(cpyCubes, x, y, tmpZ) == 0)
+					if (!leftChunk)
 						break;
 
+					while (tmpZ < CHUNK_SIZE)
+					{
+						if (getCubeZ(cpyCubes, x, y, tmpZ) == 0)
+							break;
+
+						if (leftChunk->at(CHUNK_MAX, y, tmpZ) != CUBE_AIR)
+							break;
+
+						setCubeZ(cpyCubes, x, y, tmpZ, 0);
+						face.w++;
+						tmpZ++;
+					}
+				}
+				else
+				{
+					while (tmpZ < CHUNK_SIZE)
+					{
+						if (getCubeZ(cpyCubes, x, y, tmpZ) == 0)
+							break;
+
+						if (this->at(x - 1, y, tmpZ) != CUBE_AIR)
+							break;
+
+						setCubeZ(cpyCubes, x, y, tmpZ, 0);
+						face.w++;
+						tmpZ++;
+					}
+				}
+
+
+				// Extend in y
+				airMask = createLengthMask(face.w) << face.x;
+				tmpY = y + face.h;
+				while (tmpY < CHUNK_HEIGHT)
+				{
+					// Check if every cubes on the high layer aren't air
+					if ((cpyCubes[x + tmpY * CHUNK_SIZE] & airMask) != airMask)
+						break;
+
+					tmpZ = 0;
 					if (x - 1 < 0)
 					{
 						if (!leftChunk)
 							break;
-						if (leftChunk->at(CHUNK_MAX, y, tmpZ) != CUBE_AIR)
-							break;
-					}
-					else if (this->at(x - 1, y, tmpZ) != CUBE_AIR)
-							break;
-
-					setCubeZ(cpyCubes, x, y, tmpZ, 0);
-					face.w++;
-					tmpZ = z + face.w;
-				}
-
-				// Extend in y
-				tmpY = y + face.h;
-				while (tmpY < CHUNK_HEIGHT)
-				{
-					tmpZ = 0;
-					while (tmpZ < face.w)
-					{
-						if (getCubeZ(cpyCubes, x, tmpY, z + tmpZ) == 0)
-							break;
-
-						if (x - 1 < 0)
+						while (tmpZ < face.w)
 						{
-							if (!leftChunk)
-								break;
 							if (leftChunk->at(CHUNK_MAX, tmpY, z + tmpZ) != CUBE_AIR)
 								break;
+							tmpZ++;
 						}
-						else if (this->at(x - 1, tmpY, z + tmpZ) != CUBE_AIR)
-								break;
-
-						tmpZ++;
+					}
+					else
+					{
+						// Check if every cubes on the next layer are air
+						if ((cpyCubes[(x - 1) + tmpY * CHUNK_SIZE] & airMask) == 0)
+							tmpZ = face.w;
 					}
 
 					if (tmpZ != face.w)
@@ -813,7 +877,7 @@ void	Chunk::createMesh(Map &map)
 						setCubeZ(cpyCubes, x, tmpY, z + i, 0);
 
 					face.h++;
-					tmpY = y + face.h;
+					tmpY++;
 				}
 
 				facesLeft.push_back(face);
@@ -856,43 +920,55 @@ void	Chunk::createMesh(Map &map)
 
 				// Extend in z
 				tmpZ = z + face.h;
-				while (tmpZ < CHUNK_SIZE)
+				if (y + 1 < CHUNK_HEIGHT)
 				{
-					if (getCubeZ(cpyCubes, x, y, tmpZ) == 0)
-						break;
+					while (tmpZ < CHUNK_SIZE)
+					{
+						if (getCubeZ(cpyCubes, x, y, tmpZ) == 0)
+							break;
 
-					if (y + 1 < CHUNK_HEIGHT && this->at(x, y + 1, tmpZ) != CUBE_AIR)
-						break;
+						if (this->at(x, y + 1, tmpZ) != CUBE_AIR)
+							break;
 
-					setCubeZ(cpyCubes, x, y, tmpZ, 0);
-					face.h++;
-					tmpZ = z + face.h;
+						setCubeZ(cpyCubes, x, y, tmpZ, 0);
+						face.h++;
+						tmpZ++;
+					}
+				}
+				else
+				{
+					while (tmpZ < CHUNK_SIZE)
+					{
+						if (getCubeZ(cpyCubes, x, y, tmpZ) == 0)
+							break;
+
+						setCubeZ(cpyCubes, x, y, tmpZ, 0);
+						face.h++;
+						tmpZ++;
+					}
 				}
 
 				// Extend in x
+				airMask = createLengthMask(face.h) << face.y;
 				tmpX = x + face.w;
 				while (tmpX < CHUNK_SIZE)
 				{
-					tmpZ = 0;
-					while (tmpZ < face.h)
-					{
-						if (getCubeZ(cpyCubes, tmpX, y, z + tmpZ) == 0)
-							break;
-
-						if (y + 1 < CHUNK_HEIGHT && this->at(tmpX, y + 1, z + tmpZ) != CUBE_AIR)
-							break;
-
-						tmpZ++;
-					}
-
-					if (tmpZ != face.h)
+					// Check if every cubes on the high layer aren't air
+					if ((cpyCubes[tmpX + y * CHUNK_SIZE] & airMask) != airMask)
 						break;
+
+					if (y + 1 < CHUNK_HEIGHT)
+					{
+						// Check if every cubes on the next layer are air
+						if ((cpyCubes[tmpX + (y + 1) * CHUNK_SIZE] & airMask) != 0)
+							break;
+					}
 
 					for (int i = 0; i < face.h; i++)
 						setCubeZ(cpyCubes, tmpX, y, z + i, 0);
 
 					face.w++;
-					tmpX = x + face.w;
+					tmpX++;
 				}
 
 				facesUp.push_back(face);
@@ -935,43 +1011,55 @@ void	Chunk::createMesh(Map &map)
 
 				// Extend in z
 				tmpZ = z + face.h;
-				while (tmpZ < CHUNK_SIZE)
+				if (y - 1 >= 0)
 				{
-					if (getCubeZ(cpyCubes, x, y, tmpZ) == 0)
-						break;
+					while (tmpZ < CHUNK_SIZE)
+					{
+						if (getCubeZ(cpyCubes, x, y, tmpZ) == 0)
+							break;
 
-					if (y - 1 >= 0 && this->at(x, y - 1, tmpZ) != CUBE_AIR)
-						break;
+						if (this->at(x, y - 1, tmpZ) != CUBE_AIR)
+							break;
 
-					setCubeZ(cpyCubes, x, y, tmpZ, 0);
-					face.h++;
-					tmpZ = z + face.h;
+						setCubeZ(cpyCubes, x, y, tmpZ, 0);
+						face.h++;
+						tmpZ++;
+					}
+				}
+				else
+				{
+					while (tmpZ < CHUNK_SIZE)
+					{
+						if (getCubeZ(cpyCubes, x, y, tmpZ) == 0)
+							break;
+
+						setCubeZ(cpyCubes, x, y, tmpZ, 0);
+						face.h++;
+						tmpZ++;
+					}
 				}
 
 				// Extend in x
+				airMask = createLengthMask(face.h) << face.y;
 				tmpX = x + face.w;
 				while (tmpX < CHUNK_SIZE)
 				{
-					tmpZ = 0;
-					while (tmpZ < face.h)
-					{
-						if (getCubeZ(cpyCubes, tmpX, y, z + tmpZ) == 0)
-							break;
-
-						if (y - 1 >= 0 && this->at(tmpX, y - 1, z + tmpZ) != CUBE_AIR)
-							break;
-
-						tmpZ++;
-					}
-
-					if (tmpZ != face.h)
+					// Check if every cubes on the high layer aren't air
+					if ((cpyCubes[tmpX + y * CHUNK_SIZE] & airMask) != airMask)
 						break;
+
+					if (y - 1 >= 0)
+					{
+						// Check if every cubes on the next layer are air
+						if ((cpyCubes[tmpX + (y - 1) * CHUNK_SIZE] & airMask) != 0)
+							break;
+					}
 
 					for (int i = 0; i < face.h; i++)
 						setCubeZ(cpyCubes, tmpX, y, z + i, 0);
 
 					face.w++;
-					tmpX = x + face.w;
+					tmpX++;
 				}
 
 				facesDown.push_back(face);
@@ -1146,4 +1234,15 @@ static void	setCubeZ(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z, 
 		cubesBitmap[id] += mask;
 	else
 		cubesBitmap[id] -= mask;
+}
+
+
+static int32_t	createLengthMask(int length)
+{
+	int32_t	res = 0;
+
+	for (int i = 0; i < length; i++)
+		res += (0b1 << i);
+
+	return (res);
 }
