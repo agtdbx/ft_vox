@@ -11,24 +11,25 @@ const gm::Vec2f	vecLeftBot = {1.0, -1.0};
 
 static void	generate_perlin_noise(
 				int *perlin_noise,
-                int seed)
+                int seed,
+				int perlin_noise_size)
 {
 	int	shuffleIndex, tmp;
 
 	srand(seed);
-	for (int i = 0; i < PERLIN_NOISE_SIZE; i++)
+	for (int i = 0; i < perlin_noise_size; i++)
 		perlin_noise[i] = i;
 
-	for (int i = 0; i < PERLIN_NOISE_SIZE; i++)
+	for (int i = 0; i < perlin_noise_size; i++)
 	{
-		shuffleIndex = rand() % PERLIN_NOISE_SIZE;
+		shuffleIndex = rand() % perlin_noise_size;
 		tmp = perlin_noise[i];
 		perlin_noise[i] = perlin_noise[shuffleIndex];
 		perlin_noise[shuffleIndex] = tmp;
 	}
 
-	for (int i = 0; i < PERLIN_NOISE_SIZE; i++)
-		perlin_noise[i + PERLIN_NOISE_SIZE] = perlin_noise[i];
+	for (int i = 0; i < perlin_noise_size; i++)
+		perlin_noise[i + perlin_noise_size] = perlin_noise[i];
 }
 
 
@@ -51,12 +52,20 @@ static float	lerp(
 //---- Constructors ------------------------------------------------------------
 PerlinNoise::PerlinNoise(void)
 {
-    generate_perlin_noise(this->perlin_noise, SEED);
+	this->perlin_noise_size = PERLIN_NOISE_SIZE;
+	this->perlin_noise_list_size = this->perlin_noise_size * 2;
+	this->perlin_noise_mask = this->perlin_noise_list_size - 1;
+	this->perlin_noise.resize(this->perlin_noise_list_size);
+    generate_perlin_noise(this->perlin_noise.data(), SEED, this->perlin_noise_size);
 }
 
-PerlinNoise::PerlinNoise(int seed)
+PerlinNoise::PerlinNoise(int seed, int perlin_noise_size)
 {
-    generate_perlin_noise(this->perlin_noise, seed);
+	this->perlin_noise_size = perlin_noise_size;
+	this->perlin_noise_list_size = this->perlin_noise_size * 2;
+	this->perlin_noise_mask = this->perlin_noise_list_size - 1;
+	this->perlin_noise.resize(this->perlin_noise_list_size);
+    generate_perlin_noise(this->perlin_noise.data(), seed, this->perlin_noise_size);
 }
 
 //---- Destructor ------------------------------------------------------------
@@ -76,11 +85,11 @@ float PerlinNoise::getNoise(float x, float y)
                 dotLeftTop, dotRightTop, dotLeftBot, dotRightBot,
                 topValue, botValue;
 
-    x *= PERLIN_NOISE_SIZE;
-	y *= PERLIN_NOISE_SIZE;
+    x *= this->perlin_noise_size;
+	y *= this->perlin_noise_size;
 
-	pnX = ((int)x) & PERLIN_NOISE_MASK;
-	pnY = ((int)y) & PERLIN_NOISE_MASK;
+	pnX = ((int)x) & this->perlin_noise_mask;
+	pnY = ((int)y) & this->perlin_noise_mask;
 
 	x_ratio = x - ((int)x);
 	y_ratio = y - ((int)y);
@@ -109,8 +118,7 @@ float PerlinNoise::getNoise(float x, float y)
     float   perlinValue = lerp(botValue, topValue, y_ratio);
     float   perlinNormalize = (perlinValue + 1.0f) / 2.0f;
 
-	//TODO faire sa + tard
-	return (perlinNormalize * 32.0f + 48.0f);
+	return (perlinNormalize);
 }
 
 //**** PRIVATE METHODS *********************************************************

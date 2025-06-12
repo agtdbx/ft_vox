@@ -2,16 +2,10 @@
 # define PERLINNOISE_HPP
 
 # include <gmath.hpp>
+# include <vector>
 
 #define SEED 42
 #define PERLIN_NOISE_SIZE 64 //must be a power of 2
-const int PERLIN_NOISE_LIST_SIZE = PERLIN_NOISE_SIZE * 2;
-const int PERLIN_NOISE_MASK = PERLIN_NOISE_LIST_SIZE - 1;
-
-#define GENERATION 1
-#define TERRAIN 2
-#define BIOME 3
-
 
 /**
  * @brief PerlinNoise class.
@@ -34,9 +28,11 @@ public:
 	 *
 	 * @param seed The seed of the perlin.
 	 *
+	 * @param perlin_noise_size The size of the perlin noise.
+	 *
 	 * @return The default PerlinNoise.
 	 */
-	PerlinNoise(int seed);
+	PerlinNoise(int seed, int perlin_noise_size);
 
 //---- Destructor --------------------------------------------------------------
 	/**
@@ -62,8 +58,11 @@ public:
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
 
-    int			perlin_noise[PERLIN_NOISE_LIST_SIZE]  = {0};
-    int         seed;
+    std::vector<int>	perlin_noise;
+    int         		seed;
+	int 				perlin_noise_size;
+	int 				perlin_noise_list_size;
+	int 				perlin_noise_mask;
 
 //**** PRIVATE METHODS *********************************************************
 

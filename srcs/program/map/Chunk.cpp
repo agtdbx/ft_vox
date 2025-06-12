@@ -4,9 +4,9 @@
 
 #include <unordered_map>
 
-PerlinNoise PerlinGeration(42);
-PerlinNoise PerlinTerrain(854);
-PerlinNoise PerlinBiome(654);
+PerlinNoise PerlinGeration(42, 64);
+PerlinNoise PerlinTerrain(854, 2);
+PerlinNoise PerlinBiome(654, 4096);
 
 //**** STATIC FUNCTIONS DEFINE *************************************************
 
@@ -133,6 +133,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 	int tmpX = 0;
 	int tmpZ = 0;
 	float Biome = 0;
+	float Moutain = 0;
 	for (int x = 0; x < CHUNK_SIZE; x++)
 	{
 		for (int z = 0; z < CHUNK_SIZE; z++)
@@ -148,23 +149,37 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 			perlinX = (float)tmpX / (float)MAP_SIZE;
 			perlinZ = (float)tmpZ / (float)MAP_SIZE;
 
-			maxSize = PerlinGeration.getNoise(perlinX, perlinZ);
-			Biome = 30;
+			//TODO Moutain will need a lot tweaking (Biome need more chunk to see if he is garbage) 
+			maxSize = (PerlinGeration.getNoise(perlinX, perlinZ) * 32.0f + 48.0f);
+			Biome = (PerlinBiome.getNoise(perlinX, perlinZ));
+			Moutain = (PerlinTerrain.getNoise(perlinX, perlinZ));
+			if (Moutain < 0.2)
+				maxSize = maxSize - (Moutain * 32.0f + 48.0f);
+			else if (Moutain > 0.8)
+				maxSize = maxSize + (Moutain * 32.0f + 48.0f);
+			if (maxSize < 0)
+				maxSize = 1;
 			for (int y = 0; y < CHUNK_HEIGHT; y++)
 			{
 				int	id = x + z * CHUNK_SIZE + y * CHUNK_SIZE2;
-				//TODO change blocType with perlin noise for different biome
 				if (y > (int)maxSize && y > 58)
 					this->cubes[id] = CUBE_AIR;
 				else if (y > (int)maxSize && y <= 58)
-					this->cubes[id] = CUBE_WATER;
+				{
+					if (Biome > 0.7)
+							this->cubes[id] = CUBE_LAVA;
+						else if (Biome < 0.3)
+							this->cubes[id] = CUBE_ICE;
+						else
+							this->cubes[id] = CUBE_WATER;
+				}
 				else
 				{
 					if (y > 57 && y == (int)maxSize)
 					{
-						if (Biome > 58)
+						if (Biome > 0.7)
 							this->cubes[id] = CUBE_SAND;
-						else if (Biome < 20)
+						else if (Biome < 0.3)
 							this->cubes[id] = CUBE_SNOW;
 						else
 							this->cubes[id] = CUBE_GRASS;
