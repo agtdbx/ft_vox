@@ -1,11 +1,13 @@
 #include <program/map/PerlinNoise.hpp>
 
-//TODO check si sa marche apres est si oui la mettre en mode jolie comme auguste
+//**** STATIC Variable *************************************************
 
 const gm::Vec2f	vecLeftTop = {1.0, 1.0};
 const gm::Vec2f	vecRightTop = {-1.0, 1.0};
 const gm::Vec2f	vecRightBot = {-1.0, -1.0};
 const gm::Vec2f	vecLeftBot = {1.0, -1.0};
+
+//**** STATIC FUNCTIONS *************************************************
 
 static void	generate_perlin_noise(
 				int *perlin_noise,
@@ -46,6 +48,7 @@ static float	lerp(
 
 // ########################## CLASS #################################################3
 
+//---- Constructors ------------------------------------------------------------
 PerlinNoise::PerlinNoise(void)
 {
     generate_perlin_noise(this->perlin_noise, SEED);
@@ -56,30 +59,14 @@ PerlinNoise::PerlinNoise(int seed)
     generate_perlin_noise(this->perlin_noise, seed);
 }
 
+//---- Destructor ------------------------------------------------------------
 PerlinNoise::~PerlinNoise()
 {
 
 }
 
-gm::Vec2f	PerlinNoise::get_constant_vector(
-					int value)
-{
-	static	gm::Vec2f	vecLeftTop = {1.0, 1.0};
-	static	gm::Vec2f	vecRightTop = {-1.0, 1.0};
-	static	gm::Vec2f	vecRightBot = {-1.0, -1.0};
-	static	gm::Vec2f	vecLeftBot = {1.0, -1.0};
-	int				height;
-
-	height = value & 3;
-	if (height == 0)
-		return (vecLeftTop);
-	else if (height == 1)
-		return (vecRightTop);
-	else if (height == 2)
-		return (vecRightBot);
-	return (vecLeftBot);
-}
-
+//**** ACCESSORS ***************************************************************
+//---- Getters -----------------------------------------------------------------
 float PerlinNoise::getNoise(float x, float y)
 {  
 	int			pnX, pnY;
@@ -124,4 +111,24 @@ float PerlinNoise::getNoise(float x, float y)
 
 	//TODO faire sa + tard
 	return (perlinNormalize * 32.0f + 48.0f);
+}
+
+//**** PRIVATE METHODS *********************************************************
+gm::Vec2f	PerlinNoise::get_constant_vector(
+					int value)
+{
+	static	gm::Vec2f	vecLeftTop = {1.0, 1.0};
+	static	gm::Vec2f	vecRightTop = {-1.0, 1.0};
+	static	gm::Vec2f	vecRightBot = {-1.0, -1.0};
+	static	gm::Vec2f	vecLeftBot = {1.0, -1.0};
+	int				height;
+
+	height = value & 3;
+	if (height == 0)
+		return (vecLeftTop);
+	else if (height == 1)
+		return (vecRightTop);
+	else if (height == 2)
+		return (vecRightBot);
+	return (vecLeftBot);
 }
