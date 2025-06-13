@@ -219,6 +219,11 @@ void	TextureManager::createTextureSampler(
 	// samplerInfo.minFilter = VK_FILTER_LINEAR;
 	samplerInfo.magFilter = VK_FILTER_NEAREST;
 	samplerInfo.minFilter = VK_FILTER_NEAREST;
+	// VK_SAMPLER_ADDRESS_MODE_REPEAT
+	// VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT
+	// VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
+	// VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE
+	// VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER
 	samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
@@ -231,7 +236,8 @@ void	TextureManager::createTextureSampler(
 	// samplerInfo.maxAnisotropy = 1.0f;
 
 	samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-	samplerInfo.unnormalizedCoordinates = VK_FALSE; // False : pixel in range [0, 1[ | True : pixel in range [0, width[
+	// samplerInfo.unnormalizedCoordinates = VK_FALSE; // False : pixel in range [0, 1[ | True : pixel in range [0, width[
+	samplerInfo.unnormalizedCoordinates = VK_TRUE; // False : pixel in range [0, 1[ | True : pixel in range [0, width[
 	samplerInfo.compareEnable = VK_FALSE;
 	samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;

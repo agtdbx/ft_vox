@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   define.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
+/*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/12 11:29:58 by gugus            ###   ########.fr       */
+/*   Updated: 2025/06/13 13:56:20 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,12 +52,8 @@ const int	CHUNK_TOTAL_SIZE = CHUNK_SIZE2 * CHUNK_HEIGHT;
 const int	CHUNK_MASK_SIZE = CHUNK_SIZE * CHUNK_HEIGHT;
 
 const std::vector<std::string>	CUBE_TEXTURES = {
-	"grass-up", "dirt-up", "stone-up", "water-up", "snow-up",
-	"ice-up", "sand-up", "lava-up", "iron-up", "diamond-up",
-	"grass-side", "dirt-side", "stone-side", "water-side", "snow-side",
-	"ice-side", "sand-side", "lava-side", "iron-side", "diamond-side",
-	"grass-down", "dirt-down", "stone-down", "water-down", "snow-down",
-	"ice-down", "sand-down", "lava-down", "iron-down", "diamond-down"
+	// "cubes",
+	"test",
 };
 
 // Cluster defines
