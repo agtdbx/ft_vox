@@ -45,6 +45,8 @@ static void	loadTextures(Engine &engine)
 	{
 		engine.textureManager.addTexture(name, "data/textures/" + name +".png");
 	}
+
+	engine.textureManager.createImageArray(engine, "cubeTextures", CUBE_TEXTURES);
 }
 
 

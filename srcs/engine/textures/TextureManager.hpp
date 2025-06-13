@@ -29,6 +29,7 @@ struct Image
 	VkDeviceMemory	memory;
 	VkImageView		view;
 	VkSampler		sampler;
+	uint32_t		nbLayer;
 };
 
 struct Engine;
@@ -89,13 +90,26 @@ public:
 	/**
 	 * @brief Create an image usable for vulkan.
 	 *
-	 * @param imageId Id of the created image.
-	 * @param textureId If of the texture used of create the image.
 	 * @param engine The engine struct.
+	 * @param imageId Id of the created image.
+	 * @param textureId Id of the texture used to create the image.
 	 *
 	 * @exception Throw an runtime_error if imageId is already used or if textureId isn't exist.
 	 */
-	void	createImage(std::string imageId, std::string textureId, Engine &engine);
+	void	createImage(Engine &engine, std::string imageId, std::string textureId);
+	/**
+	 * @brief Create an image array usable for vulkan.
+	 *
+	 * @param engine The engine struct.
+	 * @param imageId Id of the created image.
+	 * @param textureIds Vector or texture's id used to create the image array.
+	 *
+	 * @exception Throw an runtime_error if imageId is already used or if textureId isn't exist.
+	 */
+	void	createImageArray(
+				Engine &engine,
+				std::string imageId,
+				const std::vector<std::string> &textureIds);
 	/**
 	 * @brief Create all image usable for vulkan from all textures.
 	 *
@@ -125,7 +139,7 @@ private:
 	 * @param device The device of VulkanContext class.
 	 * @param physicalDevice The physical device of VulkanContext class.
 	 * @param commandPool The command pool for run the creation of image.
-	 * @param texture The used for creation of image.
+	 * @param texture The texture used for creation of image.
 	 * @param image The image to create.
 	 * @param memory The image memory for allocation.
 	 */
@@ -134,13 +148,43 @@ private:
 				const VulkanCommandPool &commandPool,
 				Texture &texture, VkImage &image, VkDeviceMemory &memory);
 	/**
+	 * @brief Create a texture image from a texture.
+	 *
+	 * @param device The device of VulkanContext class.
+	 * @param physicalDevice The physical device of VulkanContext class.
+	 * @param commandPool The command pool for run the creation of image.
+	 * @param textures The textures used for creation of image array.
+	 * @param image The image to create.
+	 * @param memory The image memory for allocation.
+	 */
+	void	createTextureImageArray(
+				VkDevice device, VkPhysicalDevice physicalDevice,
+				const VulkanCommandPool &commandPool,
+				std::vector<Texture*> &textures, VkImage &image,
+				VkDeviceMemory &memory);
+	/**
 	 * @brief Create an image view from an image.
 	 *
 	 * @param device The device of VulkanContext class.
 	 * @param image The image used for create view.
 	 * @param view The view to create.
 	 */
-	void	createTextureImageView(VkDevice device, VkImage &image, VkImageView &view);
+	void	createTextureImageView(
+				VkDevice device,
+				VkImage &image,
+				VkImageView &view);
+	/**
+	 * @brief Create an image array view from an image array.
+	 *
+	 * @param device The device of VulkanContext class.
+	 * @param image The image used for create view.
+	 * @param view The view to create.
+	 */
+	void	createTextureImageArrayView(
+				VkDevice device,
+				VkImage &image,
+				VkImageView &view,
+				uint32_t nbLayer);
 	/**
 	 * @brief Create a sampler for an image.
 	 *

@@ -82,7 +82,7 @@ void	TextureManager::addTexture(std::string id, std::string texturePath)
 }
 
 
-void	TextureManager::createImage(std::string imageId, std::string textureId, Engine &engine)
+void	TextureManager::createImage(Engine &engine, std::string imageId, std::string textureId)
 {
 	std::unordered_map<std::string, Image>::iterator itImg = this->images.find(imageId);
 
@@ -102,6 +102,59 @@ void	TextureManager::createImage(std::string imageId, std::string textureId, Eng
 								itTex->second, image.image, image.memory);
 	this->createTextureImageView(device, image.image, image.view);
 	this->createTextureSampler(device, physicalDevice, image.sampler);
+	image.nbLayer = 1;
+
+	this->images[imageId] = image;
+}
+
+
+void	TextureManager::createImageArray(
+							Engine &engine,
+							std::string imageId,
+							const std::vector<std::string> &textureIds)
+{
+	std::unordered_map<std::string, Image>::iterator itImg = this->images.find(imageId);
+
+	if (itImg != this->images.end())
+		throw std::runtime_error("Image array error : id '" + imageId + "' is already used");
+
+	std::unordered_map<std::string, Texture>::iterator itTex;
+
+	uint32_t	nbTexture = textureIds.size();
+	if (nbTexture == 0)
+		throw std::runtime_error("Image array error : cannot create empty array");
+
+	int	width = -1;
+	int	height = -1;
+	std::vector<Texture *>	arrayTextures(nbTexture);
+
+	for (uint32_t i = 0; i < nbTexture; i++)
+	{
+		itTex = this->textures.find(textureIds[i]);
+
+		if (itTex == this->textures.end())
+			throw std::runtime_error("Image array error : texture id '" + textureIds[i] + "' not found");
+
+		if (width == -1)
+		{
+			width = itTex->second.width;
+			height = itTex->second.height;
+		}
+		else if (width != itTex->second.width || height != itTex->second.height)
+			throw std::runtime_error("Image array error : texture id '" + textureIds[i] + "' must be at the size "
+										+ "than the rest of texture in array");
+		arrayTextures[i] = &itTex->second;
+	}
+
+	VkDevice device = engine.context.getDevice();
+	VkPhysicalDevice physicalDevice = engine.context.getPhysicalDevice();
+	Image	image;
+
+	this->createTextureImageArray(device, physicalDevice, engine.commandPool,
+									arrayTextures, image.image, image.memory);
+	this->createTextureImageArrayView(device, image.image, image.view, nbTexture);
+	this->createTextureSampler(device, physicalDevice, image.sampler);
+	image.nbLayer = nbTexture;
 
 	this->images[imageId] = image;
 }
@@ -127,6 +180,7 @@ void	TextureManager::createAllImages(Engine &engine)
 									itTex->second, image.image, image.memory);
 		this->createTextureImageView(device, image.image, image.view);
 		this->createTextureSampler(device, physicalDevice, image.sampler);
+		image.nbLayer = 1;
 
 		this->images[imageId] = image;
 
@@ -197,11 +251,86 @@ void	TextureManager::createTextureImage(
 }
 
 
-void	TextureManager::createTextureImageView(VkDevice device, VkImage &image, VkImageView &view)
+void	TextureManager::createTextureImageArray(
+							VkDevice device, VkPhysicalDevice physicalDevice,
+							const VulkanCommandPool &commandPool,
+							std::vector<Texture*> &textures, VkImage &image,
+							VkDeviceMemory &memory)
+{
+	uint32_t	nbLayer = textures.size();
+	uint32_t	layerSize = textures[0]->imageSize;
+	uint32_t	layerWidth = static_cast<uint32_t>(textures[0]->width);
+	uint32_t	layerHeight = static_cast<uint32_t>(textures[0]->height);
+	uint32_t	totalArraySize = nbLayer * layerSize;
+
+	// Create temporary texture buffer
+	VkBuffer		stagingBuffer;
+	VkDeviceMemory	stagingBufferMemory;
+
+	createVulkanBuffer(device, physicalDevice,
+						totalArraySize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+						VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+						stagingBuffer, stagingBufferMemory);
+
+	// Copy image into temporary texture buffer
+	void	*data;
+	vkMapMemory(device, stagingBufferMemory, 0, layerSize, 0, &data);
+	for (uint32_t i = 0; i < nbLayer; i++)
+	{
+		memcpy((char *)data + i * layerSize,
+				textures[i]->pixels,
+				static_cast<size_t>(layerSize));
+	}
+	vkUnmapMemory(device, stagingBufferMemory);
+
+	// Create texture
+	createVulkanImageArray(
+		device, physicalDevice,
+		layerWidth, layerHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
+		VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, image, memory, nbLayer);
+
+	// Put image into optimize format for copy data in it
+	transitionImageArrayLayout(
+		commandPool, image, VK_FORMAT_R8G8B8A8_SRGB,
+		VK_IMAGE_LAYOUT_UNDEFINED,
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, nbLayer);
+	// Copy temporary buffet into image
+	copyBufferToImageArray(
+		commandPool, stagingBuffer, image,
+		layerWidth, layerHeight, nbLayer);
+	// Put image into optimize format for shader
+	transitionImageArrayLayout(
+		commandPool, image, VK_FORMAT_R8G8B8A8_SRGB,
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, nbLayer);
+
+	vkDestroyBuffer(device, stagingBuffer, nullptr);
+	vkFreeMemory(device, stagingBufferMemory, nullptr);
+}
+
+
+void	TextureManager::createTextureImageView(
+							VkDevice device,
+							VkImage &image,
+							VkImageView &view)
 {
 	view = createVulkanImageView(
 			device, image,
 			VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+}
+
+
+void	TextureManager::createTextureImageArrayView(
+							VkDevice device,
+							VkImage &image,
+							VkImageView &view,
+							uint32_t nbLayer)
+{
+	view = createVulkanImageArrayView(
+			device, image,
+			VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT,
+			nbLayer);
 }
 
 

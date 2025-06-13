@@ -59,8 +59,8 @@ void	Map::init(
 				Camera &camera,
 				ChunkShader &chunkShader)
 {
-	gm::Vec3i minChunk = gm::Vec2i(-4, -4);
-	gm::Vec3i maxChunk = gm::Vec2i(4, 4);
+	gm::Vec2i minChunk = gm::Vec2i(-4, -4);
+	gm::Vec2i maxChunk = gm::Vec2i(4, 4);
 	std::size_t	hash;
 
 	PerfLogger	perfLogger;
