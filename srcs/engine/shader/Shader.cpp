@@ -86,38 +86,38 @@ void	Shader::destroy(Engine &engine)
 
 void	Shader::createDescriptorSetLayout(VkDevice device)
 {
-	size_t	nbUbo = this->bufferInfos.size();
+	size_t	nbBuffers = this->bufferInfos.size();
 	size_t	nbImages = this->imageInfos.size();
 
-	std::vector<VkDescriptorSetLayoutBinding> bindings(nbUbo + nbImages);
+	std::vector<VkDescriptorSetLayoutBinding> bindings(nbBuffers + nbImages);
 
 	// Bind uniforms to shaders
-	std::vector<VkDescriptorSetLayoutBinding> uboLayoutBindings(nbUbo);
-	for (size_t i = 0; i < nbUbo; i++)
+	std::vector<VkDescriptorSetLayoutBinding> bufferLayoutBindings(nbBuffers);
+	for (size_t i = 0; i < nbBuffers; i++)
 	{
-		uboLayoutBindings[i].binding = i;
-		uboLayoutBindings[i].descriptorCount = 1;
+		bufferLayoutBindings[i].binding = i;
+		bufferLayoutBindings[i].descriptorCount = 1;
 		if (this->bufferInfos[i].type == BUFFER_UBO)
-			uboLayoutBindings[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			bufferLayoutBindings[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		else // SSBO
-			uboLayoutBindings[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		uboLayoutBindings[i].pImmutableSamplers = nullptr; // Optional
-		uboLayoutBindings[i].stageFlags = 0;
+			bufferLayoutBindings[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		bufferLayoutBindings[i].pImmutableSamplers = nullptr; // Optional
+		bufferLayoutBindings[i].stageFlags = 0;
 		if (this->bufferInfos[i].stage & STAGE_COMPUTE)
-			uboLayoutBindings[i].stageFlags = uboLayoutBindings[i].stageFlags | VK_SHADER_STAGE_COMPUTE_BIT;
+			bufferLayoutBindings[i].stageFlags = bufferLayoutBindings[i].stageFlags | VK_SHADER_STAGE_COMPUTE_BIT;
 		if (this->bufferInfos[i].stage & STAGE_VERTEX)
-			uboLayoutBindings[i].stageFlags = uboLayoutBindings[i].stageFlags | VK_SHADER_STAGE_VERTEX_BIT;
+			bufferLayoutBindings[i].stageFlags = bufferLayoutBindings[i].stageFlags | VK_SHADER_STAGE_VERTEX_BIT;
 		if (this->bufferInfos[i].stage & STAGE_FRAGMENT)
-			uboLayoutBindings[i].stageFlags = uboLayoutBindings[i].stageFlags | VK_SHADER_STAGE_FRAGMENT_BIT;
+			bufferLayoutBindings[i].stageFlags = bufferLayoutBindings[i].stageFlags | VK_SHADER_STAGE_FRAGMENT_BIT;
 
-		bindings[i] = uboLayoutBindings[i];
+		bindings[i] = bufferLayoutBindings[i];
 	}
 
 	// Bind sampler to shaders
 	std::vector<VkDescriptorSetLayoutBinding> samplerLayoutBindings(nbImages);
 	for (size_t i = 0; i < nbImages; i++)
 	{
-		samplerLayoutBindings[i].binding = nbUbo + i;
+		samplerLayoutBindings[i].binding = nbBuffers + i;
 		samplerLayoutBindings[i].descriptorCount = 1;
 		samplerLayoutBindings[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		samplerLayoutBindings[i].pImmutableSamplers = nullptr;
@@ -129,7 +129,7 @@ void	Shader::createDescriptorSetLayout(VkDevice device)
 		if (this->imageInfos[i].stage & STAGE_FRAGMENT)
 			samplerLayoutBindings[i].stageFlags = samplerLayoutBindings[i].stageFlags | VK_SHADER_STAGE_FRAGMENT_BIT;
 
-		bindings[nbUbo + i] = samplerLayoutBindings[i];
+		bindings[nbBuffers + i] = samplerLayoutBindings[i];
 	}
 
 	VkDescriptorSetLayoutCreateInfo layoutInfo{};

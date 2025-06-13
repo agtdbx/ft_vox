@@ -120,10 +120,12 @@ public:
 	 * @brief Update uniform values used by shader.destroy
 	 *
  	 * @param window Window class of the engine.
-	 * @param ubo Pointer of uniform values struct used for update.
-	 * @param uboId Id of ubo in init vector. Id isn't check for speed, will crash if pass an incorect id.
+	 * @param buffer Pointer of buffer values struct used for update.
+	 * @param bufferId Id of buffer in init vector.
+	 *
+	 * @warning Id isn't check for speed, will crash if pass an incorect id.
 	 */
-	void	updateUBO(Window &window, void *ubo, int uboId);
+	void	updateBuffer(Window &window, void *buffer, int bufferId);
 
 //**** STATIC METHODS **********************************************************
 

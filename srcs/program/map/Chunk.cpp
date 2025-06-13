@@ -268,8 +268,14 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 
 	endLog(perfLogger.generation);
 
-	for (int i = 0; i < CHUNK_TOTAL_SIZE; i++)
-		this->uboCubes.cubes[i] = this->cubes[i];
+	for (int i = 0; i < CHUNK_SSBO_SIZE; i++)
+	{
+		id = i * 4;
+		this->uboCubes.cubes[i] = this->cubes[id] |
+									this->cubes[id + 1] << 8 |
+									this->cubes[id + 2] << 16 |
+									this->cubes[id + 3] << 24;
+	}
 }
 
 
@@ -294,19 +300,19 @@ void	Chunk::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 	// Draw mesh
 	if (!chunkShader.shaderFdfEnable)
 	{
-		this->shaderParam.updateUBO(engine.window, &this->uboPos, 0);
-		this->shaderParam.updateUBO(engine.window, &this->uboCubes, 1);
+		this->shaderParam.updateBuffer(engine.window, &this->uboPos, 0);
+		this->shaderParam.updateBuffer(engine.window, &this->uboCubes, 1);
 		engine.window.drawMesh(this->mesh, chunkShader.shader, this->shaderParam);
 	}
 	else
 	{
-		this->shaderParamFdf.updateUBO(engine.window, &this->uboPos, 0);
+		this->shaderParamFdf.updateBuffer(engine.window, &this->uboPos, 0);
 		engine.window.drawMesh(this->mesh, chunkShader.shaderFdf, this->shaderParamFdf);
 	}
 
 	if (chunkShader.shaderBorderEnable)
 	{
-		this->shaderParamBorder.updateUBO(engine.window, &this->uboPos, 0);
+		this->shaderParamBorder.updateBuffer(engine.window, &this->uboPos, 0);
 		engine.window.drawMesh(this->borderMesh, chunkShader.shaderBorder, this->shaderParamBorder);
 	}
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   shaderStruct.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/11 11:14:27 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/06/13 19:30:26 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ struct UBO3DChunkPos {
 };
 
 struct UBO3DChunkCubes {
-	int	cubes[CHUNK_TOTAL_SIZE];
+	uint32_t	cubes[CHUNK_SSBO_SIZE];
 };
 
 #endif

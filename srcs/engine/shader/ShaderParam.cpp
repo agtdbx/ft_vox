@@ -93,10 +93,10 @@ void	ShaderParam::destroy(Engine &engine)
 }
 
 
-void	ShaderParam::updateUBO(Window &window, void *ubo, int uboId)
+void	ShaderParam::updateBuffer(Window &window, void *buffer, int bufferId)
 {
-	int	bufferId = window.getCurrentFrame() * this->bufferInfos.size() + uboId;
-	memcpy(this->uniformBuffersMapped[bufferId], ubo, this->bufferInfos[uboId].size);
+	int	id = window.getCurrentFrame() * this->bufferInfos.size() + bufferId;
+	memcpy(this->uniformBuffersMapped[id], buffer, this->bufferInfos[bufferId].size);
 }
 
 //**** STATIC METHODS **********************************************************

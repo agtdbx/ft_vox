@@ -1,8 +1,8 @@
 #version 450
 
 // Cubes array input
-layout(std430, binding = 1) buffer cubesBuffer {
-    int cubes[262144];
+layout(std430, binding = 1) readonly buffer cubesBuffer {
+    uint cubes[65536]; // 65536 * 4 = 262144
 };
 // Images input
 layout(binding = 2) uniform sampler2DArray sampleCubeTextures;
@@ -17,7 +17,7 @@ layout(location = 0) out vec4   outColor;
 // Constants
 
 // Function
-vec4    getCubeTextureUp(vec2 texCoord, int cubeType)
+vec4    getCubeTextureUp(vec2 texCoord, uint cubeType)
 {
     if  (cubeType < 1 || cubeType  > 10)
         return (vec4(1, 0, 1, 1));
@@ -26,7 +26,7 @@ vec4    getCubeTextureUp(vec2 texCoord, int cubeType)
 }
 
 
-vec4    getCubeTextureSide(vec2 texCoord, int cubeType)
+vec4    getCubeTextureSide(vec2 texCoord, uint cubeType)
 {
     if  (cubeType < 1 || cubeType  > 10)
         return (vec4(1, 0, 1, 1));
@@ -35,12 +35,21 @@ vec4    getCubeTextureSide(vec2 texCoord, int cubeType)
 }
 
 
-vec4    getCubeTextureDown(vec2 texCoord, int cubeType)
+vec4    getCubeTextureDown(vec2 texCoord, uint cubeType)
 {
     if  (cubeType < 1 || cubeType  > 10)
         return (vec4(1, 0, 1, 1));
 
     return (texture(sampleCubeTextures, vec3(texCoord, 20 + cubeType - 1)));
+}
+
+
+uint    getCubeType(int x, int y, int z)
+{
+    int cubeId = x + z * 32 + y * 1024;
+    uint cubeType = (cubes[cubeId >> 2] >> (8 * (cubeId & 3))) & 255;
+
+    return (cubeType);
 }
 
 
@@ -51,8 +60,7 @@ vec4    getUpColor()
     int x = int(fragPosition.x);
     int y = int(fragPosition.y - 0.01);
     int z = int(fragPosition.z);
-    int cubeId = x + z * 32 + y * 1024;
-    int cubeType = cubes[cubeId];
+    uint cubeType = getCubeType(x, y, z);
 
     return (getCubeTextureUp(texCoord, cubeType));
 }
@@ -65,8 +73,7 @@ vec4    getDownColor()
     int x = int(fragPosition.x);
     int y = int(fragPosition.y + 0.01);
     int z = int(fragPosition.z);
-    int cubeId = x + z * 32 + y * 1024;
-    int cubeType = cubes[cubeId];
+    uint cubeType = getCubeType(x, y, z);
 
     return (getCubeTextureDown(texCoord, cubeType));
 }
@@ -79,8 +86,7 @@ vec4    getLeftColor()
     int x = int(fragPosition.x + 0.01);
     int y = int(fragPosition.y);
     int z = int(fragPosition.z);
-    int cubeId = x + z * 32 + y * 1024;
-    int cubeType = cubes[cubeId];
+    uint cubeType = getCubeType(x, y, z);
 
     return (getCubeTextureSide(texCoord, cubeType));
 }
@@ -93,8 +99,7 @@ vec4    getRightColor()
     int x = int(fragPosition.x - 0.01);
     int y = int(fragPosition.y);
     int z = int(fragPosition.z);
-    int cubeId = x + z * 32 + y * 1024;
-    int cubeType = cubes[cubeId];
+    uint cubeType = getCubeType(x, y, z);
 
     return (getCubeTextureSide(texCoord, cubeType));
 }
@@ -107,8 +112,7 @@ vec4    getFrontColor()
     int x = int(fragPosition.x);
     int y = int(fragPosition.y);
     int z = int(fragPosition.z - 0.01);
-    int cubeId = x + z * 32 + y * 1024;
-    int cubeType = cubes[cubeId];
+    uint cubeType = getCubeType(x, y, z);
 
     return (getCubeTextureSide(texCoord, cubeType));
 }
@@ -121,8 +125,7 @@ vec4    getBackColor()
     int x = int(fragPosition.x);
     int y = int(fragPosition.y);
     int z = int(fragPosition.z + 0.01);
-    int cubeId = x + z * 32 + y * 1024;
-    int cubeType = cubes[cubeId];
+    uint cubeType = getCubeType(x, y, z);
 
     return (getCubeTextureSide(texCoord, cubeType));
 }

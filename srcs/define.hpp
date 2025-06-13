@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/12 11:29:58 by gugus            ###   ########.fr       */
+/*   Updated: 2025/06/13 19:30:20 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,8 @@ const int	CHUNK_MAX = CHUNK_SIZE - 1;
 const int	CHUNK_SIZE2 = CHUNK_SIZE * CHUNK_SIZE;
 const int	CHUNK_TOTAL_SIZE = CHUNK_SIZE2 * CHUNK_HEIGHT;
 const int	CHUNK_MASK_SIZE = CHUNK_SIZE * CHUNK_HEIGHT;
+// 1 cube = 8 bits, SSBO take 32 bits, so 4 cube per int
+const int	CHUNK_SSBO_SIZE = CHUNK_TOTAL_SIZE / 4;
 
 const std::vector<std::string>	CUBE_TEXTURES = {
 	"grass-up", "dirt-up", "stone-up", "water-up", "snow-up",
