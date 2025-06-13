@@ -92,8 +92,8 @@ public:
 
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
-	ChunkMap	chunks;
-	Cluster		cluster;
+	ChunkMap				chunks;
+	std::vector<Cluster>	clusters;
 //**** PRIVATE METHODS *********************************************************
 };
 

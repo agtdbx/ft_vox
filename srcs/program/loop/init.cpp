@@ -13,8 +13,8 @@ bool init(
 		ChunkShader &chunkShader,
 		Camera &camera)
 {
-	camera.setPosition(gm::Vec3f(-3.0f, 235.0f, 212.0f));
-	camera.setRotation(-33.73f, -91.42f, 0.0f);
+	camera.setPosition(gm::Vec3f(0.0f, 200.0f, 0.0f));
+	camera.setRotation(-30.0f, -90.0f, 0.0f);
 
 	try
 	{

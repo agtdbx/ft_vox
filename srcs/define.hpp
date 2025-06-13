@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/13 19:30:20 by gugus            ###   ########.fr       */
+/*   Updated: 2025/06/13 21:11:53 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@
 // Camera defines
 # define FOV 80.0f
 # define NEAR 0.1f
-# define FAR 1000.0f
+# define FAR 5000.0f
 # define SPEED 3.0f // TODO Put it to 1
 # define SPRINT 20.0f
 # define ROTATE 45.0f
@@ -65,5 +65,10 @@ const std::vector<std::string>	CUBE_TEXTURES = {
 // Cluster defines
 # define CLUSTER_SIZE 8
 const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
+
+// Map defines
+const int	MAP_CLUSTER_ARROUND = 1; // Map have 0 cluster arround
+const int	MAP_CLUSTER_WIDTH = MAP_CLUSTER_ARROUND + 1 + MAP_CLUSTER_ARROUND;
+const int	MAP_CLUSTER_SIZE = MAP_CLUSTER_WIDTH * MAP_CLUSTER_WIDTH;
 
 #endif

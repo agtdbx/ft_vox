@@ -6,14 +6,13 @@
 
 Map::Map(void)
 {
-	this->cluster = Cluster();
 }
 
 
 Map::Map(const Map &obj)
 {
 	this->chunks = obj.chunks;
-	this->cluster = obj.cluster;
+	this->clusters = obj.clusters;
 }
 
 //---- Destructor --------------------------------------------------------------
@@ -47,7 +46,7 @@ Map	&Map::operator=(const Map &obj)
 		return (*this);
 
 	this->chunks = obj.chunks;
-	this->cluster = obj.cluster;
+	this->clusters = obj.clusters;
 
 	return (*this);
 }
@@ -59,8 +58,14 @@ void	Map::init(
 				Camera &camera,
 				ChunkShader &chunkShader)
 {
-	gm::Vec2i minChunk = gm::Vec2i(-4, -4);
-	gm::Vec2i maxChunk = gm::Vec2i(4, 4);
+	// Create clusters
+	this->clusters.resize(MAP_CLUSTER_SIZE);
+	for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
+		this->clusters[i] = Cluster();
+
+	int	nbChunkArround = CLUSTER_SIZE / 2 + MAP_CLUSTER_ARROUND * CLUSTER_SIZE;
+	gm::Vec2i minChunk = gm::Vec2i(-nbChunkArround, -nbChunkArround);
+	gm::Vec2i maxChunk = gm::Vec2i( nbChunkArround,  nbChunkArround);
 	std::size_t	hash;
 
 	PerfLogger	perfLogger;
@@ -69,10 +74,16 @@ void	Map::init(
 	perfLogger.nbTriangles = 0;
 
 	// Generate chunks
+	int	nbChunks = 0;
+	int	totalChunks = (nbChunkArround * 2) * (nbChunkArround * 2);
+	printf("Chunks generation :\n");
 	for (int x = minChunk.x; x < maxChunk.x; x++)
 	{
 		for (int y = minChunk.y; y < maxChunk.y; y++)
 		{
+			nbChunks++;
+			printf("\r chunk %i/%i", nbChunks, totalChunks);
+
 			hash = gm::hash(gm::Vec2i(x, y));
 			this->chunks[hash] = Chunk();
 			this->chunks[hash].init(engine, camera, chunkShader);
@@ -80,27 +91,45 @@ void	Map::init(
 		}
 	}
 
+	printf("\nChunks mesh creation :\n");
+	nbChunks = 0;
 	// Create chunks meshes
 	for (int x = minChunk.x; x < maxChunk.x; x++)
 	{
 		for (int y = minChunk.y; y < maxChunk.y; y++)
 		{
+			nbChunks++;
+			printf("\r chunk %i/%i", nbChunks, totalChunks);
+
 			hash = gm::hash(gm::Vec2i(x, y));
 			this->chunks[hash].updateMeshes(*this, perfLogger);
 		}
 	}
+	printf("\n\n");
 
 	printLog(perfLogger.generation, "Chunk generation");
 	printLog(perfLogger.createMesh, "Mesh creation");
 	printf("Number of triangle : %i\n", perfLogger.nbTriangles);
 
-	this->cluster.setChunks(*this, gm::Vec2i(0, 0));
+	int	minClusterId = -MAP_CLUSTER_ARROUND * CLUSTER_SIZE;
+	int	idY, chunkX, chunkY;
+	for (int y = 0; y < MAP_CLUSTER_WIDTH; y++)
+	{
+		chunkY = minClusterId + y * CLUSTER_SIZE;
+		idY = y * MAP_CLUSTER_WIDTH;
+		for (int x = 0; x < MAP_CLUSTER_WIDTH; x++)
+		{
+			chunkX = minClusterId + x * CLUSTER_SIZE;
+			this->clusters[x + idY].setChunks(*this, gm::Vec2i(chunkX, chunkY));
+		}
+	}
 }
 
 
 void	Map::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 {
-	this->cluster.draw(engine, camera, chunkShader);
+	for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
+		this->clusters[i].draw(engine, camera, chunkShader);
 }
 
 
