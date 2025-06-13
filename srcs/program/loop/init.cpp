@@ -46,7 +46,7 @@ static void	loadTextures(Engine &engine)
 		engine.textureManager.addTexture(name, "data/textures/" + name +".png");
 	}
 
-	engine.textureManager.createImageArray(engine, "cubeTextures", CUBE_TEXTURES);
+	engine.textureManager.createImageArray(engine, "cubes", CUBE_TEXTURES);
 }
 
 
@@ -54,9 +54,12 @@ static void loadShaders(
 				Engine &engine,
 				ChunkShader &chunkShader)
 {
-	std::vector<BufferInfo>	uboTypesChunk = {{sizeof(UBO3DChunkPos), BUFFER_UBO, STAGE_VERTEX},
+	std::vector<BufferInfo>	bufferInfosChunk = {{sizeof(UBO3DChunkPos), BUFFER_UBO, STAGE_VERTEX},
 											{sizeof(UBO3DChunkCubes), BUFFER_SSBO, STAGE_FRAGMENT}};
-	std::vector<BufferInfo>	uboTypesChunkFdf = {{sizeof(UBO3DChunkPos), BUFFER_UBO, STAGE_VERTEX}};
+	std::vector<BufferInfo>	bufferInfosChunkFdf = {{sizeof(UBO3DChunkPos), BUFFER_UBO, STAGE_VERTEX}};
+	std::vector<ImageInfo>	imageInfos = {
+		{CUBE_TEXTURES.size(), STAGE_COMPUTE_FRAGMENT},
+	};
 
 	chunkShader.shaderFdfEnable = false;
 	chunkShader.shaderBorderEnable = false;
@@ -64,13 +67,13 @@ static void loadShaders(
 	chunkShader.shader.init<VertexPosNrm>(
 						engine, FCUL_COUNTER, DRAW_POLYGON,
 						"shadersbin/chunk_vert.spv", "shadersbin/chunk_frag.spv",
-						uboTypesChunk, CUBE_TEXTURES.size());
+						bufferInfosChunk, imageInfos);
 	chunkShader.shaderFdf.init<VertexPosNrm>(
 						engine, FCUL_NONE, DRAW_LINE,
 						"shadersbin/chunk_vert.spv", "shadersbin/chunkFdf_frag.spv",
-						uboTypesChunkFdf);
+						bufferInfosChunkFdf);
 	chunkShader.shaderBorder.init<VertexPos>(
 						engine, FCUL_NONE, DRAW_LINE,
 						"shadersbin/chunkBorder_vert.spv", "shadersbin/chunkBorder_frag.spv",
-						uboTypesChunkFdf);
+						bufferInfosChunkFdf);
 }

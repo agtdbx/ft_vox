@@ -364,7 +364,7 @@ void	copyBufferToImageArray(
 
 		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		region.imageSubresource.mipLevel = 0;
-		region.imageSubresource.baseArrayLayer = nbLayer;
+		region.imageSubresource.baseArrayLayer = i;
 		region.imageSubresource.layerCount = 1;
 
 		region.imageOffset = {0, 0, 0};

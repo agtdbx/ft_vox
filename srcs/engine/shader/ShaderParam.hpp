@@ -36,6 +36,13 @@ struct BufferInfo
 	BufferStage	stage;
 };
 
+
+struct ImageInfo
+{
+	size_t		nbLayer;
+	BufferStage	stage;
+};
+
 //**** STATIC DEFINE FUNCTIONS *************************************************
 
 /**
@@ -93,13 +100,15 @@ public:
 	 * @brief Init shader from parameters.
 	 *
 	 * @param engine The engine struct.
-	 * @param uboTypes Vector of ubo types.
+	 * @param bufferInfos Vector of buffer info.
+	 * @param imageInfos Vector of image info.
 	 * @param imageIds Vector of image id to used in shader.
 	 */
 	void	init(
 				Engine &engine,
 				VkDescriptorSetLayout descriptorSetLayout,
 				const std::vector<BufferInfo> &bufferInfos,
+				const std::vector<ImageInfo> &imageInfos,
 				const std::vector<std::string> &imageIds);
 	/**
 	 * @brief Destroy vulkan's allocate attributs.
@@ -121,6 +130,7 @@ public:
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
 	std::vector<BufferInfo>			bufferInfos;
+	std::vector<ImageInfo>			imageInfos;
 	std::vector<VkBuffer>			uniformBuffers;
 	std::vector<VkDeviceMemory>		uniformBuffersMemory;
 	std::vector<void*>				uniformBuffersMapped;

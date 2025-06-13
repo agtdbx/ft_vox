@@ -61,7 +61,8 @@ void	Shader::initShaderParam(
 					ShaderParam &shaderParam,
 					const std::vector<std::string> &imageIds)
 {
-	shaderParam.init(engine, this->descriptorSetLayout, this->bufferInfos, imageIds);
+	shaderParam.init(engine, this->descriptorSetLayout,
+						this->bufferInfos, this->imageInfos, imageIds);
 }
 
 
@@ -83,15 +84,16 @@ void	Shader::destroy(Engine &engine)
 //**** STATIC METHODS **********************************************************
 //**** PRIVATE METHODS *********************************************************
 
-void	Shader::createDescriptorSetLayout(VkDevice device, size_t nbImages)
+void	Shader::createDescriptorSetLayout(VkDevice device)
 {
-	int	nbUbo = this->bufferInfos.size();
+	size_t	nbUbo = this->bufferInfos.size();
+	size_t	nbImages = this->imageInfos.size();
 
 	std::vector<VkDescriptorSetLayoutBinding> bindings(nbUbo + nbImages);
 
 	// Bind uniforms to shaders
 	std::vector<VkDescriptorSetLayoutBinding> uboLayoutBindings(nbUbo);
-	for (int i = 0; i < nbUbo; i++)
+	for (size_t i = 0; i < nbUbo; i++)
 	{
 		uboLayoutBindings[i].binding = i;
 		uboLayoutBindings[i].descriptorCount = 1;
@@ -119,7 +121,13 @@ void	Shader::createDescriptorSetLayout(VkDevice device, size_t nbImages)
 		samplerLayoutBindings[i].descriptorCount = 1;
 		samplerLayoutBindings[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		samplerLayoutBindings[i].pImmutableSamplers = nullptr;
-		samplerLayoutBindings[i].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		samplerLayoutBindings[i].stageFlags = 0;
+		if (this->imageInfos[i].stage & STAGE_COMPUTE)
+			samplerLayoutBindings[i].stageFlags = samplerLayoutBindings[i].stageFlags | VK_SHADER_STAGE_COMPUTE_BIT;
+		if (this->imageInfos[i].stage & STAGE_VERTEX)
+			samplerLayoutBindings[i].stageFlags = samplerLayoutBindings[i].stageFlags | VK_SHADER_STAGE_VERTEX_BIT;
+		if (this->imageInfos[i].stage & STAGE_FRAGMENT)
+			samplerLayoutBindings[i].stageFlags = samplerLayoutBindings[i].stageFlags | VK_SHADER_STAGE_FRAGMENT_BIT;
 
 		bindings[nbUbo + i] = samplerLayoutBindings[i];
 	}

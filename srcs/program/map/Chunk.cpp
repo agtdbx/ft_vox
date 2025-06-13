@@ -183,7 +183,7 @@ void	Chunk::init(
 {
 	this->copyCommandPool = &engine.commandPool;
 
-	chunkShader.shader.initShaderParam(engine, this->shaderParam, CUBE_TEXTURES);
+	chunkShader.shader.initShaderParam(engine, this->shaderParam, {"cubes"});
 	chunkShader.shaderFdf.initShaderParam(engine, this->shaderParamFdf, {});
 	chunkShader.shaderBorder.initShaderParam(engine, this->shaderParamBorder, {});
 
