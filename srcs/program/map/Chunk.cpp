@@ -4,6 +4,11 @@
 
 #include <unordered_map>
 
+PerlinNoise PerlinGeration(42, 64);
+PerlinNoise PerlinTerrain(854, 2);
+PerlinNoise PerlinBiome(654, 4096);
+//PerlinNoise PerlinCave(8576, 128);
+
 //**** STATIC FUNCTIONS DEFINE *************************************************
 
 const double	INV_CLOCKS_PER_USEC = 1.0 / (double)CLOCKS_PER_SEC * 1000000.0;
@@ -224,54 +229,74 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 	float perlinZ = 0;
 	float tmpX = 0;
 	float tmpZ = 0;
+	float Biome = 0;
+	float Moutain = 0;
 	int		idZ, id, idBitmapY, maskX, maskZ;
+	//float Cave = 0;
 	for (int z = 0; z < CHUNK_SIZE; z++)
 	{
+		maskZ = (0b1 << z);
 		idZ = z * CHUNK_SIZE;
 		for (int x = 0; x < CHUNK_SIZE; x++)
 		{
-			tmpX = ((float)this->chunkId.x);
-			if (tmpX < 0)
-			{
-				tmpX = tmpX * -1;
-				perlinX = tmpX - ((float)x / CHUNK_SIZE);
-			}
-			else
-				perlinX = tmpX + ((float)x / CHUNK_SIZE);
-			tmpZ = ((float)this->chunkId.y);
-			if (tmpZ < 0)
-			{
-				tmpZ = tmpZ * -1;
-				perlinZ = tmpZ - ((float)z / CHUNK_SIZE);
-			}
-			else
-				perlinZ = tmpZ + ((float)z / CHUNK_SIZE);
-			maxSize = perlin(perlinX, perlinZ);
-			//TODO seed here maybe ?
-			perlinX = perlinX + (SEED & 0xff);
-			perlinZ = perlinZ + ((SEED >> 16) & 0xff);
-			maxSize = maxSize + (perlin(perlinX, perlinZ) / 2.5);
 			maskX = (0b1 << x);
-			maskZ = (0b1 << z);
+			tmpX = ((int)this->chunkPosition.x + x) % MAP_SIZE;
+			if (tmpX < 0)
+				tmpX += MAP_SIZE;
+
+			tmpZ = ((int)this->chunkPosition.z + z) % MAP_SIZE;
+			if (tmpZ < 0)
+				tmpZ += MAP_SIZE;
+			// Begin
+
+			perlinX = (float)tmpX / (float)MAP_SIZE;
+			perlinZ = (float)tmpZ / (float)MAP_SIZE;
+
+			//TODO Moutain will need a lot tweaking (Biome need more chunk to see if he is garbage)
+			maxSize = (PerlinGeration.getNoise(perlinX, perlinZ) * 32.0f + 48.0f);
+			Biome = (PerlinBiome.getNoise(perlinX, perlinZ));
+			Moutain = (PerlinTerrain.getNoise(perlinX, perlinZ));
+			// faire des truc aprés sa
+			//Cave = (PerlinCave.getNoise(perlinX, perlinZ));
+			if (Moutain < 0.2)
+				maxSize = maxSize - (Moutain * 32.0f + 48.0f);
+			else if (Moutain > 0.8)
+				maxSize = maxSize + (Moutain * 32.0f + 48.0f);
+			if (maxSize < 0)
+				maxSize = 1;
 			for (int y = 0; y < CHUNK_HEIGHT; y++)
 			{
-				//Basic plaine
-				//TODO change blocType with perlin noise for different biome
-				if (y > (int)maxSize && y > 40)
+				//with this setup stone cannot be seen on the surface
+				int	id = x + idZ + y * CHUNK_SIZE2;
+				if (y > (int)maxSize && y > 58)
 					break;
 
-				id = x + idZ + y * CHUNK_SIZE2;
 				idBitmapY = y * CHUNK_SIZE;
 				this->cubesBitmapX[z + idBitmapY] += maskX;
 				this->cubesBitmapZ[x + idBitmapY] += maskZ;
 
-				if (y > (int)maxSize && y <= 40)
-					this->cubes[id] = CUBE_WATER;
+				if (y > (int)maxSize && y <= 58)
+				{
+					if (Biome > 0.7)
+						this->cubes[id] = CUBE_LAVA;
+					else if (Biome < 0.3)
+						this->cubes[id] = CUBE_ICE;
+					else
+						this->cubes[id] = CUBE_WATER;
+				}
+				// End
 				else
 				{
-					if (y > 40 && y == (int)maxSize)
-						this->cubes[id] = CUBE_GRASS;
-					else if (y > 40 && y > (int)maxSize - 3 && y < (int)maxSize)
+					if (y > 57 && y == (int)maxSize)
+					{
+						if (Biome > 0.7)
+							this->cubes[id] = CUBE_SAND;
+						else if (Biome < 0.3)
+							this->cubes[id] = CUBE_SNOW;
+						else
+							this->cubes[id] = CUBE_GRASS;
+					}
+					else if (y > 58 && y > (int)maxSize - 3 && y < (int)maxSize)
 						this->cubes[id] = CUBE_DIRT;
 					else if (y != 0)
 						this->cubes[id] = CUBE_STONE;

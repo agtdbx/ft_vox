@@ -10,7 +10,7 @@ srcs = [
   'srcs/program/map/Chunk.cpp',
   'srcs/program/map/Map.cpp',
   'srcs/program/map/Cluster.cpp',
-  'srcs/program/map/Perlin.cpp',
+  'srcs/program/map/PerlinNoise.cpp',
   'srcs/program/main.cpp',
   'srcs/program/loop/computation.cpp',
   'srcs/program/loop/draw.cpp',
@@ -30,7 +30,9 @@ srcs = [
   'srcs/engine/textures/TextureManager.cpp',
   'srcs/engine/mesh/VertexPosNrm.cpp',
   'srcs/engine/mesh/VertexPos.cpp',
+  'srcs/engine/mesh/VertexPosTex.cpp',
   'srcs/engine/mesh/Vertex.cpp',
+  'srcs/program/skybox/Skybox.cpp',
 ]
 
 executable('ft_vox',

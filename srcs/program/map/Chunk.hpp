@@ -10,7 +10,7 @@
 # include <engine/camera/BoundingCube.hpp>
 # include <program/map/Cube.hpp>
 # include <program/shaderStruct.hpp>
-# include <program/map/Perlin.hpp>
+# include <program/map/PerlinNoise.hpp>
 
 #include <chrono>
 

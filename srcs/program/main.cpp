@@ -26,15 +26,19 @@ int	main(void)
 	Camera		camera;
 	ChunkShader	chunkShader;
 	Map			map;
+	Shader		skyBoxShader;
+	Skybox		skybox;
 
-	if (!init(engine, map, chunkShader, camera))
+	if (!init(engine, map, chunkShader, skyBoxShader, camera, skybox))
 	{
 		// Wait all vulkan tasks
 		vkDeviceWaitIdle(engine.context.getDevice());
 
 		// Destroy vulkans attributs
 		map.destroy(engine);
+		skybox.destroy(engine);
 		chunkShader.destroy(engine);
+		skyBoxShader.destroy(engine);
 
 		// Terminate engine and glfw
 		destroyEngine(engine);
@@ -63,7 +67,7 @@ int	main(void)
 		computation(engine, map, camera, chunkShader, delta);
 
 		// Drawing part
-		draw(engine, map, chunkShader, camera);
+		draw(engine, map, chunkShader, camera, skybox, skyBoxShader);
 	}
 
 	// Wait all vulkan tasks
@@ -71,7 +75,9 @@ int	main(void)
 
 	// Destroy vulkans attributs
 	map.destroy(engine);
+	skybox.destroy(engine);
 	chunkShader.destroy(engine);
+	skyBoxShader.destroy(engine);
 
 	// Terminate engine and glfw
 	destroyEngine(engine);
