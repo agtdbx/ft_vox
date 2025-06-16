@@ -133,6 +133,28 @@ void	createVulkanImage(
 			VkImageUsageFlags usage, VkMemoryPropertyFlags properties,
 			VkImage &image, VkDeviceMemory &imageMemory);
 /**
+ * @brief Create and allocate image array usable with vulkan.
+ *
+ * @param device The device of VulkanContext class.
+ * @param physicalDevice The physicalDevice of VulkanContext class.
+ * @param width The width of images.
+ * @param height The height of images.
+ * @param format The format of images.
+ * @param tiling The tiling of images.
+ * @param usage The usage of images. The usage change the optimisation for image.
+ * @param properties The properties of images.
+ * @param image The image to create.
+ * @param imageMemory The memory allocated for the image.
+ * @param arraySize The size of the array.
+ *
+ * @exception Throw an runtime_error if the creation failed.
+ */
+void	createVulkanImageArray(
+			VkDevice device, VkPhysicalDevice physicalDevice,
+			uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
+			VkImageUsageFlags usage, VkMemoryPropertyFlags properties,
+			VkImage &image, VkDeviceMemory &imageMemory, uint32_t arraySize);
+/**
  * @brief Create an image view from an image.
  *
  * @param device The device of VulkanContext class.
@@ -146,6 +168,22 @@ void	createVulkanImage(
 VkImageView	createVulkanImageView(
 				VkDevice device,
 				VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
+/**
+ * @brief Create an image array view from an image array.
+ *
+ * @param device The device of VulkanContext class.
+ * @param image The image used for create the image view.
+ * @param format The format of image view.
+ * @param aspectFlags The flags of image view.
+ * @param arraySize The size of the array.
+ *
+ * @return The image view created.
+ * @exception Throw an runtime_error if the creation failed.
+ */
+VkImageView	createVulkanImageArrayView(
+				VkDevice device,
+				VkImage image, VkFormat format, VkImageAspectFlags aspectFlags,
+				uint32_t arraySize);
 
 //---- Copies ------------------------------------------------------------------
 /**
@@ -171,6 +209,21 @@ void	copyBuffer(
 void	copyBufferToImage(
 			const VulkanCommandPool &commandPool,
 			VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+/**
+ * @brief Copy buffer to image array.
+ *
+ * @param commandPool The command pool for run the copy.
+ * @param buffer The buffer that will be copied.
+ * @param image Image array where the buffer will be copied.
+ * @param width Width of image.
+ * @param height Height of image.
+ * @param nbLayer Number of layer into the array.
+ */
+void	copyBufferToImageArray(
+			const VulkanCommandPool &commandPool,
+			VkBuffer buffer, VkImage image,
+			uint32_t width, uint32_t height,
+			uint32_t nbLayer);
 
 //---- Others ------------------------------------------------------------------
 /**
@@ -184,6 +237,22 @@ void	copyBufferToImage(
  */
 void	transitionImageLayout(
 			const VulkanCommandPool &commandPool,
-			VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+			VkImage image, VkFormat format,
+			VkImageLayout oldLayout, VkImageLayout newLayout);
+/**
+ * @brief Change an image layout.
+ *
+ * @param commandPool The command pool for run the copy.
+ * @param image The image to change.
+ * @param format The format of image.
+ * @param oldLayout The current layout of image.
+ * @param newLayout The new layout wanted for image.
+ * @param nbLayer The number of layer of the image.
+ */
+void	transitionImageArrayLayout(
+			const VulkanCommandPool &commandPool,
+			VkImage image, VkFormat format,
+			VkImageLayout oldLayout, VkImageLayout newLayout,
+			uint32_t nbLayer);
 
 #endif

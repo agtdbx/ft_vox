@@ -2,8 +2,28 @@
 # define CAMERA_HPP
 
 # include <define.hpp>
+# include <engine/camera/BoundingCube.hpp>
 
 # include <gmath.hpp>
+
+
+struct FrustumPlane
+{
+	gm::Vec3f	position;
+	gm::Vec3f	normal;
+};
+
+struct Frustum
+{
+	FrustumPlane	topFace;
+	FrustumPlane	botFace;
+
+	FrustumPlane	leftFace;
+	FrustumPlane	rightFace;
+
+	FrustumPlane	nearFace;
+	FrustumPlane	farFace;
+};
 
 /**
  * @brief Camera class.
@@ -181,6 +201,10 @@ public:
 	 */
 	void	updateFOV(const float fov);
 
+//---- checks ------------------------------------------------------------------
+
+	bool	isCubeInFrutum(const BoundingCube &cube);
+
 //---- status ------------------------------------------------------------------
 	/**
 	 * @brief Print camera position and rotation on standard output.
@@ -194,10 +218,12 @@ private:
 	gm::Mat4f	view, projection;
 	gm::Vec3f	position, front, up, right;
 	float		pitch, yaw, roll, planeWidth, planeHeight, winRatio, fov;
+	Frustum		furstum;
 
 //**** PRIVATE METHODS *********************************************************
 	void	computeRotation(void);
 	void	computeView(void);
+	void	computeFrustum(void);
 };
 
 //**** FUNCTIONS ***************************************************************

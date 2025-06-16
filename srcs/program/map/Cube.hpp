@@ -1,7 +1,7 @@
 #ifndef CUBE_HPP
 # define CUBE_HPP
 
-enum	Cube
+enum	Cube : uint8_t
 {
 	// Basic cube
 	CUBE_AIR = 0,

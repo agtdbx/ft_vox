@@ -36,6 +36,13 @@ struct BufferInfo
 	BufferStage	stage;
 };
 
+
+struct ImageInfo
+{
+	size_t		nbLayer;
+	BufferStage	stage;
+};
+
 //**** STATIC DEFINE FUNCTIONS *************************************************
 
 /**
@@ -93,13 +100,15 @@ public:
 	 * @brief Init shader from parameters.
 	 *
 	 * @param engine The engine struct.
-	 * @param uboTypes Vector of ubo types.
+	 * @param bufferInfos Vector of buffer info.
+	 * @param imageInfos Vector of image info.
 	 * @param imageIds Vector of image id to used in shader.
 	 */
 	void	init(
 				Engine &engine,
 				VkDescriptorSetLayout descriptorSetLayout,
 				const std::vector<BufferInfo> &bufferInfos,
+				const std::vector<ImageInfo> &imageInfos,
 				const std::vector<std::string> &imageIds);
 	/**
 	 * @brief Destroy vulkan's allocate attributs.
@@ -111,16 +120,19 @@ public:
 	 * @brief Update uniform values used by shader.destroy
 	 *
  	 * @param window Window class of the engine.
-	 * @param ubo Pointer of uniform values struct used for update.
-	 * @param uboId Id of ubo in init vector. Id isn't check for speed, will crash if pass an incorect id.
+	 * @param buffer Pointer of buffer values struct used for update.
+	 * @param bufferId Id of buffer in init vector.
+	 *
+	 * @warning Id isn't check for speed, will crash if pass an incorect id.
 	 */
-	void	updateUBO(Window &window, void *ubo, int uboId);
+	void	updateBuffer(Window &window, void *buffer, int bufferId);
 
 //**** STATIC METHODS **********************************************************
 
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
 	std::vector<BufferInfo>			bufferInfos;
+	std::vector<ImageInfo>			imageInfos;
 	std::vector<VkBuffer>			uniformBuffers;
 	std::vector<VkDeviceMemory>		uniformBuffersMemory;
 	std::vector<void*>				uniformBuffersMapped;

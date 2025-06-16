@@ -31,7 +31,7 @@ void Skybox::init(Engine &engine, Shader &skyboxShader, Camera &camera)
     indices = {
         //back face
         6,7,5, 6,5,3,
-        //front face   
+        //front face
         0,2,4, 0,4,1,
         //left face
         1,4,7, 1,7,6,
@@ -62,6 +62,6 @@ void Skybox::draw(Engine &engine, Camera &camera, Shader &skyboxShader)
 	this->uboPos.view = camera.getView();
 
 	// Draw mesh
-    this->shaderParam.updateUBO(engine.window, &this->uboPos, 0);
+    this->shaderParam.updateBuffer(engine.window, &this->uboPos, 0);
     engine.window.drawMesh(this->mesh, skyboxShader, this->shaderParam);
 }

@@ -1,6 +1,10 @@
 #include <engine/camera/Camera.hpp>
 
 //**** STATIC FUNCTIONS DEFINE *************************************************
+
+static bool	isOnOrForwardPlane(const FrustumPlane &plane, const BoundingCube &cube);
+static float	getSignedDistanceToPlane(const FrustumPlane &plane, const gm::Vec3f &point);
+
 //**** INITIALISION ************************************************************
 //---- Constructors ------------------------------------------------------------
 
@@ -21,6 +25,7 @@ Camera::Camera(void)
 
 	this->computeRotation();
 	this->computeView();
+	this->computeFrustum();
 }
 
 
@@ -38,6 +43,7 @@ Camera::Camera(const Camera &obj)
 	this->planeWidth = obj.planeWidth;
 	this->planeHeight = obj.planeHeight;
 	this->winRatio = obj.winRatio;
+	this->furstum = obj.furstum;
 }
 
 //---- Destructor --------------------------------------------------------------
@@ -109,6 +115,7 @@ void	Camera::setPosition(const gm::Vec3f &position)
 {
 	this->position = position;
 	this->computeView();
+	this->computeFrustum();
 }
 
 
@@ -125,6 +132,7 @@ void	Camera::setRotation(const float pitch, const float yaw, const float roll)
 
 	this->computeRotation();
 	this->computeView();
+	this->computeFrustum();
 }
 
 //---- Operators ---------------------------------------------------------------
@@ -146,6 +154,7 @@ Camera	&Camera::operator=(const Camera &obj)
 	this->planeWidth = obj.planeWidth;
 	this->planeHeight = obj.planeHeight;
 	this->winRatio = obj.winRatio;
+	this->furstum = obj.furstum;
 
 	return (*this);
 }
@@ -159,6 +168,7 @@ void	Camera::move(const gm::Vec3f &direction, const float speed)
 						+ this->up * direction.y * speed
 						+ this->front * direction.z * speed;
 	this->computeView();
+	this->computeFrustum();
 }
 
 
@@ -166,6 +176,7 @@ void	Camera::moveFront(const float speed)
 {
 	this->position += this->front * speed;
 	this->computeView();
+	this->computeFrustum();
 }
 
 
@@ -173,6 +184,7 @@ void	Camera::moveUp(const float speed)
 {
 	this->position += this->up * speed;
 	this->computeView();
+	this->computeFrustum();
 }
 
 
@@ -180,6 +192,7 @@ void	Camera::moveRight(const float speed)
 {
 	this->position += this->right * speed;
 	this->computeView();
+	this->computeFrustum();
 }
 
 //---- rotate ------------------------------------------------------------------
@@ -195,6 +208,7 @@ void	Camera::rotateX(const float degrees)
 
 	this->computeRotation();
 	this->computeView();
+	this->computeFrustum();
 }
 
 
@@ -203,6 +217,7 @@ void	Camera::rotateY(const float degrees)
 	this->yaw += degrees;
 	this->computeRotation();
 	this->computeView();
+	this->computeFrustum();
 }
 
 
@@ -211,6 +226,7 @@ void	Camera::rotateZ(const float degrees)
 	this->roll += degrees;
 	this->computeRotation();
 	this->computeView();
+	this->computeFrustum();
 }
 
 //---- update ------------------------------------------------------------------
@@ -239,6 +255,18 @@ void	Camera::updateFOV(const float fov)
 
 	this->planeHeight = tan(gm::radians(this->fov * 0.5f)) * 2.0f;
 	this->planeWidth = this->planeHeight * this->winRatio;
+}
+
+//---- status ------------------------------------------------------------------
+
+bool	Camera::isCubeInFrutum(const BoundingCube &cube)
+{
+	return (isOnOrForwardPlane(this->furstum.leftFace, cube)
+			&& isOnOrForwardPlane(this->furstum.rightFace, cube)
+			&& isOnOrForwardPlane(this->furstum.topFace, cube)
+			&& isOnOrForwardPlane(this->furstum.botFace, cube)
+			&& isOnOrForwardPlane(this->furstum.nearFace, cube)
+			&& isOnOrForwardPlane(this->furstum.farFace, cube));
 }
 
 //---- status ------------------------------------------------------------------
@@ -276,5 +304,55 @@ void	Camera::computeView(void)
 									this->up);
 }
 
+
+void	Camera::computeFrustum(void)
+{
+	static const float	halfVSide = FAR * tanf(this->fov * 0.5f);
+	static const float	halfHSide = halfVSide * this->winRatio;
+	const gm::Vec3f	frontMultFar = this->front * FAR;
+
+	this->furstum.nearFace = {
+		this->position + this->front * NEAR,
+		this->front
+	};
+	this->furstum.farFace = {
+		this->position + frontMultFar,
+		-this->front
+	};
+
+	this->furstum.rightFace = {
+		this->position,
+		gm::cross(frontMultFar - this->right * halfHSide, this->up)
+	};
+	this->furstum.leftFace = {
+		this->position,
+		gm::cross(this->up, frontMultFar + this->right * halfHSide)
+	};
+
+	this->furstum.topFace = {
+		this->position,
+		gm::cross(this->right, frontMultFar - this->up * halfVSide)
+	};
+	this->furstum.botFace = {
+		this->position,
+		gm::cross(frontMultFar + this->up * halfVSide, this->right)
+	};
+}
+
 //**** FUNCTIONS ***************************************************************
 //**** STATIC FUNCTIONS ********************************************************
+
+static bool	isOnOrForwardPlane(const FrustumPlane &plane, const BoundingCube &cube)
+{
+	const float	r = cube.extents.x * gm::abs(plane.normal.x)
+					+ cube.extents.y * gm::abs(plane.normal.y)
+					+ cube.extents.z * gm::abs(plane.normal.z);
+
+	return (-r <=  getSignedDistanceToPlane(plane, cube.center));
+}
+
+
+static float	getSignedDistanceToPlane(const FrustumPlane &plane, const gm::Vec3f &point)
+{
+	return (gm::dot(plane.normal, point - plane.position));
+}

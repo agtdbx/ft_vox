@@ -16,8 +16,8 @@ bool init(
 		Camera &camera,
 		Skybox &skybox)
 {
-	camera.setPosition(gm::Vec3f(-3.0f, 235.0f, 212.0f));
-	camera.setRotation(-33.73f, -91.42f, 0.0f);
+	camera.setPosition(gm::Vec3f(0.0f, 200.0f, 0.0f));
+	camera.setRotation(-30.0f, -90.0f, 0.0f);
 
 	try
 	{
@@ -45,19 +45,12 @@ bool init(
 
 static void	loadTextures(Engine &engine)
 {
-	std::vector<std::string>	names = {
-		"grass", "dirt", "stone", "water", "snow",
-		"ice", "sand", "lava", "iron", "diamond",
-	};
-
-	engine.textureManager.addTexture("test", "data/textures/test.png");
-
-	for (std::string &name : names)
+	for (const std::string &name : CUBE_TEXTURES)
 	{
-		engine.textureManager.addTexture(name + "-up", "data/textures/" + name +"-up.png");
-		engine.textureManager.addTexture(name + "-side", "data/textures/" + name +"-side.png");
-		engine.textureManager.addTexture(name + "-down", "data/textures/" + name +"-down.png");
+		engine.textureManager.addTexture(name, "data/textures/" + name +".png");
 	}
+
+	engine.textureManager.createImageArray(engine, "cubes", CUBE_TEXTURES);
 }
 
 
@@ -66,9 +59,12 @@ static void loadShaders(
 				ChunkShader &chunkShader,
 				Shader &skyBoxShader)
 {
-	std::vector<BufferInfo>	uboTypesChunk = {{sizeof(UBO3DChunkPos), BUFFER_UBO, STAGE_VERTEX},
+	std::vector<BufferInfo>	bufferInfosChunk = {{sizeof(UBO3DChunkPos), BUFFER_UBO, STAGE_VERTEX},
 											{sizeof(UBO3DChunkCubes), BUFFER_SSBO, STAGE_FRAGMENT}};
-	std::vector<BufferInfo>	uboTypesChunkFdf = {{sizeof(UBO3DChunkPos), BUFFER_UBO, STAGE_VERTEX}};
+	std::vector<BufferInfo>	bufferInfosChunkFdf = {{sizeof(UBO3DChunkPos), BUFFER_UBO, STAGE_VERTEX}};
+	std::vector<ImageInfo>	imageInfos = {
+		{CUBE_TEXTURES.size(), STAGE_COMPUTE_FRAGMENT},
+	};
 
 	chunkShader.shaderFdfEnable = false;
 	chunkShader.shaderBorderEnable = false;
@@ -76,19 +72,19 @@ static void loadShaders(
 	chunkShader.shader.init<VertexPosNrm>(
 						engine, FCUL_COUNTER, DRAW_POLYGON,
 						"shadersbin/chunk_vert.spv", "shadersbin/chunk_frag.spv",
-						uboTypesChunk, CUBE_TEXTURES.size());
+						bufferInfosChunk, imageInfos);
 	chunkShader.shaderFdf.init<VertexPosNrm>(
 						engine, FCUL_NONE, DRAW_LINE,
 						"shadersbin/chunk_vert.spv", "shadersbin/chunkFdf_frag.spv",
-						uboTypesChunkFdf);
+						bufferInfosChunkFdf);
 	chunkShader.shaderBorder.init<VertexPos>(
 						engine, FCUL_NONE, DRAW_LINE,
 						"shadersbin/chunkBorder_vert.spv", "shadersbin/chunkBorder_frag.spv",
-						uboTypesChunkFdf);
+						bufferInfosChunkFdf);
 
 	//TODO donner une texture a la skybox
 	skyBoxShader.init<VertexPosTex>(
 						engine, FCUL_NONE, DRAW_POLYGON,
 						"shadersbin/skybox_vert.spv", "shadersbin/skybox_frag.spv",
-						uboTypesChunkFdf);
+						bufferInfosChunkFdf);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   define.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/11 11:14:30 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/06/16 17:00:48 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,8 +46,12 @@ const int MAX_FRAMES_IN_FLIGHT = 2;
 // Chunk defines
 # define CHUNK_SIZE 32
 # define CHUNK_HEIGHT 256
+const int	CHUNK_MAX = CHUNK_SIZE - 1;
 const int	CHUNK_SIZE2 = CHUNK_SIZE * CHUNK_SIZE;
 const int	CHUNK_TOTAL_SIZE = CHUNK_SIZE2 * CHUNK_HEIGHT;
+const int	CHUNK_MASK_SIZE = CHUNK_SIZE * CHUNK_HEIGHT;
+// 1 cube = 8 bits, SSBO take 32 bits, so 4 cube per int
+const int	CHUNK_SSBO_SIZE = CHUNK_TOTAL_SIZE / 4;
 
 const std::vector<std::string>	CUBE_TEXTURES = {
 	"grass-up", "dirt-up", "stone-up", "water-up", "snow-up",
@@ -64,5 +68,8 @@ const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
 
 // Map defines
 # define MAP_SIZE 4096
+const int	MAP_CLUSTER_ARROUND = 1; // Map have 1 cluster arround
+const int	MAP_CLUSTER_WIDTH = MAP_CLUSTER_ARROUND + 1 + MAP_CLUSTER_ARROUND;
+const int	MAP_CLUSTER_SIZE = MAP_CLUSTER_WIDTH * MAP_CLUSTER_WIDTH;
 
 #endif

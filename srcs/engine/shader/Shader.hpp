@@ -102,7 +102,7 @@ public:
 	{
 		VkDevice	device = engine.context.getDevice();
 
-		this->createDescriptorSetLayout(device, 0);
+		this->createDescriptorSetLayout(device);
 		this->createGraphicsPipeline<VertexType>(device, engine.window, vertexPath, fragmentPath,
 										faceCulling, drawMode);
 	}
@@ -125,7 +125,7 @@ public:
 
 		this->bufferInfos = bufferInfos;
 
-		this->createDescriptorSetLayout(device, 0);
+		this->createDescriptorSetLayout(device);
 		this->createGraphicsPipeline<VertexType>(device, engine.window, vertexPath, fragmentPath,
 										faceCulling, drawMode);
 	}
@@ -137,20 +137,21 @@ public:
 	 * @param vertexPath Path to compile vertex shader file.
 	 * @param fragmentPath Path to compile fragment shader file.
 	 * @param bufferInfos Vector of buffer info.
-	 * @param nbImages Number of image id to used in shader.
+	 * @param imageInfos Vector of image info.
 	 */
 	template<typename VertexType>
 	void	init(
 				Engine &engine, FaceCulling faceCulling, DrawMode drawMode,
 				std::string vertexPath, std::string fragmentPath,
 				const std::vector<BufferInfo> &bufferInfos,
-				size_t nbImages)
+				const std::vector<ImageInfo> &imageInfos)
 	{
 		VkDevice	device = engine.context.getDevice();
 
 		this->bufferInfos = bufferInfos;
+		this->imageInfos = imageInfos;
 
-		this->createDescriptorSetLayout(device, nbImages);
+		this->createDescriptorSetLayout(device);
 		this->createGraphicsPipeline<VertexType>(device, engine.window, vertexPath, fragmentPath,
 										faceCulling, drawMode);
 	}
@@ -177,6 +178,7 @@ public:
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
 	std::vector<BufferInfo>			bufferInfos;
+	std::vector<ImageInfo>			imageInfos;
 	VkDescriptorSetLayout			descriptorSetLayout;
 	VkPipelineLayout				pipelineLayout;
 	VkPipeline						graphicsPipeline;
@@ -186,9 +188,8 @@ private:
 	 * @brief Create descriptor set layout.
 	 *
 	 * @param device The device of VulkanContext class.
-	 * @param nbImages The number of image used in shader.
 	 */
-	void	createDescriptorSetLayout(VkDevice device, size_t nbImages);
+	void	createDescriptorSetLayout(VkDevice device);
 	/**
 	 * @brief Create graphic pipeline.
 	 *

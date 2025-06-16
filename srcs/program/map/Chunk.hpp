@@ -7,9 +7,12 @@
 # include <engine/mesh/VertexPosNrm.hpp>
 # include <engine/shader/Shader.hpp>
 # include <engine/camera/Camera.hpp>
+# include <engine/camera/BoundingCube.hpp>
 # include <program/map/Cube.hpp>
 # include <program/shaderStruct.hpp>
 # include <program/map/PerlinNoise.hpp>
+
+#include <chrono>
 
 using ChunkMesh = Mesh<VertexPosNrm>;
 using ChunkBorderMesh = Mesh<VertexPos>;
@@ -37,6 +40,38 @@ struct ChunkShader
 		this->shaderBorder.destroy(engine);
 	}
 };
+
+
+struct Face
+{
+	int	x;
+	int	y;
+	int	w;
+	int	h;
+	int	axis;
+};
+
+
+// TODO : REMOVE
+struct PerfField
+{
+	std::clock_t	start;
+	int				total;
+	int				nbCall;
+};
+
+void	startLog(PerfField &perfField);
+void	endLog(PerfField &perfField);
+void	resetLog(PerfField &perfField);
+void	printLog(PerfField &perfField, const char *msg);
+
+struct PerfLogger
+{
+	PerfField	generation;
+	PerfField	createMesh;
+	int			nbTriangles;
+};
+
 
 /**
  * @brief Chunk class.
@@ -71,6 +106,12 @@ public:
 //**** ACCESSORS ***************************************************************
 //---- Getters -----------------------------------------------------------------
 	/**
+	 * @brief Getter of bounding cube.
+	 *
+	 * @return The const reference to bounding cube.
+	 */
+	const BoundingCube	&getBoundingCube(void) const;
+	/**
 	 * @brief Getter of cube in a chunk.
 	 *
 	 * @param x X coordonate of the cube in the chunk.
@@ -79,7 +120,7 @@ public:
 	 *
 	 * @return The cube at the coordonate, or air in case of invalid coordonates.
 	 */
-	Cube	getCube(int x, int y, int z);
+	Cube	getCube(int x, int y, int z) const;
 	/**
 	 * @brief Getter of cube in a chunk.
 	 *
@@ -87,7 +128,29 @@ public:
 	 *
 	 * @return The cube at the coordonate, or air in case of invalid coordonates.
 	 */
-	Cube	getCube(const gm::Vec3i &pos);
+	Cube	getCube(const gm::Vec3i &pos) const;
+	/**
+	 * @brief Fast unsafe getter of cube in a chunk.
+	 *
+	 * @param x X coordonate of the cube in the chunk.
+	 * @param y Y coordonate of the cube in the chunk.
+	 * @param z Z coordonate of the cube in the chunk.
+	 *
+	 * @warning Will crash if coordonates are wrong.
+	 *
+	 * @return Const cube reference at the coordonate.
+	 */
+	const Cube	&at(int x, int y, int z) const;
+	/**
+	 * @brief Fast unsafe getter of cube in a chunk.
+	 *
+	 * @param xpos Coordonate of the cube in the chunk.
+	 *
+	 * @warning Will crash if coordonates are wrong.
+	 *
+	 * @return Const cube reference at the coordonate.
+	 */
+	const Cube	&at(const gm::Vec3i &pos) const;
 
 //---- Setters -----------------------------------------------------------------
 	/**
@@ -128,13 +191,13 @@ public:
 	 *
 	 * @param chunkId Id of the chunk.
 	 */
-	void	generate(const gm::Vec2i &chunkId);
+	void	generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger);
 	/**
 	 * @brief Update chunk meshs.
 	 *
 	 * @param map Map containing other chunks.
 	 */
-	void	updateMeshes(Map &map);
+	void	updateMeshes(Map &map, PerfLogger &perfLogger);
 	/**
 	 * @brief Draw chunk meshes.
 	 *
@@ -157,11 +220,14 @@ private:
 	gm::Vec3f		chunkPosition;
 	std::vector<gm::Vec3f>	positions;
 	Cube			cubes[CHUNK_TOTAL_SIZE]; // id = x + z * SIZE + y * SIZE2
+	int32_t			cubesBitmapX[CHUNK_MASK_SIZE]; // id = z + y * SIZE, 1 << x
+	int32_t			cubesBitmapZ[CHUNK_MASK_SIZE]; // id = x + y * SIZE, 1 << z
 	ChunkMesh		mesh;
 	ChunkBorderMesh	borderMesh;
 	UBO3DChunkPos	uboPos;
 	UBO3DChunkCubes	uboCubes;
 	ShaderParam		shaderParam, shaderParamFdf, shaderParamBorder;
+	BoundingCube	boundingCube;
 //---- Copy --------------------------------------------------------------------
 	VulkanCommandPool	*copyCommandPool;
 
@@ -176,39 +242,6 @@ private:
 	 * @param map Map that contain chunks.
 	 */
 	void	createMesh(Map &map);
-	/**
-	 * @brief Create face up mesh.
-	 *
-	 * @param vertexIndex Hash map of vertex for avoid vertex duplication.
-	 * @param vertices Vector of vertex.
-	 * @param indices Vector of index.
-	 * @param nbVertex Number of vertex.
-	 * @param posCheck Position of check if there is air here.
-	 * @param leftChunk Chunk at the left.
-	 * @param rightChunk Chunk at the right.
-	 * @param frontChunk Chunk at the front.
-	 * @param backChunk Chunk at the back.
-	 * @param posLU Position of top left vertex of face.
-	 * @param posLD Position of bottom left vertex of face.
-	 * @param posRD Position of bottom right vertex of face.
-	 * @param posRU Position of top right vertex of face.
-	 * @param normal Normal of face.
-	 */
-	void	createFace(
-				std::unordered_map<std::size_t, uint32_t> &vertexIndex,
-				std::vector<VertexPosNrm> &vertices,
-				std::vector<uint32_t> &indices,
-				int &nbVertex,
-				gm::Vec3i posCheck,
-				Chunk *leftChunk,
-				Chunk *rightChunk,
-				Chunk *frontChunk,
-				Chunk *backChunk,
-				const gm::Vec3f &posLU,
-				const gm::Vec3f &posLD,
-				const gm::Vec3f &posRD,
-				const gm::Vec3f &posRU,
-				const gm::Vec3f &normal);
 };
 
 //**** FUNCTIONS ***************************************************************

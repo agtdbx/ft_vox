@@ -53,12 +53,17 @@ void	ShaderParam::init(
 			Engine &engine,
 			VkDescriptorSetLayout descriptorSetLayout,
 			const std::vector<BufferInfo> &bufferInfos,
+			const std::vector<ImageInfo> &imageInfos,
 			const std::vector<std::string> &imageIds)
 {
 	VkDevice	device = engine.context.getDevice();
 	VkPhysicalDevice	physicalDevice = engine.context.getPhysicalDevice();
 
 	this->bufferInfos = bufferInfos;
+	this->imageInfos = imageInfos;
+
+	if (this->imageInfos.size() != imageIds.size())
+		throw std::runtime_error("Invalid number of image according to shader parameters");
 
 	std::vector<const Image *> images = getImages(engine.textureManager, imageIds);
 
@@ -88,10 +93,10 @@ void	ShaderParam::destroy(Engine &engine)
 }
 
 
-void	ShaderParam::updateUBO(Window &window, void *ubo, int uboId)
+void	ShaderParam::updateBuffer(Window &window, void *buffer, int bufferId)
 {
-	int	bufferId = window.getCurrentFrame() * this->bufferInfos.size() + uboId;
-	memcpy(this->uniformBuffersMapped[bufferId], ubo, this->bufferInfos[uboId].size);
+	int	id = window.getCurrentFrame() * this->bufferInfos.size() + bufferId;
+	memcpy(this->uniformBuffersMapped[id], buffer, this->bufferInfos[bufferId].size);
 }
 
 //**** STATIC METHODS **********************************************************
