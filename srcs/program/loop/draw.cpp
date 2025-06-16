@@ -12,7 +12,7 @@ void	draw(
 	engine.window.startDraw();
 
 	map.draw(engine, camera, chunkShader);
-	skybox.draw(engine, camera, skyboxShader);
+	// skybox.draw(engine, camera, skyboxShader);
 
 	// End drawing
 	engine.window.endDraw(engine.context);
