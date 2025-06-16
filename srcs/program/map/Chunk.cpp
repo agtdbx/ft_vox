@@ -77,6 +77,11 @@ Chunk::Chunk(void)
 		this->cubesBitmapZ[i] = 0;
 	}
 	this->copyCommandPool = NULL;
+
+	int	halfChunkSize = CHUNK_SIZE / 2;
+	int	halfChunkHeight = CHUNK_HEIGHT / 2;
+	this->boundingCube.center = gm::Vec3f(halfChunkSize, halfChunkHeight, halfChunkSize);
+	this->boundingCube.extents = gm::Vec3f(halfChunkSize, halfChunkHeight, halfChunkSize);
 }
 
 
@@ -93,6 +98,7 @@ Chunk::Chunk(const Chunk &obj)
 	}
 	this->copyCommandPool = obj.copyCommandPool;
 	this->mesh = obj.mesh;
+	this->boundingCube = obj.boundingCube;
 }
 
 //---- Destructor --------------------------------------------------------------
@@ -104,6 +110,12 @@ Chunk::~Chunk()
 
 //**** ACCESSORS ***************************************************************
 //---- Getters -----------------------------------------------------------------
+
+const BoundingCube	&Chunk::getBoundingCube(void) const
+{
+	return (this->boundingCube);
+}
+
 
 Cube	Chunk::getCube(int x, int y, int z) const
 {
@@ -171,6 +183,8 @@ Chunk	&Chunk::operator=(const Chunk &obj)
 		this->cubesBitmapZ[i] = obj.cubesBitmapZ[i];
 	}
 
+	this->boundingCube = obj.boundingCube;
+
 	return (*this);
 }
 
@@ -200,6 +214,8 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 	this->chunkPosition.x = this->chunkId.x * CHUNK_SIZE;
 	this->chunkPosition.y = 0.0f;
 	this->chunkPosition.z = this->chunkId.y * CHUNK_SIZE;
+
+	this->boundingCube.center = this->chunkPosition;
 
 	startLog(perfLogger.generation);
 

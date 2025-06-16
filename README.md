@@ -45,3 +45,4 @@ cd release
 **Camera** :
 - enable/disable fdf view			tab
 - enable/disable chunk border view	c
+- display number of draw call		l <!-- TODO: REMOVE -->

@@ -7,6 +7,7 @@
 # include <engine/mesh/VertexPosNrm.hpp>
 # include <engine/shader/Shader.hpp>
 # include <engine/camera/Camera.hpp>
+# include <engine/camera/BoundingCube.hpp>
 # include <program/map/Cube.hpp>
 # include <program/shaderStruct.hpp>
 # include <program/map/Perlin.hpp>
@@ -104,6 +105,12 @@ public:
 
 //**** ACCESSORS ***************************************************************
 //---- Getters -----------------------------------------------------------------
+	/**
+	 * @brief Getter of bounding cube.
+	 *
+	 * @return The const reference to bounding cube.
+	 */
+	const BoundingCube	&getBoundingCube(void) const;
 	/**
 	 * @brief Getter of cube in a chunk.
 	 *
@@ -220,6 +227,7 @@ private:
 	UBO3DChunkPos	uboPos;
 	UBO3DChunkCubes	uboCubes;
 	ShaderParam		shaderParam, shaderParamFdf, shaderParamBorder;
+	BoundingCube	boundingCube;
 //---- Copy --------------------------------------------------------------------
 	VulkanCommandPool	*copyCommandPool;
 

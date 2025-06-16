@@ -37,6 +37,12 @@ public:
 
 //**** ACCESSORS ***************************************************************
 //---- Getters -----------------------------------------------------------------
+	/**
+	 * @brief Getter of bounding cube.
+	 *
+	 * @return The const reference to bounding cube.
+	 */
+	const BoundingCube	&getBoundingCube(void) const;
 //---- Setters -----------------------------------------------------------------
 //---- Operators ---------------------------------------------------------------
 	/**
@@ -62,8 +68,13 @@ public:
 	 * @param engine Engine struct.
 	 * @param camera The camera.
 	 * @param chunkShader Shaders used to draw chunk meshes.
+	 * @param nbDrawCall Counter for draw call.
 	 */
-	void	draw(Engine &engine, Camera &camera, ChunkShader &chunkShader);
+	void	draw(
+				Engine &engine,
+				Camera &camera,
+				ChunkShader &chunkShader,
+				int &nbDrawCall); // TODO: Remove nbDrawCall
 
 //**** STATIC METHODS **********************************************************
 
@@ -71,6 +82,8 @@ private:
 //**** PRIVATE ATTRIBUTS *******************************************************
 	gm::Vec2i	minChunk, maxChunk;
 	Chunk	*chunks[CLUSTER_SIZE2];
+	BoundingCube	boundingCube;
+
 //**** PRIVATE METHODS *********************************************************
 };
 

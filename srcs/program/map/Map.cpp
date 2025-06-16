@@ -128,8 +128,22 @@ void	Map::init(
 
 void	Map::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 {
+	int	drawCall = 0;
+
 	for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
-		this->clusters[i].draw(engine, camera, chunkShader);
+	{
+		if (camera.isCubeInFrutum(this->clusters[i].getBoundingCube()))
+			this->clusters[i].draw(engine, camera, chunkShader, drawCall);
+	}
+
+	// TODO: Remove draw call count
+	if (engine.inputManager.l.isPressed())
+	{
+		int	nbChunkArround = CLUSTER_SIZE / 2 + MAP_CLUSTER_ARROUND * CLUSTER_SIZE;
+		int	totalChunks = (nbChunkArround * 2) * (nbChunkArround * 2);
+
+		printf("Draw call : %i / %i\n", drawCall, totalChunks);
+	}
 }
 
 
