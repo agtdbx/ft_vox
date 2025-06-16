@@ -4,14 +4,17 @@
 static void	loadTextures(Engine &engine);
 static void loadShaders(
 				Engine &engine,
-				ChunkShader &chunkShader);
+				ChunkShader &chunkShader,
+				Shader &skyBoxShader);
 
 
 bool init(
 		Engine &engine,
 		Map &map,
 		ChunkShader &chunkShader,
-		Camera &camera)
+		Shader &skyBoxShader,
+		Camera &camera,
+		Skybox &skybox)
 {
 	camera.setPosition(gm::Vec3f(-3.0f, 235.0f, 212.0f));
 	camera.setRotation(-33.73f, -91.42f, 0.0f);
@@ -27,8 +30,9 @@ bool init(
 		// Vulkan attributs creation
 		engine.textureManager.createAllImages(engine);
 
-		loadShaders(engine, chunkShader);
+		loadShaders(engine, chunkShader, skyBoxShader);
 		map.init(engine, camera, chunkShader);
+		skybox.init(engine, skyBoxShader, camera);
 	}
 	catch(const std::exception& e)
 	{
@@ -59,7 +63,8 @@ static void	loadTextures(Engine &engine)
 
 static void loadShaders(
 				Engine &engine,
-				ChunkShader &chunkShader)
+				ChunkShader &chunkShader,
+				Shader &skyBoxShader)
 {
 	std::vector<BufferInfo>	uboTypesChunk = {{sizeof(UBO3DChunkPos), BUFFER_UBO, STAGE_VERTEX},
 											{sizeof(UBO3DChunkCubes), BUFFER_SSBO, STAGE_FRAGMENT}};
@@ -79,5 +84,11 @@ static void loadShaders(
 	chunkShader.shaderBorder.init<VertexPos>(
 						engine, FCUL_NONE, DRAW_LINE,
 						"shadersbin/chunkBorder_vert.spv", "shadersbin/chunkBorder_frag.spv",
+						uboTypesChunkFdf);
+
+	//TODO donner une texture a la skybox
+	skyBoxShader.init<VertexPosTex>(
+						engine, FCUL_NONE, DRAW_POLYGON,
+						"shadersbin/skybox_vert.spv", "shadersbin/skybox_frag.spv",
 						uboTypesChunkFdf);
 }

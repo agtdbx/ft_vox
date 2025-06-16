@@ -30,7 +30,9 @@ srcs = [
   'srcs/engine/textures/TextureManager.cpp',
   'srcs/engine/mesh/VertexPosNrm.cpp',
   'srcs/engine/mesh/VertexPos.cpp',
+  'srcs/engine/mesh/VertexPosTex.cpp',
   'srcs/engine/mesh/Vertex.cpp',
+  'srcs/program/skybox/Skybox.cpp',
 ]
 
 executable('ft_vox',

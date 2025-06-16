@@ -7,6 +7,7 @@
 PerlinNoise PerlinGeration(42, 64);
 PerlinNoise PerlinTerrain(854, 2);
 PerlinNoise PerlinBiome(654, 4096);
+//PerlinNoise PerlinCave(8576, 128);
 
 //**** STATIC FUNCTIONS DEFINE *************************************************
 
@@ -134,6 +135,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 	int tmpZ = 0;
 	float Biome = 0;
 	float Moutain = 0;
+	//float Cave = 0;
 	for (int x = 0; x < CHUNK_SIZE; x++)
 	{
 		for (int z = 0; z < CHUNK_SIZE; z++)
@@ -153,6 +155,8 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 			maxSize = (PerlinGeration.getNoise(perlinX, perlinZ) * 32.0f + 48.0f);
 			Biome = (PerlinBiome.getNoise(perlinX, perlinZ));
 			Moutain = (PerlinTerrain.getNoise(perlinX, perlinZ));
+			// faire des truc aprés sa
+			//Cave = (PerlinCave.getNoise(perlinX, perlinZ));
 			if (Moutain < 0.2)
 				maxSize = maxSize - (Moutain * 32.0f + 48.0f);
 			else if (Moutain > 0.8)
@@ -161,6 +165,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 				maxSize = 1;
 			for (int y = 0; y < CHUNK_HEIGHT; y++)
 			{
+				//with this setup stone cannot be seen on the surface
 				int	id = x + z * CHUNK_SIZE + y * CHUNK_SIZE2;
 				if (y > (int)maxSize && y > 58)
 					this->cubes[id] = CUBE_AIR;

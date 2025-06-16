@@ -11,6 +11,7 @@
 # include <engine/textures/TextureManager.hpp>
 # include <program/shaderStruct.hpp>
 # include <program/map/Map.hpp>
+# include <program/skybox/Skybox.hpp>
 
 /**
  * @brief Init function of program.
@@ -26,7 +27,9 @@ bool init(
 			Engine &engine,
 			Map &map,
 			ChunkShader &chunkShader,
-			Camera &camera);
+			Shader &skyBoxShader,
+			Camera &camera,
+			Skybox &skybox);
 /**
  * @brief Update envents of program.
  *
@@ -61,7 +64,9 @@ void	draw(
 			Engine &engine,
 			Map &map,
 			ChunkShader &chunkShader,
-			Camera &camera);
+			Camera &camera,
+			Skybox &skybox,
+			Shader &skyboxShader);
 
 
 #endif
