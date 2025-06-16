@@ -12,12 +12,13 @@ static void cameraMovements(
 
 void	computation(
 			Engine &engine,
-			Map &map,
 			Camera &camera,
-			ChunkShader &chunkShader,
+			Objects &objects,
+			Shaders &shaders,
 			double delta)
 {
 	InputManager &inputManager = engine.inputManager;
+	ChunkShader	&chunkShader = shaders.chunkShader;
 
 	perfLog(delta, engine.window);
 

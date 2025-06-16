@@ -11,6 +11,14 @@
 # include <fstream>
 # include <gmath.hpp>
 
+enum DepthMode
+{
+	DEPTH_DISABLE = 0b00,
+	DEPTH_READ = 0b01,
+	DEPTH_WRITE = 0b10,
+	DEPTH_READ_WRITE = 0b11,
+};
+
 enum FaceCulling
 {
 	FCUL_NONE,
@@ -97,14 +105,14 @@ public:
 	 */
 	template<typename VertexType>
 	void	init(
-				Engine &engine, FaceCulling faceCulling, DrawMode drawMode,
+				Engine &engine, DepthMode depthMode, FaceCulling faceCulling, DrawMode drawMode,
 				std::string vertexPath, std::string fragmentPath)
 	{
 		VkDevice	device = engine.context.getDevice();
 
 		this->createDescriptorSetLayout(device);
 		this->createGraphicsPipeline<VertexType>(device, engine.window, vertexPath, fragmentPath,
-										faceCulling, drawMode);
+										depthMode, faceCulling, drawMode);
 	}
 	/**
 	 * @brief Init shader from parameters.
@@ -117,7 +125,7 @@ public:
 	 */
 	template<typename VertexType>
 	void	init(
-				Engine &engine, FaceCulling faceCulling, DrawMode drawMode,
+				Engine &engine, DepthMode depthMode, FaceCulling faceCulling, DrawMode drawMode,
 				std::string vertexPath, std::string fragmentPath,
 				const std::vector<BufferInfo> &bufferInfos)
 	{
@@ -127,7 +135,7 @@ public:
 
 		this->createDescriptorSetLayout(device);
 		this->createGraphicsPipeline<VertexType>(device, engine.window, vertexPath, fragmentPath,
-										faceCulling, drawMode);
+										depthMode, faceCulling, drawMode);
 	}
 	/**
 	 * @brief Init shader from parameters.
@@ -141,7 +149,7 @@ public:
 	 */
 	template<typename VertexType>
 	void	init(
-				Engine &engine, FaceCulling faceCulling, DrawMode drawMode,
+				Engine &engine, DepthMode depthMode, FaceCulling faceCulling, DrawMode drawMode,
 				std::string vertexPath, std::string fragmentPath,
 				const std::vector<BufferInfo> &bufferInfos,
 				const std::vector<ImageInfo> &imageInfos)
@@ -153,7 +161,7 @@ public:
 
 		this->createDescriptorSetLayout(device);
 		this->createGraphicsPipeline<VertexType>(device, engine.window, vertexPath, fragmentPath,
-										faceCulling, drawMode);
+										depthMode, faceCulling, drawMode);
 	}
 	/**
 	 * @brief Init a shaderParam
@@ -202,7 +210,7 @@ private:
 	void	createGraphicsPipeline(
 				VkDevice device, Window &window,
 				std::string vertexPath, std::string fragmentPath,
-				FaceCulling faceCulling, DrawMode drawMode)
+				DepthMode depthMode, FaceCulling faceCulling, DrawMode drawMode)
 	{
 		// Read files
 		std::vector<char> vertShaderCode = readFile(vertexPath);
@@ -339,8 +347,16 @@ private:
 
 		VkPipelineDepthStencilStateCreateInfo depthStencil{};
 		depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-		depthStencil.depthTestEnable = VK_TRUE;
-		depthStencil.depthWriteEnable = VK_TRUE;
+
+		if (depthMode & DEPTH_READ)
+			depthStencil.depthTestEnable = VK_TRUE;
+		else
+			depthStencil.depthTestEnable = VK_FALSE;
+		if (depthMode & DEPTH_WRITE)
+			depthStencil.depthWriteEnable = VK_TRUE;
+		else
+			depthStencil.depthWriteEnable = VK_FALSE;
+
 		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
 		depthStencil.depthBoundsTestEnable = VK_FALSE;
 		depthStencil.minDepthBounds = 0.0f; // Optional

@@ -2,17 +2,15 @@
 
 void	draw(
 			Engine &engine,
-			Map &map,
-			ChunkShader &chunkShader,
 			Camera &camera,
-			Skybox &skybox,
-			Shader &skyboxShader)
+			Objects &objects,
+			Shaders &shaders)
 {
 	// Start drawing
 	engine.window.startDraw();
 
-	map.draw(engine, camera, chunkShader);
-	// skybox.draw(engine, camera, skyboxShader);
+	objects.skybox.draw(engine, camera, shaders.skyboxShader);
+	objects.map.draw(engine, camera, shaders.chunkShader);
 
 	// End drawing
 	engine.window.endDraw(engine.context);

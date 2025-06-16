@@ -6,12 +6,12 @@ layout(location = 1) in vec2 fragTexCoord;
 
 // Output
 layout(location = 0) out vec4   outColor;
-layout(binding = 1)  uniform sampler2D sampleSky;
 
-// Function
+// Binding buffer
+layout(binding = 1) uniform sampler2D sampleSky;
 
 // Main
 void main()
 {
-    outColor = vec4(fragTexCoord, 1, 1);
+    outColor = texture(sampleSky, fragTexCoord);
 }

@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 15:33:15 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/13 19:22:26 by gugus            ###   ########.fr       */
+/*   Updated: 2025/06/16 19:36:45 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,21 +24,17 @@ int	main(void)
 
 	Engine		engine;
 	Camera		camera;
-	ChunkShader	chunkShader;
-	Map			map;
-	Shader		skyBoxShader;
-	Skybox		skybox;
+	Objects		objects;
+	Shaders		shaders;
 
-	if (!init(engine, map, chunkShader, skyBoxShader, camera, skybox))
+	if (!init(engine, camera, objects, shaders))
 	{
 		// Wait all vulkan tasks
 		vkDeviceWaitIdle(engine.context.getDevice());
 
 		// Destroy vulkans attributs
-		map.destroy(engine);
-		skybox.destroy(engine);
-		chunkShader.destroy(engine);
-		skyBoxShader.destroy(engine);
+		objects.destroy(engine);
+		shaders.destroy(engine);
 
 		// Terminate engine and glfw
 		destroyEngine(engine);
@@ -64,20 +60,18 @@ int	main(void)
 			break;
 
 		// Compute part
-		computation(engine, map, camera, chunkShader, delta);
+		computation(engine, camera, objects, shaders, delta);
 
 		// Drawing part
-		draw(engine, map, chunkShader, camera, skybox, skyBoxShader);
+		draw(engine, camera, objects, shaders);
 	}
 
 	// Wait all vulkan tasks
 	vkDeviceWaitIdle(engine.context.getDevice());
 
 	// Destroy vulkans attributs
-	map.destroy(engine);
-	skybox.destroy(engine);
-	chunkShader.destroy(engine);
-	skyBoxShader.destroy(engine);
+	objects.destroy(engine);
+	shaders.destroy(engine);
 
 	// Terminate engine and glfw
 	destroyEngine(engine);

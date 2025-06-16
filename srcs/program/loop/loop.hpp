@@ -13,23 +13,56 @@
 # include <program/map/Map.hpp>
 # include <program/skybox/Skybox.hpp>
 
+
+struct Objects
+{
+	Map		map;
+	Skybox	skybox;
+
+	/**
+	 * @brief Destroy all object in struct.
+	 *
+	 * @param engine Engine to init.
+	 */
+	void	destroy(Engine &engine)
+	{
+		map.destroy(engine);
+		skybox.destroy(engine);
+	}
+};
+
+struct Shaders
+{
+	ChunkShader	chunkShader;
+	Shader		skyboxShader;
+
+	/**
+	 * @brief Destroy all shader in struct.
+	 *
+	 * @param engine Engine to init.
+	 */
+	void	destroy(Engine &engine)
+	{
+		chunkShader.destroy(engine);
+		skyboxShader.destroy(engine);
+	}
+};
+
 /**
  * @brief Init function of program.
  *
  * @param engine Engine to init.
- * @param map Map to init.
- * @param chunkShader Shaders for chunk to init.
  * @param camera Camera to init.
+ * @param objects Struct that contain all objects.
+ * @param shaders Struct that contain all shaders.
  *
  * @return True if the init succeed, false else.
  */
 bool init(
-			Engine &engine,
-			Map &map,
-			ChunkShader &chunkShader,
-			Shader &skyBoxShader,
-			Camera &camera,
-			Skybox &skybox);
+		Engine &engine,
+		Camera &camera,
+		Objects &objects,
+		Shaders &shaders);
 /**
  * @brief Update envents of program.
  *
@@ -41,32 +74,30 @@ void	events(
  * @brief Make computation of program.
  *
  * @param engine Engine struct.
- * @param map Map to update.
  * @param camera Camera to update.
- * @param chunkShader Shaders for chunk to switch.
+ * @param objects Struct that contain all objects.
+ * @param shaders Struct that contain all shaders.
  * @param delta Delta time, previous main loop execution time in second.
  */
 void	computation(
 			Engine &engine,
-			Map &map,
 			Camera &camera,
-			ChunkShader &chunkShader,
+			Objects &objects,
+			Shaders &shaders,
 			double delta);
 /**
  * @brief Function to call drawing.
  *
  * @param engine Engine struct.
- * @param map Map to draw.
- * @param chunkShader Shaders used for draw chunks.
  * @param camera Camera used for draw.
+ * @param objects Struct that contain all objects.
+ * @param shaders Struct that contain all shaders.
  */
 void	draw(
 			Engine &engine,
-			Map &map,
-			ChunkShader &chunkShader,
 			Camera &camera,
-			Skybox &skybox,
-			Shader &skyboxShader);
+			Objects &objects,
+			Shaders &shaders);
 
 
 #endif

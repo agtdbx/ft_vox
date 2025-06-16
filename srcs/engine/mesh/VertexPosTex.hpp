@@ -7,7 +7,7 @@
 # include <gmath.hpp>
 
 /**
- * @brief Class for 3D vertex with a position and a normal. Made to work with Vulkan.
+ * @brief Class for 3D vertex with a position and a texture coordonate. Made to work with Vulkan.
  */
 class VertexPosTex
 {
@@ -18,7 +18,7 @@ public:
 	 */
 	gm::Vec3f	pos;
 	/**
-	 * @brief Normal of vertex.
+	 * @brief Texture coordonate of vertex.
 	 */
 	gm::Vec2f	tex;
 

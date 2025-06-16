@@ -32,6 +32,23 @@ struct Image
 	uint32_t		nbLayer;
 };
 
+
+/**
+ * @brief Struct for sampler info.
+ */
+struct SamplerInfo
+{
+	// false for interpolate pixel, true for pixelart
+	bool	pixelize;
+	// false to clamp to edge, true for repeat
+	bool	repeat;
+	// false for texCoord in range [0.0,1.0[, true for range [0, size[
+	bool	intCoordonates;
+	// false for quality, true for perf
+	bool	perfOverQuality;
+};
+
+
 struct Engine;
 
 /**
@@ -91,16 +108,22 @@ public:
 	 * @brief Create an image usable for vulkan.
 	 *
 	 * @param engine The engine struct.
+	 * @param samplerInfo Info for the sampler.
 	 * @param imageId Id of the created image.
 	 * @param textureId Id of the texture used to create the image.
 	 *
 	 * @exception Throw an runtime_error if imageId is already used or if textureId isn't exist.
 	 */
-	void	createImage(Engine &engine, std::string imageId, std::string textureId);
+	void	createImage(
+				Engine &engine,
+				SamplerInfo samplerInfo,
+				std::string imageId,
+				std::string textureId);
 	/**
 	 * @brief Create an image array usable for vulkan.
 	 *
 	 * @param engine The engine struct.
+	 * @param samplerInfo Info for the sampler.
 	 * @param imageId Id of the created image.
 	 * @param textureIds Vector or texture's id used to create the image array.
 	 *
@@ -108,16 +131,20 @@ public:
 	 */
 	void	createImageArray(
 				Engine &engine,
+				SamplerInfo samplerInfo,
 				std::string imageId,
 				const std::vector<std::string> &textureIds);
 	/**
 	 * @brief Create all image usable for vulkan from all textures.
 	 *
 	 * @param engine The engine struct.
+	 * @param samplerInfo Info for the sampler.
 	 *
 	 * @exception Throw an runtime_error if imageId is already used or if textureId isn't exist.
 	 */
-	void	createAllImages(Engine &engine);
+	void	createAllImages(
+				Engine &engine,
+				SamplerInfo samplerInfo);
 	/**
 	 * @brief Free all images created.
 	 *
@@ -191,12 +218,13 @@ private:
 	 * @param device The device of VulkanContext class.
 	 * @param physicalDevice The physical device of VulkanContext class.
 	 * @param sampler The sampler to create.
+	 * @param samplerInfoParam Info for the sampler.
 	 *
 	 * @exception Throw a runtime_error if the creation failed.
 	 */
 	void	createTextureSampler(
 				VkDevice device, VkPhysicalDevice physicalDevice,
-				VkSampler &sampler);
+				VkSampler &sampler, SamplerInfo &samplerInfoParam);
 };
 
 //**** FUNCTIONS ***************************************************************

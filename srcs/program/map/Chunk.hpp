@@ -208,6 +208,8 @@ public:
 	void	draw(Engine &engine, Camera &camera, ChunkShader &chunkShader);
 	/**
 	 * @brief Destroy chunk.
+	 *
+	 * @param engine Engine struct.
 	 */
 	void	destroy(Engine &engine);
 

@@ -82,7 +82,11 @@ void	TextureManager::addTexture(std::string id, std::string texturePath)
 }
 
 
-void	TextureManager::createImage(Engine &engine, std::string imageId, std::string textureId)
+void	TextureManager::createImage(
+							Engine &engine,
+							SamplerInfo samplerInfo,
+							std::string imageId,
+							std::string textureId)
 {
 	std::unordered_map<std::string, Image>::iterator itImg = this->images.find(imageId);
 
@@ -101,7 +105,7 @@ void	TextureManager::createImage(Engine &engine, std::string imageId, std::strin
 	this->createTextureImage(device, physicalDevice, engine.commandPool,
 								itTex->second, image.image, image.memory);
 	this->createTextureImageView(device, image.image, image.view);
-	this->createTextureSampler(device, physicalDevice, image.sampler);
+	this->createTextureSampler(device, physicalDevice, image.sampler, samplerInfo);
 	image.nbLayer = 1;
 
 	this->images[imageId] = image;
@@ -110,6 +114,7 @@ void	TextureManager::createImage(Engine &engine, std::string imageId, std::strin
 
 void	TextureManager::createImageArray(
 							Engine &engine,
+							SamplerInfo samplerInfo,
 							std::string imageId,
 							const std::vector<std::string> &textureIds)
 {
@@ -153,14 +158,16 @@ void	TextureManager::createImageArray(
 	this->createTextureImageArray(device, physicalDevice, engine.commandPool,
 									arrayTextures, image.image, image.memory);
 	this->createTextureImageArrayView(device, image.image, image.view, nbTexture);
-	this->createTextureSampler(device, physicalDevice, image.sampler);
+	this->createTextureSampler(device, physicalDevice, image.sampler, samplerInfo);
 	image.nbLayer = nbTexture;
 
 	this->images[imageId] = image;
 }
 
 
-void	TextureManager::createAllImages(Engine &engine)
+void	TextureManager::createAllImages(
+							Engine &engine,
+							SamplerInfo samplerInfo)
 {
 	std::unordered_map<std::string, Texture>::iterator itTex = this->textures.begin();
 
@@ -179,7 +186,7 @@ void	TextureManager::createAllImages(Engine &engine)
 		this->createTextureImage(device, physicalDevice, engine.commandPool,
 									itTex->second, image.image, image.memory);
 		this->createTextureImageView(device, image.image, image.view);
-		this->createTextureSampler(device, physicalDevice, image.sampler);
+		this->createTextureSampler(device, physicalDevice, image.sampler, samplerInfo);
 		image.nbLayer = 1;
 
 		this->images[imageId] = image;
@@ -336,7 +343,7 @@ void	TextureManager::createTextureImageArrayView(
 
 void	TextureManager::createTextureSampler(
 							VkDevice device, VkPhysicalDevice physicalDevice,
-							VkSampler &sampler)
+							VkSampler &sampler, SamplerInfo &samplerInfoParam)
 {
 	VkPhysicalDeviceProperties properties{};
 	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
@@ -344,23 +351,48 @@ void	TextureManager::createTextureSampler(
 	// Define how texture will be displayed (interpolation or not, repeat or not...)
 	VkSamplerCreateInfo samplerInfo{};
 	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-	// samplerInfo.magFilter = VK_FILTER_LINEAR;
-	// samplerInfo.minFilter = VK_FILTER_LINEAR;
-	samplerInfo.magFilter = VK_FILTER_NEAREST;
-	samplerInfo.minFilter = VK_FILTER_NEAREST;
-	samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	if (samplerInfoParam.pixelize)
+	{
+		samplerInfo.magFilter = VK_FILTER_LINEAR;
+		samplerInfo.minFilter = VK_FILTER_LINEAR;
+	}
+	else
+	{
+		samplerInfo.magFilter = VK_FILTER_NEAREST;
+		samplerInfo.minFilter = VK_FILTER_NEAREST;
+	}
+	if (samplerInfoParam.repeat)
+	{
+		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	}
+	else
+	{
+		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+	}
 
-	// If anisotropy is high, perf < quality
-	samplerInfo.anisotropyEnable = VK_TRUE;
-	samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
-	// If anisotropy is lower, perf > quality
-	// samplerInfo.anisotropyEnable = VK_FALSE;
-	// samplerInfo.maxAnisotropy = 1.0f;
+	if (samplerInfoParam.perfOverQuality)
+	{
+		// If anisotropy is lower, perf > quality
+		samplerInfo.anisotropyEnable = VK_FALSE;
+		samplerInfo.maxAnisotropy = 1.0f;
+	}
+	else
+	{
+		// If anisotropy is high, perf < quality
+		samplerInfo.anisotropyEnable = VK_TRUE;
+		samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+	}
+
 
 	samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-	samplerInfo.unnormalizedCoordinates = VK_FALSE; // False : pixel in range [0, 1[ | True : pixel in range [0, width[
+	if (samplerInfoParam.intCoordonates)
+		samplerInfo.unnormalizedCoordinates = VK_TRUE; // True : pixel in range [0, width[
+	else
+		samplerInfo.unnormalizedCoordinates = VK_FALSE; // False : pixel in range [0, 1[
 	samplerInfo.compareEnable = VK_FALSE;
 	samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;

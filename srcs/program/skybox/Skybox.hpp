@@ -1,25 +1,72 @@
-#pragma once
+#ifndef SKYBOX_HPP
+# define SKYBOX_HPP
 
 # include <engine/engine.hpp>
 # include <engine/mesh/Mesh.hpp>
 # include <engine/mesh/VertexPosTex.hpp>
 # include <engine/shader/Shader.hpp>
 # include <engine/camera/Camera.hpp>
-# include <program/map/Cube.hpp>
 # include <program/shaderStruct.hpp>
-# include <program/map/PerlinNoise.hpp>
 
-class Skybox {
+/**
+ * @brief Class for a skybox.
+ */
+class Skybox
+{
 public:
-    Skybox();
-    ~Skybox();
+//**** PUBLIC ATTRIBUTS ********************************************************
+//**** INITIALISION ************************************************************
+//---- Constructors ------------------------------------------------------------
+	/**
+	 * @brief Default contructor of Skybox class.
+	 *
+	 * @return The default Skybox.
+	 */
+	Skybox();
+//---- Destructor --------------------------------------------------------------
+	/**
+	 * @brief Destructor of Skybox class.
+	 */
+	~Skybox();
 
-    void init(Engine &engine, Shader &skyboxShader, Camera &camera);
-    void destroy(Engine &engine);
-    void draw(Engine &engine, Camera &camera, Shader &skyboxShader);
+//**** ACCESSORS ***************************************************************
+//---- Getters -----------------------------------------------------------------
+//---- Setters -----------------------------------------------------------------
+//---- Operators ---------------------------------------------------------------
+//**** PUBLIC METHODS **********************************************************
+	/**
+	 * @brief Init the skybox.
+	 *
+	 * @param engine Engine struct.
+	 * @param camera The camera.
+	 * @param skyboxShader Shader used to draw skybox.
+	 */
+	void init(Engine &engine, Camera &camera, Shader &skyboxShader);
+	/**
+	 * @brief Draw the skybox.
+	 *
+	 * @param engine Engine struct.
+	 * @param camera The camera.
+	 * @param skyboxShader Shader used to draw skybox.
+	 */
+	void draw(Engine &engine, Camera &camera, Shader &skyboxShader);
+	/**
+	 * @brief Destroy skybox.
+	 *
+	 * @param engine Engine struct.
+	 */
+	void destroy(Engine &engine);
+
+//**** STATIC METHODS **********************************************************
 
 private:
-    Mesh<VertexPosTex> mesh;
-    ShaderParam		shaderParam;
-    UBO3DChunkPos          uboPos;
+//**** PRIVATE ATTRIBUTS *******************************************************
+	Mesh<VertexPosTex>	mesh;
+	ShaderParam			shaderParam;
+	UBO3DChunkPos		uboPos;
+//**** PRIVATE METHODS *********************************************************
 };
+
+//**** FUNCTIONS ***************************************************************
+
+#endif
