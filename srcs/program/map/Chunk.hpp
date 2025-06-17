@@ -4,7 +4,7 @@
 # include <engine/engine.hpp>
 # include <engine/mesh/Mesh.hpp>
 # include <engine/mesh/VertexPos.hpp>
-# include <engine/mesh/VertexPosNrm.hpp>
+# include <engine/mesh/VertexVoxel.hpp>
 # include <engine/shader/Shader.hpp>
 # include <engine/camera/Camera.hpp>
 # include <engine/camera/BoundingCube.hpp>
@@ -14,7 +14,7 @@
 
 #include <chrono>
 
-using ChunkMesh = Mesh<VertexPosNrm>;
+using ChunkMesh = Mesh<VertexVoxel>;
 using ChunkBorderMesh = Mesh<VertexPos>;
 
 class Map;
@@ -206,7 +206,6 @@ private:
 	ChunkMesh		mesh;
 	ChunkBorderMesh	borderMesh;
 	UBO3DChunkPos	uboPos;
-	UBO3DChunkCubes	uboCubes;
 	ShaderParam		shaderParam, shaderParamFdf, shaderParamBorder;
 	BoundingCube	boundingCube;
 //---- Copy --------------------------------------------------------------------

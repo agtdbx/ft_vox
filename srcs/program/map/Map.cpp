@@ -140,21 +140,22 @@ void	Map::update(Camera &camera)
 			this->mapChunksIntoClusters();
 		}
 	}
-	else
-	{
-		gm::Vec2i	cameraChunkId(camera.getPosition().x / CHUNK_SIZE,
-									camera.getPosition().z / CHUNK_SIZE);
+	// TODO: Uncomment for enable infinite generation
+	// else
+	// {
+	// 	gm::Vec2i	cameraChunkId(camera.getPosition().x / CHUNK_SIZE,
+	// 								camera.getPosition().z / CHUNK_SIZE);
 
-		if (cameraChunkId != this->cameraChunkId)
-		{
-			this->generationProcess.mutex.lock();
-			this->generationProcess.cameraChunkId = cameraChunkId;
-			this->generationProcess.mustGenerate = true;
-			this->generationProcess.mutex.unlock();
-			this->checkGeneration = true;
-			this->cameraChunkId = cameraChunkId;
-		}
-	}
+	// 	if (cameraChunkId != this->cameraChunkId)
+	// 	{
+	// 		this->generationProcess.mutex.lock();
+	// 		this->generationProcess.cameraChunkId = cameraChunkId;
+	// 		this->generationProcess.mustGenerate = true;
+	// 		this->generationProcess.mutex.unlock();
+	// 		this->checkGeneration = true;
+	// 		this->cameraChunkId = cameraChunkId;
+	// 	}
+	// }
 }
 
 
@@ -269,7 +270,7 @@ static void	threadRoutine(GenerationProcess *generationProcess)
 	generationProcess->mutex.unlock();
 }
 
-
+const float	INV_CLOCKS_PER_USEC = 1.0 / (float)CLOCKS_PER_SEC * 1000000.0;
 static void	firstGenerateChunk(
 				GenerationProcess *generationProcess,
 				const gm::Vec2i &cameraChunkId)
@@ -285,29 +286,47 @@ static void	firstGenerateChunk(
 	std::size_t	hash;
 
 	// Generate chunks
+	std::clock_t	start = std::clock();
+	int	nbChunk = 0;
+	int	totalChunk = (maxChunk.x - minChunk.x) * (maxChunk.y - minChunk.y);
+	std::cout << "Generate chunks :" << std::endl;
 	for (int x = minChunk.x; x < maxChunk.x; x++)
 	{
 		for (int y = minChunk.y; y < maxChunk.y; y++)
 		{
+			nbChunk++;
+			std::cout << "\r" << nbChunk  << "/" << totalChunk << std::flush;
+
 			hash = gm::hash(gm::Vec2i(x, y));
 			chunks[hash] = Chunk();
 			chunks[hash].init(engine, camera, chunkShader);
 			chunks[hash].generate(gm::Vec2i(x, y));
 		}
 	}
+	float	avg = (std::clock() - start) * INV_CLOCKS_PER_USEC / (float)totalChunk;
+	std::cout << "\navg  : " << avg << " us\n" << std::endl;
 
 	minChunk += gm::Vec2i(1, 1);
 	maxChunk -= gm::Vec2i(1, 1);
 
 	// Create chunks meshes
+	start = std::clock();
+	nbChunk = 0;
+	totalChunk = (maxChunk.x - minChunk.x) * (maxChunk.y - minChunk.y);
+	std::cout << "Create meshes :" << std::endl;
 	for (int x = minChunk.x; x < maxChunk.x; x++)
 	{
 		for (int y = minChunk.y; y < maxChunk.y; y++)
 		{
+			nbChunk++;
+			std::cout << "\r" << nbChunk  << "/" << totalChunk << std::flush;
+
 			hash = gm::hash(gm::Vec2i(x, y));
 			chunks[hash].createMeshes(map);
 		}
 	}
+	avg = (std::clock() - start) * INV_CLOCKS_PER_USEC / (float)totalChunk;
+	std::cout << "\navg  : " << avg << " us\n" << std::endl;
 }
 
 

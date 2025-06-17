@@ -4,8 +4,7 @@
 enum	Cube : uint8_t
 {
 	// Basic cube
-	CUBE_AIR = 0,
-	CUBE_GRASS,
+	CUBE_GRASS = 0,
 	CUBE_DIRT,
 	CUBE_STONE,
 	CUBE_WATER,
@@ -21,6 +20,9 @@ enum	Cube : uint8_t
 	// Underground
 	CUBE_IRON,
 	CUBE_DIAMOND,
+
+	// Air
+	CUBE_AIR,
 };
 
 #endif

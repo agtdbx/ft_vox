@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/13 19:30:26 by gugus            ###   ########.fr       */
+/*   Updated: 2025/06/17 19:19:50 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,10 +23,6 @@ struct UBO3DChunkPos {
 	gm::Mat4f	view;
 	gm::Mat4f	proj;
 	gm::Vec4f	pos;
-};
-
-struct UBO3DChunkCubes {
-	uint32_t	cubes[CHUNK_SSBO_SIZE];
 };
 
 #endif

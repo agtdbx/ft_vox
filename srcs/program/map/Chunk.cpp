@@ -21,19 +21,20 @@ const gm::Vec3f	normalRight(1, 0, 0);
 
 static uint32_t	getVetrexId(
 					std::unordered_map<std::size_t, uint32_t> &vertexIndex,
-					std::vector<VertexPosNrm> &vertices,
-					VertexPosNrm &vertex,
+					std::vector<VertexVoxel> &vertices,
+					VertexVoxel &vertex,
 					int &nbVertex);
 static void	createTriangleFace(
 				std::unordered_map<std::size_t, uint32_t> &vertexIndex,
-				std::vector<VertexPosNrm> &vertices,
+				std::vector<VertexVoxel> &vertices,
 				std::vector<uint32_t> &indices,
 				int &nbVertex,
 				const gm::Vec3f &posLU,
 				const gm::Vec3f &posLD,
 				const gm::Vec3f &posRD,
 				const gm::Vec3f &posRU,
-				const gm::Vec3f &normal);
+				const gm::Vec3f &normal,
+				const Cube &type);
 static bool	getCubeX(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z);
 static bool	getCubeZ(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z);
 static void	setCubeX(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z, bool cube);
@@ -277,15 +278,6 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 			}
 		}
 	}
-
-	for (int i = 0; i < CHUNK_SSBO_SIZE; i++)
-	{
-		id = i * 4;
-		this->uboCubes.cubes[i] = this->cubes[id] |
-									this->cubes[id + 1] << 8 |
-									this->cubes[id + 2] << 16 |
-									this->cubes[id + 3] << 24;
-	}
 }
 
 
@@ -311,7 +303,6 @@ void	Chunk::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 	if (!chunkShader.shaderFdfEnable)
 	{
 		this->shaderParam.updateBuffer(engine.window, &this->uboPos, 0);
-		this->shaderParam.updateBuffer(engine.window, &this->uboCubes, 1);
 		engine.window.drawMesh(this->mesh, chunkShader.shader, this->shaderParam);
 	}
 	else
@@ -383,775 +374,97 @@ void	Chunk::createBorderMesh(void)
 void	Chunk::createMesh(Map &map)
 {
 	std::unordered_map<std::size_t, uint32_t>	vertexIndex;
-	std::vector<Face>			facesFront, facesBack, facesRight,
-								facesLeft, facesUp, facesDown;
-	std::vector<VertexPosNrm>	vertices;
-	std::vector<uint32_t>		indices;
-	int							nbVertex = 0;
+	std::vector<VertexVoxel>					vertices;
+	std::vector<uint32_t>						indices;
+	int											nbVertex = 0;
 	Chunk	*leftChunk = map.getChunk(this->chunkId.x - 1, this->chunkId.y);
 	Chunk	*rightChunk = map.getChunk(this->chunkId.x + 1, this->chunkId.y);
 	Chunk	*frontChunk = map.getChunk(this->chunkId.x, this->chunkId.y + 1);
 	Chunk	*backChunk = map.getChunk(this->chunkId.x, this->chunkId.y - 1);
-	int	x, y, z, tmpX, tmpY, tmpZ;
-	int32_t	cpyCubes[CHUNK_MASK_SIZE];
-	int32_t	airMask;
-
-	// Create face front
-	for (int i = 0; i < CHUNK_MASK_SIZE; i++)
-		cpyCubes[i] = this->cubesBitmapX[i];
-
-	z = 0;
-	while (z < CHUNK_SIZE)
-	{
-		y = 0;
-		while (y < CHUNK_HEIGHT)
-		{
-			x = 0;
-			while (x < CHUNK_SIZE)
-			{
-				if (getCubeX(cpyCubes, x, y, z) == 0)
-				{
-					x++;
-					continue;
-				}
-
-				if (z + 1 < CHUNK_SIZE)
-				{
-					if (this->at(x, y, z + 1) != CUBE_AIR)
-					{
-						x++;
-						continue;
-					}
-				}
-				else if (frontChunk)
-				{
-					if (frontChunk->at(x, y, 0) != CUBE_AIR)
-					{
-						x++;
-						continue;
-					}
-				}
-				else
-				{
-					x++;
-					continue;
-				}
-
-				Face	face = {x, y, 1, 1, z + 1};
-
-				setCubeX(cpyCubes, x, y, z, 0);
-
-				// Extend in x
-				tmpX = x + face.w;
-				if (z + 1 >= CHUNK_SIZE)
-				{
-					if (!frontChunk)
-						break;
-
-					while (tmpX < CHUNK_SIZE)
-					{
-						if (getCubeX(cpyCubes, tmpX, y, z) == 0)
-							break;
-
-						if (frontChunk->at(tmpX, y, 0) != CUBE_AIR)
-							break;
-
-						setCubeX(cpyCubes, tmpX, y, z, 0);
-						face.w++;
-						tmpX++;
-					}
-				}
-				else
-				{
-					while (tmpX < CHUNK_SIZE)
-					{
-						if (getCubeX(cpyCubes, tmpX, y, z) == 0)
-							break;
-
-						if (this->at(tmpX, y, z + 1) != CUBE_AIR)
-							break;
-
-						setCubeX(cpyCubes, tmpX, y, z, 0);
-						face.w++;
-						tmpX++;
-					}
-				}
-
-				// Extend in y
-				airMask = createLengthMask(face.w) << face.x;
-				tmpY = y + face.h;
-				while (tmpY < CHUNK_HEIGHT)
-				{
-					// Check if every cubes on the high layer aren't air
-					if ((cpyCubes[z + tmpY * CHUNK_SIZE] & airMask) != airMask)
-						break;
-
-					tmpX = 0;
-					if (z + 1 >= CHUNK_SIZE)
-					{
-						if (!frontChunk)
-							break;
-
-						while (tmpX < face.w)
-						{
-							if (frontChunk->at(x + tmpX, tmpY, 0) != CUBE_AIR)
-								break;
-							tmpX++;
-						}
-					}
-					else
-					{
-						// Check if every cubes on the next layer are air
-						if ((cpyCubes[(z + 1) + tmpY * CHUNK_SIZE] & airMask) == 0)
-							tmpX = face.w;
-					}
-
-					if (tmpX != face.w)
-						break;
-
-					for (int i = 0; i < face.w; i++)
-						setCubeX(cpyCubes, x + i, tmpY, z, 0);
-
-					face.h++;
-					tmpY++;
-				}
-
-				facesFront.push_back(face);
-				x += face.w;
-			}
-			y++;
-		}
-		z++;
-	}
-
-	// Create face back
-	for (int i = 0; i < CHUNK_MASK_SIZE; i++)
-		cpyCubes[i] = this->cubesBitmapX[i];
-	z = 0;
-	while (z < CHUNK_SIZE)
-	{
-		y = 0;
-		while (y < CHUNK_HEIGHT)
-		{
-			x = 0;
-			while (x < CHUNK_SIZE)
-			{
-				if (getCubeX(cpyCubes, x, y, z) == 0)
-				{
-					x++;
-					continue;
-				}
-
-				if (z - 1 >= 0)
-				{
-					if (this->at(x, y, z - 1) != CUBE_AIR)
-					{
-						x++;
-						continue;
-					}
-				}
-				else if (backChunk)
-				{
-					if (backChunk->at(x, y, CHUNK_MAX) != CUBE_AIR)
-					{
-						x++;
-						continue;
-					}
-				}
-				else
-				{
-					x++;
-					continue;
-				}
-
-				Face	face = {x, y, 1, 1, z};
-
-				setCubeX(cpyCubes, x, y, z, 0);
-
-				// Extend in x
-				tmpX = x + face.w;
-				if (z - 1 < 0)
-				{
-					if (!backChunk)
-						break;
-
-					while (tmpX < CHUNK_SIZE)
-					{
-						if (getCubeX(cpyCubes, tmpX, y, z) == 0)
-							break;
-
-						if (backChunk->at(tmpX, y, CHUNK_MAX) != CUBE_AIR)
-							break;
-
-						setCubeX(cpyCubes, tmpX, y, z, 0);
-						face.w++;
-						tmpX++;
-					}
-				}
-				else
-				{
-					while (tmpX < CHUNK_SIZE)
-					{
-						if (getCubeX(cpyCubes, tmpX, y, z) == 0)
-							break;
-
-						if (this->at(tmpX, y, z - 1) != CUBE_AIR)
-							break;
-
-						setCubeX(cpyCubes, tmpX, y, z, 0);
-						face.w++;
-						tmpX++;
-					}
-				}
-
-				// Extend in y
-				airMask = createLengthMask(face.w) << face.x;
-				tmpY = y + face.h;
-				while (tmpY < CHUNK_HEIGHT)
-				{
-					// Check if every cubes on the high layer aren't air
-					if ((cpyCubes[z + tmpY * CHUNK_SIZE] & airMask) != airMask)
-						break;
-
-					tmpX = 0;
-					if (z - 1 < 0)
-					{
-						if (!backChunk)
-							break;
-
-						while (tmpX < face.w)
-						{
-							if (backChunk->at(x + tmpX, y, CHUNK_MAX) != CUBE_AIR)
-								break;
-							tmpX++;
-						}
-					}
-					else
-					{
-						// Check if every cubes on the next layer are air
-						if ((cpyCubes[(z - 1) + tmpY * CHUNK_SIZE] & airMask) == 0)
-							tmpX = face.w;
-					}
-
-					if (tmpX != face.w)
-						break;
-
-					for (int i = 0; i < face.w; i++)
-						setCubeX(cpyCubes, x + i, tmpY, z, 0);
-
-					face.h++;
-					tmpY++;
-				}
-
-				facesBack.push_back(face);
-				x += face.w;
-			}
-			y++;
-		}
-		z++;
-	}
-
-	// Create face right
-	for (int i = 0; i < CHUNK_MASK_SIZE; i++)
-		cpyCubes[i] = this->cubesBitmapZ[i];
-	x = 0;
-	while (x < CHUNK_SIZE)
-	{
-		y = 0;
-		while (y < CHUNK_HEIGHT)
-		{
-			z = 0;
-			while (z < CHUNK_SIZE)
-			{
-				if (getCubeZ(cpyCubes, x, y, z) == 0)
-				{
-					z++;
-					continue;
-				}
-
-				if (x + 1 < CHUNK_SIZE)
-				{
-					if (this->at(x + 1, y, z) != CUBE_AIR)
-					{
-						z++;
-						continue;
-					}
-				}
-				else if (rightChunk)
-				{
-					if (rightChunk->at(0, y, z) != CUBE_AIR)
-					{
-						z++;
-						continue;
-					}
-				}
-				else
-				{
-					z++;
-					continue;
-				}
-
-				Face	face = {z, y, 1, 1, x + 1};
-
-				setCubeZ(cpyCubes, x, y, z, 0);
-
-				// Extend in z
-				tmpZ = z + face.w;
-				if (x + 1 >= CHUNK_SIZE)
-				{
-					if (!rightChunk)
-						break;
-					while (tmpZ < CHUNK_SIZE)
-					{
-						if (getCubeZ(cpyCubes, x, y, tmpZ) == 0)
-							break;
-
-						if (rightChunk->at(0, y, tmpZ) != CUBE_AIR)
-							break;
-
-						setCubeZ(cpyCubes, x, y, tmpZ, 0);
-						face.w++;
-						tmpZ++;
-					}
-				}
-				else
-				{
-					while (tmpZ < CHUNK_SIZE)
-					{
-						if (getCubeZ(cpyCubes, x, y, tmpZ) == 0)
-							break;
-
-						if (this->at(x + 1, y, tmpZ) != CUBE_AIR)
-							break;
-
-						setCubeZ(cpyCubes, x, y, tmpZ, 0);
-						face.w++;
-						tmpZ++;
-					}
-				}
-
-				// Extend in y
-				airMask = createLengthMask(face.w) << face.x;
-				tmpY = y + face.h;
-				while (tmpY < CHUNK_HEIGHT)
-				{
-					// Check if every cubes on the high layer aren't air
-					if ((cpyCubes[x + tmpY * CHUNK_SIZE] & airMask) != airMask)
-						break;
-
-					tmpZ = 0;
-					if (x + 1 >= CHUNK_SIZE)
-					{
-						if (!rightChunk)
-							break;
-
-						while (tmpZ < face.w)
-						{
-							if (rightChunk->at(0, tmpY, z + tmpZ) != CUBE_AIR)
-								break;
-							tmpZ++;
-						}
-					}
-					else
-					{
-						// Check if every cubes on the next layer are air
-						if ((cpyCubes[(x + 1) + tmpY * CHUNK_SIZE] & airMask) == 0)
-							tmpZ = face.w;
-					}
-
-					if (tmpZ != face.w)
-						break;
-
-					for (int i = 0; i < face.w; i++)
-						setCubeZ(cpyCubes, x, tmpY, z + i, 0);
-
-					face.h++;
-					tmpY++;
-				}
-
-				facesRight.push_back(face);
-				z += face.w;
-			}
-			y++;
-		}
-		x++;
-	}
-
-	// Create face left
-	for (int i = 0; i < CHUNK_MASK_SIZE; i++)
-		cpyCubes[i] = this->cubesBitmapZ[i];
-	x = 0;
-	while (x < CHUNK_SIZE)
-	{
-		y = 0;
-		while (y < CHUNK_HEIGHT)
-		{
-			z = 0;
-			while (z < CHUNK_SIZE)
-			{
-				if (getCubeZ(cpyCubes, x, y, z) == 0)
-				{
-					z++;
-					continue;
-				}
-
-				if (x - 1 >= 0)
-				{
-					if (this->at(x - 1, y, z) != CUBE_AIR)
-					{
-						z++;
-						continue;
-					}
-				}
-				else if (leftChunk)
-				{
-					if (leftChunk->at(CHUNK_MAX, y, z) != CUBE_AIR)
-					{
-						z++;
-						continue;
-					}
-				}
-				else
-				{
-					z++;
-					continue;
-				}
-
-				Face	face = {z, y, 1, 1, x};
-
-				setCubeZ(cpyCubes, x, y, z, 0);
-
-				// Extend in z
-				tmpZ = z + face.w;
-				if (x - 1 < 0)
-				{
-					if (!leftChunk)
-						break;
-
-					while (tmpZ < CHUNK_SIZE)
-					{
-						if (getCubeZ(cpyCubes, x, y, tmpZ) == 0)
-							break;
-
-						if (leftChunk->at(CHUNK_MAX, y, tmpZ) != CUBE_AIR)
-							break;
-
-						setCubeZ(cpyCubes, x, y, tmpZ, 0);
-						face.w++;
-						tmpZ++;
-					}
-				}
-				else
-				{
-					while (tmpZ < CHUNK_SIZE)
-					{
-						if (getCubeZ(cpyCubes, x, y, tmpZ) == 0)
-							break;
-
-						if (this->at(x - 1, y, tmpZ) != CUBE_AIR)
-							break;
-
-						setCubeZ(cpyCubes, x, y, tmpZ, 0);
-						face.w++;
-						tmpZ++;
-					}
-				}
-
-
-				// Extend in y
-				airMask = createLengthMask(face.w) << face.x;
-				tmpY = y + face.h;
-				while (tmpY < CHUNK_HEIGHT)
-				{
-					// Check if every cubes on the high layer aren't air
-					if ((cpyCubes[x + tmpY * CHUNK_SIZE] & airMask) != airMask)
-						break;
-
-					tmpZ = 0;
-					if (x - 1 < 0)
-					{
-						if (!leftChunk)
-							break;
-						while (tmpZ < face.w)
-						{
-							if (leftChunk->at(CHUNK_MAX, tmpY, z + tmpZ) != CUBE_AIR)
-								break;
-							tmpZ++;
-						}
-					}
-					else
-					{
-						// Check if every cubes on the next layer are air
-						if ((cpyCubes[(x - 1) + tmpY * CHUNK_SIZE] & airMask) == 0)
-							tmpZ = face.w;
-					}
-
-					if (tmpZ != face.w)
-						break;
-
-					for (int i = 0; i < face.w; i++)
-						setCubeZ(cpyCubes, x, tmpY, z + i, 0);
-
-					face.h++;
-					tmpY++;
-				}
-
-				facesLeft.push_back(face);
-				z += face.w;
-			}
-			y++;
-		}
-		x++;
-	}
-
-	// Create face up
-	for (int i = 0; i < CHUNK_MASK_SIZE; i++)
-		cpyCubes[i] = this->cubesBitmapZ[i];
-	y = 0;
-	while (y < CHUNK_HEIGHT)
-	{
-		x = 0;
-		while (x < CHUNK_SIZE)
-		{
-			z = 0;
-			while (z < CHUNK_SIZE)
-			{
-				// If cube is air, skip
-				if (getCubeZ(cpyCubes, x, y, z) == 0)
-				{
-					z++;
-					continue;
-				}
-
-				// If cube don't touch air, skip
-				if (y + 1 < CHUNK_HEIGHT && this->at(x, y + 1, z) != CUBE_AIR)
-				{
-					z++;
-					continue;
-				}
-
-				Face face = {x, z, 1, 1, y + 1};
-
-				setCubeZ(cpyCubes, x, y, z, 0);
-
-				// Extend in z
-				tmpZ = z + face.h;
-				if (y + 1 < CHUNK_HEIGHT)
-				{
-					while (tmpZ < CHUNK_SIZE)
-					{
-						if (getCubeZ(cpyCubes, x, y, tmpZ) == 0)
-							break;
-
-						if (this->at(x, y + 1, tmpZ) != CUBE_AIR)
-							break;
-
-						setCubeZ(cpyCubes, x, y, tmpZ, 0);
-						face.h++;
-						tmpZ++;
-					}
-				}
-				else
-				{
-					while (tmpZ < CHUNK_SIZE)
-					{
-						if (getCubeZ(cpyCubes, x, y, tmpZ) == 0)
-							break;
-
-						setCubeZ(cpyCubes, x, y, tmpZ, 0);
-						face.h++;
-						tmpZ++;
-					}
-				}
-
-				// Extend in x
-				airMask = createLengthMask(face.h) << face.y;
-				tmpX = x + face.w;
-				while (tmpX < CHUNK_SIZE)
-				{
-					// Check if every cubes on the high layer aren't air
-					if ((cpyCubes[tmpX + y * CHUNK_SIZE] & airMask) != airMask)
-						break;
-
-					if (y + 1 < CHUNK_HEIGHT)
-					{
-						// Check if every cubes on the next layer are air
-						if ((cpyCubes[tmpX + (y + 1) * CHUNK_SIZE] & airMask) != 0)
-							break;
-					}
-
-					for (int i = 0; i < face.h; i++)
-						setCubeZ(cpyCubes, tmpX, y, z + i, 0);
-
-					face.w++;
-					tmpX++;
-				}
-
-				facesUp.push_back(face);
-				z += face.h;
-			}
-			x++;
-		}
-		y++;
-	}
-
-	// Create face down
-	for (int i = 0; i < CHUNK_MASK_SIZE; i++)
-		cpyCubes[i] = this->cubesBitmapZ[i];
-	y = 0;
-	while (y < CHUNK_HEIGHT)
-	{
-		x = 0;
-		while (x < CHUNK_SIZE)
-		{
-			z = 0;
-			while (z < CHUNK_SIZE)
-			{
-				// If cube is air, skip
-				if (getCubeZ(cpyCubes, x, y, z) == 0)
-				{
-					z++;
-					continue;
-				}
-
-				// If cube don't touch air, skip
-				if (y - 1 >= 0 && this->at(x, y - 1, z) != CUBE_AIR)
-				{
-					z++;
-					continue;
-				}
-
-				Face	face = {x, z, 1, 1, y};
-
-				setCubeZ(cpyCubes, x, y, z, 0);
-
-				// Extend in z
-				tmpZ = z + face.h;
-				if (y - 1 >= 0)
-				{
-					while (tmpZ < CHUNK_SIZE)
-					{
-						if (getCubeZ(cpyCubes, x, y, tmpZ) == 0)
-							break;
-
-						if (this->at(x, y - 1, tmpZ) != CUBE_AIR)
-							break;
-
-						setCubeZ(cpyCubes, x, y, tmpZ, 0);
-						face.h++;
-						tmpZ++;
-					}
-				}
-				else
-				{
-					while (tmpZ < CHUNK_SIZE)
-					{
-						if (getCubeZ(cpyCubes, x, y, tmpZ) == 0)
-							break;
-
-						setCubeZ(cpyCubes, x, y, tmpZ, 0);
-						face.h++;
-						tmpZ++;
-					}
-				}
-
-				// Extend in x
-				airMask = createLengthMask(face.h) << face.y;
-				tmpX = x + face.w;
-				while (tmpX < CHUNK_SIZE)
-				{
-					// Check if every cubes on the high layer aren't air
-					if ((cpyCubes[tmpX + y * CHUNK_SIZE] & airMask) != airMask)
-						break;
-
-					if (y - 1 >= 0)
-					{
-						// Check if every cubes on the next layer are air
-						if ((cpyCubes[tmpX + (y - 1) * CHUNK_SIZE] & airMask) != 0)
-							break;
-					}
-
-					for (int i = 0; i < face.h; i++)
-						setCubeZ(cpyCubes, tmpX, y, z + i, 0);
-
-					face.w++;
-					tmpX++;
-				}
-
-				facesDown.push_back(face);
-				z += face.h;
-			}
-			x++;
-		}
-		y++;
-	}
 
 	gm::Vec3f	pointLU, pointLD, pointRD, pointRU;
 
-	// Face front
-	for (Face &f : facesFront)
+	for (int y = 0; y < CHUNK_HEIGHT; y++)
 	{
-		pointLU = gm::Vec3f(f.x      , f.y + f.h, f.axis);
-		pointLD = gm::Vec3f(f.x      , f.y      , f.axis);
-		pointRD = gm::Vec3f(f.x + f.w, f.y      , f.axis);
-		pointRU = gm::Vec3f(f.x + f.w, f.y + f.h, f.axis);
-		createTriangleFace(vertexIndex, vertices, indices, nbVertex,
-							pointLU, pointLD, pointRD, pointRU, normalFront);
-	}
+		for (int z = 0; z < CHUNK_SIZE; z++)
+		{
+			for (int x = 0; x < CHUNK_SIZE; x++)
+			{
+				const Cube	&type = this->at(x, y, z);
+				if (type == CUBE_AIR)
+					continue;
 
-	// Face back
-	for (Face &f : facesBack)
-	{
-		pointLU = gm::Vec3f(f.x + f.w, f.y + f.h, f.axis);
-		pointLD = gm::Vec3f(f.x + f.w, f.y      , f.axis);
-		pointRD = gm::Vec3f(f.x      , f.y      , f.axis);
-		pointRU = gm::Vec3f(f.x      , f.y + f.h, f.axis);
-		createTriangleFace(vertexIndex, vertices, indices, nbVertex,
-							pointLU, pointLD, pointRD, pointRU, normalBack);
-	}
+				// Face up
+				if (y == CHUNK_MAX_H || this->at(x, y + 1, z) == CUBE_AIR)
+				{
+					pointLU = gm::Vec3f(x + 0, y + 1, z + 0);
+					pointLD = gm::Vec3f(x + 0, y + 1, z + 1);
+					pointRD = gm::Vec3f(x + 1, y + 1, z + 1);
+					pointRU = gm::Vec3f(x + 1, y + 1, z + 0);
+					createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+										pointLU, pointLD, pointRD, pointRU, normalUp, type);
+				}
 
-	// Face right
-	for (Face &f : facesRight)
-	{
-		pointLU = gm::Vec3f(f.axis, f.y + f.h, f.x + f.w);
-		pointLD = gm::Vec3f(f.axis, f.y      , f.x + f.w);
-		pointRD = gm::Vec3f(f.axis, f.y      , f.x      );
-		pointRU = gm::Vec3f(f.axis, f.y + f.h, f.x      );
-		createTriangleFace(vertexIndex, vertices, indices, nbVertex,
-							pointLU, pointLD, pointRD, pointRU, normalRight);
-	}
+				// Face down
+				if (y == 0 || this->at(x, y - 1, z) == CUBE_AIR)
+				{
+					pointLU = gm::Vec3f(x + 0, y + 0, z + 1);
+					pointLD = gm::Vec3f(x + 0, y + 0, z + 0);
+					pointRD = gm::Vec3f(x + 1, y + 0, z + 0);
+					pointRU = gm::Vec3f(x + 1, y + 0, z + 1);
+					createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+										pointLU, pointLD, pointRD, pointRU, normalDown, type);
+				}
 
-	// Face right
-	for (Face &f : facesLeft)
-	{
-		pointLU = gm::Vec3f(f.axis, f.y + f.h, f.x      );
-		pointLD = gm::Vec3f(f.axis, f.y      , f.x      );
-		pointRD = gm::Vec3f(f.axis, f.y      , f.x + f.w);
-		pointRU = gm::Vec3f(f.axis, f.y + f.h, f.x + f.w);
-		createTriangleFace(vertexIndex, vertices, indices, nbVertex,
-							pointLU, pointLD, pointRD, pointRU, normalLeft);
-	}
+				// Face front
+				if ((z != CHUNK_MAX && this->at(x, y, z + 1) == CUBE_AIR) ||
+					(z == CHUNK_MAX && frontChunk->at(x, y, 0) == CUBE_AIR))
+				{
+					pointLU = gm::Vec3f(x + 0, y + 1, z + 1);
+					pointLD = gm::Vec3f(x + 0, y + 0, z + 1);
+					pointRD = gm::Vec3f(x + 1, y + 0, z + 1);
+					pointRU = gm::Vec3f(x + 1, y + 1, z + 1);
+					createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+										pointLU, pointLD, pointRD, pointRU, normalFront, type);
+				}
 
-	// Face up
-	for (Face &f : facesUp)
-	{
-		pointLU = gm::Vec3f(f.x      , f.axis, f.y      );
-		pointLD = gm::Vec3f(f.x      , f.axis, f.y + f.h);
-		pointRD = gm::Vec3f(f.x + f.w, f.axis, f.y + f.h);
-		pointRU = gm::Vec3f(f.x + f.w, f.axis, f.y      );
-		createTriangleFace(vertexIndex, vertices, indices, nbVertex,
-							pointLU, pointLD, pointRD, pointRU, normalUp);
-	}
+				// Face back
+				if ((z != 0 && this->at(x, y, z - 1) == CUBE_AIR) ||
+					(z == 0 && backChunk->at(x, y, CHUNK_MAX) == CUBE_AIR))
+				{
+					pointLU = gm::Vec3f(x + 1, y + 1, z + 0);
+					pointLD = gm::Vec3f(x + 1, y + 0, z + 0);
+					pointRD = gm::Vec3f(x + 0, y + 0, z + 0);
+					pointRU = gm::Vec3f(x + 0, y + 1, z + 0);
+					createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+										pointLU, pointLD, pointRD, pointRU, normalBack, type);
+				}
 
-	// Face down
-	for (Face &f : facesDown)
-	{
-		pointLU = gm::Vec3f(f.x      , f.axis, f.y + f.h);
-		pointLD = gm::Vec3f(f.x      , f.axis, f.y      );
-		pointRD = gm::Vec3f(f.x + f.w, f.axis, f.y      );
-		pointRU = gm::Vec3f(f.x + f.w, f.axis, f.y + f.h);
-		createTriangleFace(vertexIndex, vertices, indices, nbVertex,
-							pointLU, pointLD, pointRD, pointRU, normalDown);
+				// Face right
+				if ((x != CHUNK_MAX && this->at(x + 1, y, z) == CUBE_AIR) ||
+					(x == CHUNK_MAX && rightChunk->at(0, y, z) == CUBE_AIR))
+				{
+					pointLU = gm::Vec3f(x + 1, y + 1, z + 1);
+					pointLD = gm::Vec3f(x + 1, y + 0, z + 1);
+					pointRD = gm::Vec3f(x + 1, y + 0, z + 0);
+					pointRU = gm::Vec3f(x + 1, y + 1, z + 0);
+					createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+										pointLU, pointLD, pointRD, pointRU, normalRight, type);
+				}
+
+				// Face left
+				if ((x != 0 && this->at(x - 1, y, z) == CUBE_AIR) ||
+					(x == 0 && leftChunk->at(CHUNK_MAX, y, z) == CUBE_AIR))
+				{
+					pointLU = gm::Vec3f(x + 0, y + 1, z + 0);
+					pointLD = gm::Vec3f(x + 0, y + 0, z + 0);
+					pointRD = gm::Vec3f(x + 0, y + 0, z + 1);
+					pointRU = gm::Vec3f(x + 0, y + 1, z + 1);
+					createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+										pointLU, pointLD, pointRD, pointRU, normalLeft, type);
+				}
+			}
+		}
 	}
 
 	this->mesh = ChunkMesh(vertices, indices);
@@ -1163,8 +476,8 @@ void	Chunk::createMesh(Map &map)
 
 static uint32_t	getVetrexId(
 					std::unordered_map<std::size_t, uint32_t> &vertexIndex,
-					std::vector<VertexPosNrm> &vertices,
-					VertexPosNrm &vertex,
+					std::vector<VertexVoxel> &vertices,
+					VertexVoxel &vertex,
 					int &nbVertex)
 {
 	std::size_t	hash = vertex.getHash();
@@ -1184,19 +497,20 @@ static uint32_t	getVetrexId(
 
 static void	createTriangleFace(
 				std::unordered_map<std::size_t, uint32_t> &vertexIndex,
-				std::vector<VertexPosNrm> &vertices,
+				std::vector<VertexVoxel> &vertices,
 				std::vector<uint32_t> &indices,
 				int &nbVertex,
 				const gm::Vec3f &posLU,
 				const gm::Vec3f &posLD,
 				const gm::Vec3f &posRD,
 				const gm::Vec3f &posRU,
-				const gm::Vec3f &normal)
+				const gm::Vec3f &normal,
+				const Cube &type)
 {
-	VertexPosNrm pointLU(posLU, normal);
-	VertexPosNrm pointLD(posLD, normal);
-	VertexPosNrm pointRD(posRD, normal);
-	VertexPosNrm pointRU(posRU, normal);
+	VertexVoxel pointLU(posLU, normal, type);
+	VertexVoxel pointLD(posLD, normal, type);
+	VertexVoxel pointRD(posRD, normal, type);
+	VertexVoxel pointRU(posRU, normal, type);
 
 	uint32_t	LU_id = getVetrexId(vertexIndex, vertices, pointLU, nbVertex);
 	uint32_t	LD_id = getVetrexId(vertexIndex, vertices, pointLD, nbVertex);

@@ -64,9 +64,7 @@ static void loadShaders(
 				Engine &engine,
 				Shaders &shaders)
 {
-	std::vector<BufferInfo>	bufferInfosChunk = {{sizeof(UBO3DChunkPos), BUFFER_UBO, STAGE_VERTEX},
-											{sizeof(UBO3DChunkCubes), BUFFER_SSBO, STAGE_FRAGMENT}};
-	std::vector<BufferInfo>	bufferInfosChunkFdf = {{sizeof(UBO3DChunkPos), BUFFER_UBO, STAGE_VERTEX}};
+	std::vector<BufferInfo>	bufferInfosChunk = {{sizeof(UBO3DChunkPos), BUFFER_UBO, STAGE_VERTEX}};
 	std::vector<ImageInfo>	imageInfosCubes = {
 		{CUBE_TEXTURES.size(), STAGE_COMPUTE_FRAGMENT},
 	};
@@ -77,21 +75,21 @@ static void loadShaders(
 	shaders.chunkShader.shaderFdfEnable = false;
 	shaders.chunkShader.shaderBorderEnable = false;
 
-	shaders.chunkShader.shader.init<VertexPosNrm>(
+	shaders.chunkShader.shader.init<VertexVoxel>(
 						engine, DEPTH_READ_WRITE, FCUL_COUNTER, DRAW_POLYGON,
 						"shadersbin/chunk_vert.spv", "shadersbin/chunk_frag.spv",
 						bufferInfosChunk, imageInfosCubes);
-	shaders.chunkShader.shaderFdf.init<VertexPosNrm>(
+	shaders.chunkShader.shaderFdf.init<VertexVoxel>(
 						engine, DEPTH_READ_WRITE, FCUL_NONE, DRAW_LINE,
 						"shadersbin/chunk_vert.spv", "shadersbin/chunkFdf_frag.spv",
-						bufferInfosChunkFdf);
+						bufferInfosChunk);
 	shaders.chunkShader.shaderBorder.init<VertexPos>(
 						engine, DEPTH_READ_WRITE, FCUL_NONE, DRAW_LINE,
 						"shadersbin/chunkBorder_vert.spv", "shadersbin/chunkBorder_frag.spv",
-						bufferInfosChunkFdf);
+						bufferInfosChunk);
 
 	shaders.skyboxShader.init<VertexPosTex>(
 						engine, DEPTH_DISABLE, FCUL_COUNTER, DRAW_POLYGON,
 						"shadersbin/skybox_vert.spv", "shadersbin/skybox_frag.spv",
-						bufferInfosChunkFdf, imageInfosSkybox);
+						bufferInfosChunk, imageInfosSkybox);
 }
