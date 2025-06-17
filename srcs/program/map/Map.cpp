@@ -5,7 +5,13 @@
 //**** STATIC FUNCTIONS DEFINE *************************************************
 
 static void	threadRoutine(GenerationProcess *generationProcess);
-static void	generateChunk(GenerationProcess *generationProcess);
+static void	firstGenerateChunk(
+				GenerationProcess *generationProcess,
+				const gm::Vec2i &cameraChunkId);
+static void	generateChunk(
+				GenerationProcess *generationProcess,
+				const gm::Vec2i &cameraChunkId,
+				const gm::Vec2i &oldCameraChunkId);
 
 //**** INITIALISION ************************************************************
 //---- Constructors ------------------------------------------------------------
@@ -92,6 +98,8 @@ void	Map::init(
 		}
 	}
 
+	this->cameraChunkId = gm::Vec2i(0, 0);
+
 	// Init generation info
 	this->generationProcess.running = true;
 	this->generationProcess.mustRun = true;
@@ -99,7 +107,7 @@ void	Map::init(
 	this->generationProcess.mustGenerate = true;
 	this->generationProcess.minChunkId = this->minChunkIdOffset;
 	this->generationProcess.maxChunkId = this->maxChunkIdOffset;
-	this->generationProcess.cameraChunkId = gm::Vec2i(0, 0);
+	this->generationProcess.cameraChunkId = cameraChunkId;
 	this->generationProcess.chunks = &this->chunks;
 	this->generationProcess.map = this;
 	this->generationProcess.engine = &engine;
@@ -129,6 +137,21 @@ void	Map::update(Camera &camera)
 		{
 			this->checkGeneration =  false;
 			this->mapChunksIntoClusters();
+		}
+	}
+	else
+	{
+		gm::Vec2i	cameraChunkId(camera.getPosition().x / CHUNK_SIZE,
+									camera.getPosition().z / CHUNK_SIZE);
+
+		if (cameraChunkId != this->cameraChunkId)
+		{
+			this->generationProcess.mutex.lock();
+			this->generationProcess.cameraChunkId = cameraChunkId;
+			this->generationProcess.mustGenerate = true;
+			this->generationProcess.mutex.unlock();
+			this->checkGeneration = true;
+			this->cameraChunkId = cameraChunkId;
 		}
 	}
 }
@@ -194,7 +217,7 @@ void	Map::mapChunksIntoClusters(void)
 {
 	for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
 	{
-		this->clusters[i].setChunks(*this, this->clusterOffsets[i]);
+		this->clusters[i].setChunks(*this, this->clusterOffsets[i] + this->cameraChunkId);
 	}
 }
 
@@ -203,8 +226,11 @@ void	Map::mapChunksIntoClusters(void)
 
 static void	threadRoutine(GenerationProcess *generationProcess)
 {
-	bool	running = true;
-	bool	generate = false;
+	bool		running = true;
+	bool		generate = false;
+	bool		firstGeneration = true;
+	gm::Vec2i	oldCameraChunkId = gm::Vec2i(0);
+	gm::Vec2i	cameraChunkId = gm::Vec2i(0);
 
 	while (running)
 	{
@@ -212,16 +238,25 @@ static void	threadRoutine(GenerationProcess *generationProcess)
 		generationProcess->mutex.lock();
 		running = generationProcess->mustRun;
 		generate = generationProcess->mustGenerate;
+		cameraChunkId = generationProcess->cameraChunkId;
 		generationProcess->mutex.unlock();
 
 		if (generate)
 		{
-			generateChunk(generationProcess);
+			if (firstGeneration)
+			{
+				firstGenerateChunk(generationProcess, cameraChunkId);
+				firstGeneration = false;
+			}
+			else
+				generateChunk(generationProcess, cameraChunkId, oldCameraChunkId);
 
 			generationProcess->mutex.lock();
 			generationProcess->generating = false;
 			generationProcess->mustGenerate = false;
 			generationProcess->mutex.unlock();
+
+			oldCameraChunkId = cameraChunkId;
 		}
 
 		// Sleep until next loop
@@ -234,9 +269,11 @@ static void	threadRoutine(GenerationProcess *generationProcess)
 }
 
 
-static void	generateChunk(GenerationProcess *generationProcess)
+static void	firstGenerateChunk(
+				GenerationProcess *generationProcess,
+				const gm::Vec2i &cameraChunkId)
 {
-	static ChunkMap	&chunks = *generationProcess->chunks;
+	static ChunkMap		&chunks = *generationProcess->chunks;
 	static Map			&map = *generationProcess->map;
 	static Engine		&engine = *generationProcess->engine;
 	static Camera		&camera = *generationProcess->camera;
@@ -247,22 +284,109 @@ static void	generateChunk(GenerationProcess *generationProcess)
 	resetLog(perfLogger.createMesh);
 	perfLogger.nbTriangles = 0;
 
-	gm::Vec2i	minChunk = generationProcess->minChunkId + generationProcess->cameraChunkId;
-	gm::Vec2i	maxChunk = generationProcess->maxChunkId + generationProcess->cameraChunkId;
+	gm::Vec2i	minChunk = generationProcess->minChunkId + cameraChunkId - gm::Vec2i(1, 1);
+	gm::Vec2i	maxChunk = generationProcess->maxChunkId + cameraChunkId + gm::Vec2i(1, 1);
 	std::size_t	hash;
 
 	// Generate chunks
-	int	nbChunks = 0;
-	int	nbChunkArround = CLUSTER_SIZE / 2 + MAP_CLUSTER_ARROUND * CLUSTER_SIZE;
-	int	totalChunks = (nbChunkArround * 2) * (nbChunkArround * 2);
-	printf("Chunks generation :\n");
+	int	totalChunks = (maxChunk.x - minChunk.x) * (maxChunk.y - minChunk.y);
+	printf("Chunks generation : %i\n", totalChunks);
 	for (int x = minChunk.x; x < maxChunk.x; x++)
 	{
 		for (int y = minChunk.y; y < maxChunk.y; y++)
 		{
-			nbChunks++;
-			printf("\r chunk %i/%i", nbChunks, totalChunks);
+			hash = gm::hash(gm::Vec2i(x, y));
+			chunks[hash] = Chunk();
+			chunks[hash].init(engine, camera, chunkShader);
+			chunks[hash].generate(gm::Vec2i(x, y), perfLogger);
+		}
+	}
 
+	minChunk += gm::Vec2i(1, 1);
+	maxChunk -= gm::Vec2i(1, 1);
+	totalChunks = (maxChunk.x - minChunk.x) * (maxChunk.y - minChunk.y);
+
+	printf("Chunks mesh creation : %i\n", totalChunks);
+	// Create chunks meshes
+	for (int x = minChunk.x; x < maxChunk.x; x++)
+	{
+		for (int y = minChunk.y; y < maxChunk.y; y++)
+		{
+			hash = gm::hash(gm::Vec2i(x, y));
+			chunks[hash].createMeshes(map, perfLogger);
+		}
+	}
+
+	printLog(perfLogger.generation, "Chunk generation");
+	printLog(perfLogger.createMesh, "Mesh creation");
+	printf("Number of triangle : %i\n", perfLogger.nbTriangles);
+}
+
+
+static void	generateChunk(
+				GenerationProcess *generationProcess,
+				const gm::Vec2i &cameraChunkId,
+				const gm::Vec2i &oldCameraChunkId)
+{
+	static ChunkMap		&chunks = *generationProcess->chunks;
+	static Map			&map = *generationProcess->map;
+	static Engine		&engine = *generationProcess->engine;
+	static Camera		&camera = *generationProcess->camera;
+	static ChunkShader	&chunkShader = *generationProcess->chunkShader;
+
+	if (cameraChunkId == oldCameraChunkId)
+		return ;
+
+	printf("\n--------------------------------\nGENERATION\n");
+
+	PerfLogger	perfLogger;
+	resetLog(perfLogger.generation);
+	resetLog(perfLogger.createMesh);
+	perfLogger.nbTriangles = 0;
+
+	gm::Vec2i	movement = cameraChunkId - oldCameraChunkId;
+	gm::Vec2i	minChunk = generationProcess->minChunkId + cameraChunkId;
+	gm::Vec2i	maxChunk = generationProcess->maxChunkId + cameraChunkId;
+
+	std::cout << "Movement : "  << movement << std::endl;
+
+	if (movement.x > 0 && movement.y == 0)
+	{
+		minChunk.x = maxChunk.x - movement.x;
+		maxChunk.x++;
+	}
+	else if (movement.x < 0 && movement.y == 0)
+	{
+		maxChunk.x = minChunk.x - movement.x;
+		minChunk.x--;
+	}
+	else if (movement.x == 0 && movement.y > 0)
+	{
+		minChunk.y = maxChunk.y - movement.y;
+		maxChunk.y++;
+	}
+	else if (movement.x == 0 && movement.y < 0)
+	{
+		maxChunk.y = minChunk.y - movement.y;
+		minChunk.y--;
+	}
+	else
+	{
+		gm::Vec2i	tmpCamera = oldCameraChunkId + gm::Vec2i(movement.x, 0);
+		generateChunk(generationProcess, tmpCamera, oldCameraChunkId);
+		generateChunk(generationProcess, cameraChunkId, tmpCamera);
+		return ;
+	}
+
+	std::size_t	hash;
+
+	// Generate chunks
+	int	totalChunks = (maxChunk.x - minChunk.x) * (maxChunk.y - minChunk.y);
+	printf("Chunks generation : %i\n", totalChunks);
+	for (int x = minChunk.x; x < maxChunk.x; x++)
+	{
+		for (int y = minChunk.y; y < maxChunk.y; y++)
+		{
 			hash = gm::hash(gm::Vec2i(x, y));
 			if (chunks.find(hash) != chunks.end())
 				continue;
@@ -273,21 +397,27 @@ static void	generateChunk(GenerationProcess *generationProcess)
 		}
 	}
 
-	printf("\nChunks mesh creation :\n");
-	nbChunks = 0;
+	if (movement.x > 0 && movement.y == 0)
+		maxChunk.x--;
+	else if (movement.x < 0 && movement.y == 0)
+		minChunk.x++;
+	else if (movement.x == 0 && movement.y > 0)
+		maxChunk.y--;
+	else if (movement.x == 0 && movement.y < 0)
+		minChunk.y++;
+
+	totalChunks = (maxChunk.x - minChunk.x) * (maxChunk.y - minChunk.y);
+
+	printf("Chunks mesh creation : %i\n", totalChunks);
 	// Create chunks meshes
 	for (int x = minChunk.x; x < maxChunk.x; x++)
 	{
 		for (int y = minChunk.y; y < maxChunk.y; y++)
 		{
-			nbChunks++;
-			printf("\r chunk %i/%i", nbChunks, totalChunks);
-
 			hash = gm::hash(gm::Vec2i(x, y));
-			chunks[hash].updateMeshes(map, perfLogger);
+			chunks[hash].createMeshes(map, perfLogger);
 		}
 	}
-	printf("\n\n");
 
 	printLog(perfLogger.generation, "Chunk generation");
 	printLog(perfLogger.createMesh, "Mesh creation");

@@ -267,7 +267,7 @@ void	Camera::updateFOV(const float fov)
 
 bool	Camera::isCubeInFrutum(const BoundingCube &cube)
 {
-	gm::Vec3f	frontOffset = this->front * 10.0f;
+	gm::Vec3f	frontOffset = this->front * 16.0f;
 	return (isOnOrForwardPlane(this->furstum.leftFace, cube, frontOffset)
 			&& isOnOrForwardPlane(this->furstum.rightFace, cube, frontOffset)
 			&& isOnOrForwardPlane(this->furstum.topFace, cube, frontOffset)

@@ -193,11 +193,11 @@ public:
 	 */
 	void	generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger);
 	/**
-	 * @brief Update chunk meshs.
+	 * @brief Create chunk meshes.
 	 *
 	 * @param map Map containing other chunks.
 	 */
-	void	updateMeshes(Map &map, PerfLogger &perfLogger);
+	void	createMeshes(Map &map, PerfLogger &perfLogger);
 	/**
 	 * @brief Draw chunk meshes.
 	 *

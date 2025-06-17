@@ -61,6 +61,9 @@ void	resetLog(PerfField &perfField)
 
 void	printLog(PerfField &perfField, const char *msg)
 {
+	if (perfField.nbCall == 0)
+		return ;
+
 	int	avg = perfField.total / perfField.nbCall;
 
 	printf("%s : total %i us, nb call %i, avg %i us\n",
@@ -320,8 +323,10 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 }
 
 
-void	Chunk::updateMeshes(Map &map, PerfLogger &perfLogger)
+void	Chunk::createMeshes(Map &map, PerfLogger &perfLogger)
 {
+	this->mesh.destroy();
+
 	startLog(perfLogger.createMesh);
 	this->createMesh(map);
 	endLog(perfLogger.createMesh);

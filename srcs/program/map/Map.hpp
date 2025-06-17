@@ -123,7 +123,7 @@ private:
 	ChunkMap				chunks;
 	std::vector<Cluster>	clusters;
 	std::vector<gm::Vec2i>	clusterOffsets;
-	gm::Vec2i				minChunkIdOffset, maxChunkIdOffset;
+	gm::Vec2i				minChunkIdOffset, maxChunkIdOffset, cameraChunkId;
 	GenerationProcess		generationProcess;
 	std::thread				*generationThread;
 	bool					checkGeneration;

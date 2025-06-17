@@ -13,7 +13,7 @@ bool init(
 		Objects &objects,
 		Shaders &shaders)
 {
-	camera.setPosition(gm::Vec3f(0.0f, 200.0f, 0.0f));
+	camera.setPosition(gm::Vec3f(0.0f, 100.0f, 0.0f));
 	camera.setRotation(-30.0f, -90.0f, 0.0f);
 
 	try
