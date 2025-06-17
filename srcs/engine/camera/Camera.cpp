@@ -2,8 +2,14 @@
 
 //**** STATIC FUNCTIONS DEFINE *************************************************
 
-static bool	isOnOrForwardPlane(const FrustumPlane &plane, const BoundingCube &cube);
-static float	getSignedDistanceToPlane(const FrustumPlane &plane, const gm::Vec3f &point);
+static bool	isOnOrForwardPlane(
+				const FrustumPlane &plane,
+				const BoundingCube &cube,
+				const gm::Vec3f &frontOffset);
+static float	getSignedDistanceToPlane(
+					const FrustumPlane &plane,
+					const gm::Vec3f &point,
+					const gm::Vec3f &frontOffset);
 
 //**** INITIALISION ************************************************************
 //---- Constructors ------------------------------------------------------------
@@ -261,12 +267,13 @@ void	Camera::updateFOV(const float fov)
 
 bool	Camera::isCubeInFrutum(const BoundingCube &cube)
 {
-	return (isOnOrForwardPlane(this->furstum.leftFace, cube)
-			&& isOnOrForwardPlane(this->furstum.rightFace, cube)
-			&& isOnOrForwardPlane(this->furstum.topFace, cube)
-			&& isOnOrForwardPlane(this->furstum.botFace, cube)
-			&& isOnOrForwardPlane(this->furstum.nearFace, cube)
-			&& isOnOrForwardPlane(this->furstum.farFace, cube));
+	gm::Vec3f	frontOffset = this->front * 10.0f;
+	return (isOnOrForwardPlane(this->furstum.leftFace, cube, frontOffset)
+			&& isOnOrForwardPlane(this->furstum.rightFace, cube, frontOffset)
+			&& isOnOrForwardPlane(this->furstum.topFace, cube, frontOffset)
+			&& isOnOrForwardPlane(this->furstum.botFace, cube, frontOffset)
+			&& isOnOrForwardPlane(this->furstum.nearFace, cube, frontOffset)
+			&& isOnOrForwardPlane(this->furstum.farFace, cube, frontOffset));
 }
 
 //---- status ------------------------------------------------------------------
@@ -342,17 +349,23 @@ void	Camera::computeFrustum(void)
 //**** FUNCTIONS ***************************************************************
 //**** STATIC FUNCTIONS ********************************************************
 
-static bool	isOnOrForwardPlane(const FrustumPlane &plane, const BoundingCube &cube)
+static bool	isOnOrForwardPlane(
+				const FrustumPlane &plane,
+				const BoundingCube &cube,
+				const gm::Vec3f &frontOffset)
 {
 	const float	r = cube.extents.x * gm::abs(plane.normal.x)
 					+ cube.extents.y * gm::abs(plane.normal.y)
 					+ cube.extents.z * gm::abs(plane.normal.z);
 
-	return (-r <=  getSignedDistanceToPlane(plane, cube.center));
+	return (-r <=  getSignedDistanceToPlane(plane, cube.center, frontOffset));
 }
 
 
-static float	getSignedDistanceToPlane(const FrustumPlane &plane, const gm::Vec3f &point)
+static float	getSignedDistanceToPlane(
+					const FrustumPlane &plane,
+					const gm::Vec3f &point,
+					const gm::Vec3f &frontOffset)
 {
-	return (gm::dot(plane.normal, point - plane.position));
+	return (gm::dot(plane.normal, point - plane.position + frontOffset));
 }

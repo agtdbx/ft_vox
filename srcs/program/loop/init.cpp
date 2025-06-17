@@ -91,7 +91,7 @@ static void loadShaders(
 						bufferInfosChunkFdf);
 
 	shaders.skyboxShader.init<VertexPosTex>(
-						engine, DEPTH_READ, FCUL_COUNTER, DRAW_POLYGON,
+						engine, DEPTH_DISABLE, FCUL_COUNTER, DRAW_POLYGON,
 						"shadersbin/skybox_vert.spv", "shadersbin/skybox_frag.spv",
 						bufferInfosChunkFdf, imageInfosSkybox);
 }

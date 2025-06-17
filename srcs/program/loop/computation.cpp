@@ -29,6 +29,8 @@ void	computation(
 
 	if (inputManager.c.isPressed())
 		chunkShader.shaderBorderEnable = !chunkShader.shaderBorderEnable;
+
+	objects.map.update(camera);
 }
 
 
