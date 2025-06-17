@@ -75,6 +75,17 @@ public:
 				Camera &camera,
 				ChunkShader &chunkShader,
 				int &nbDrawCall); // TODO: Remove nbDrawCall
+	/**
+	 * @brief Draw water on chunks.
+	 *
+	 * @param engine Engine struct.
+	 * @param camera The camera.
+	 * @param chunkShader Shaders used to draw chunk meshes.
+	 */
+	void	drawWater(
+				Engine &engine,
+				Camera &camera,
+				ChunkShader &chunkShader);
 
 //**** STATIC METHODS **********************************************************
 

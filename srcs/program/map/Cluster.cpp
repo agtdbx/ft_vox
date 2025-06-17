@@ -103,6 +103,22 @@ void	Cluster::draw(
 	}
 }
 
+
+void	Cluster::drawWater(
+				Engine &engine,
+				Camera &camera,
+				ChunkShader &chunkShader)
+{
+	for (int i = 0; i <  CLUSTER_SIZE2; i++)
+	{
+		if (this->chunks[i] != NULL)
+		{
+			if (camera.isCubeInFrutum(this->chunks[i]->getBoundingCube()))
+				this->chunks[i]->drawWater(engine, camera, chunkShader);
+		}
+	}
+}
+
 //**** STATIC METHODS **********************************************************
 //**** PRIVATE METHODS *********************************************************
 //**** FUNCTIONS ***************************************************************

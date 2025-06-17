@@ -35,11 +35,12 @@ static void	createTriangleFace(
 				const gm::Vec3f &posRU,
 				const gm::Vec3f &normal,
 				const Cube &type);
-static bool	getCubeX(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z);
-static bool	getCubeZ(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z);
-static void	setCubeX(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z, bool cube);
-static void	setCubeZ(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z, bool cube);
-static int32_t	createLengthMask(int length);
+static	bool	isCubeTransparent(const Cube &cube);
+// static bool	getCubeX(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z);
+// static bool	getCubeZ(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z);
+// static void	setCubeX(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z, bool cube);
+// static void	setCubeZ(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z, bool cube);
+// static int32_t	createLengthMask(int length);
 
 //**** INITIALISION ************************************************************
 //---- Constructors ------------------------------------------------------------
@@ -177,7 +178,9 @@ void	Chunk::init(
 	this->copyCommandPool = &engine.commandPool;
 
 	chunkShader.shader.initShaderParam(engine, this->shaderParam, {"cubes"});
+	chunkShader.shaderWater.initShaderParam(engine, this->shaderParamWater, {"cubes"});
 	chunkShader.shaderFdf.initShaderParam(engine, this->shaderParamFdf, {});
+	chunkShader.shaderFdf.initShaderParam(engine, this->shaderParamFdfWater, {});
 	chunkShader.shaderBorder.initShaderParam(engine, this->shaderParamBorder, {});
 
 	this->uboPos.proj = camera.getProjection();
@@ -239,7 +242,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 			for (int y = 0; y < CHUNK_HEIGHT; y++)
 			{
 				//with this setup stone cannot be seen on the surface
-				int	id = x + idZ + y * CHUNK_SIZE2;
+				id = x + idZ + y * CHUNK_SIZE2;
 				if (y > (int)maxSize && y > 58)
 					break;
 
@@ -283,11 +286,10 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 
 void	Chunk::createMeshes(Map &map)
 {
-	// if (this->mesh.getNbIndex() != 0)
-	// 	return ;
 	this->mesh.destroy();
 
 	this->createMesh(map);
+	this->createWaterMesh();
 
 	this->mesh.setPosition(this->chunkPosition);
 	this->uboPos.model = this->mesh.getModel();
@@ -319,11 +321,33 @@ void	Chunk::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 }
 
 
+void	Chunk::drawWater(Engine &engine, Camera &camera, ChunkShader &chunkShader)
+{
+	if (this->waterMesh.getNbIndex() == 0)
+		return ;
+
+	// Draw mesh
+	if (!chunkShader.shaderFdfEnable)
+	{
+		this->shaderParamWater.updateBuffer(engine.window, &this->uboPos, 0);
+		engine.window.drawMesh(this->waterMesh, chunkShader.shaderWater, this->shaderParamWater);
+	}
+	else
+	{
+		this->shaderParamFdfWater.updateBuffer(engine.window, &this->uboPos, 0);
+		engine.window.drawMesh(this->waterMesh, chunkShader.shaderFdf, this->shaderParamFdfWater);
+	}
+}
+
+
 void	Chunk::destroy(Engine &engine)
 {
 	this->shaderParam.destroy(engine);
+	this->shaderParamWater.destroy(engine);
 	this->shaderParamFdf.destroy(engine);
+	this->shaderParamFdfWater.destroy(engine);
 	this->mesh.destroy();
+	this->waterMesh.destroy();
 }
 
 //**** STATIC METHODS **********************************************************
@@ -391,11 +415,11 @@ void	Chunk::createMesh(Map &map)
 			for (int x = 0; x < CHUNK_SIZE; x++)
 			{
 				const Cube	&type = this->at(x, y, z);
-				if (type == CUBE_AIR)
+				if (type == CUBE_AIR || type == CUBE_WATER)
 					continue;
 
 				// Face up
-				if (y == CHUNK_MAX_H || this->at(x, y + 1, z) == CUBE_AIR)
+				if (y == CHUNK_MAX_H || isCubeTransparent(this->at(x, y + 1, z)))
 				{
 					pointLU = gm::Vec3f(x + 0, y + 1, z + 0);
 					pointLD = gm::Vec3f(x + 0, y + 1, z + 1);
@@ -406,7 +430,7 @@ void	Chunk::createMesh(Map &map)
 				}
 
 				// Face down
-				if (y == 0 || this->at(x, y - 1, z) == CUBE_AIR)
+				if (y == 0 || isCubeTransparent(this->at(x, y - 1, z)))
 				{
 					pointLU = gm::Vec3f(x + 0, y + 0, z + 1);
 					pointLD = gm::Vec3f(x + 0, y + 0, z + 0);
@@ -417,8 +441,8 @@ void	Chunk::createMesh(Map &map)
 				}
 
 				// Face front
-				if ((z != CHUNK_MAX && this->at(x, y, z + 1) == CUBE_AIR) ||
-					(z == CHUNK_MAX && frontChunk->at(x, y, 0) == CUBE_AIR))
+				if ((z != CHUNK_MAX && isCubeTransparent(this->at(x, y, z + 1))) ||
+					(z == CHUNK_MAX && isCubeTransparent(frontChunk->at(x, y, 0))))
 				{
 					pointLU = gm::Vec3f(x + 0, y + 1, z + 1);
 					pointLD = gm::Vec3f(x + 0, y + 0, z + 1);
@@ -429,8 +453,8 @@ void	Chunk::createMesh(Map &map)
 				}
 
 				// Face back
-				if ((z != 0 && this->at(x, y, z - 1) == CUBE_AIR) ||
-					(z == 0 && backChunk->at(x, y, CHUNK_MAX) == CUBE_AIR))
+				if ((z != 0 && isCubeTransparent(this->at(x, y, z - 1))) ||
+					(z == 0 && isCubeTransparent(backChunk->at(x, y, CHUNK_MAX))))
 				{
 					pointLU = gm::Vec3f(x + 1, y + 1, z + 0);
 					pointLD = gm::Vec3f(x + 1, y + 0, z + 0);
@@ -441,8 +465,8 @@ void	Chunk::createMesh(Map &map)
 				}
 
 				// Face right
-				if ((x != CHUNK_MAX && this->at(x + 1, y, z) == CUBE_AIR) ||
-					(x == CHUNK_MAX && rightChunk->at(0, y, z) == CUBE_AIR))
+				if ((x != CHUNK_MAX && isCubeTransparent(this->at(x + 1, y, z))) ||
+					(x == CHUNK_MAX && isCubeTransparent(rightChunk->at(0, y, z))))
 				{
 					pointLU = gm::Vec3f(x + 1, y + 1, z + 1);
 					pointLD = gm::Vec3f(x + 1, y + 0, z + 1);
@@ -453,8 +477,8 @@ void	Chunk::createMesh(Map &map)
 				}
 
 				// Face left
-				if ((x != 0 && this->at(x - 1, y, z) == CUBE_AIR) ||
-					(x == 0 && leftChunk->at(CHUNK_MAX, y, z) == CUBE_AIR))
+				if ((x != 0 && isCubeTransparent(this->at(x - 1, y, z))) ||
+					(x == 0 && isCubeTransparent(leftChunk->at(CHUNK_MAX, y, z))))
 				{
 					pointLU = gm::Vec3f(x + 0, y + 1, z + 0);
 					pointLD = gm::Vec3f(x + 0, y + 0, z + 0);
@@ -469,6 +493,44 @@ void	Chunk::createMesh(Map &map)
 
 	this->mesh = ChunkMesh(vertices, indices);
 	this->mesh.createBuffers(*this->copyCommandPool);
+}
+
+
+void	Chunk::createWaterMesh(void)
+{
+	std::unordered_map<std::size_t, uint32_t>	vertexIndex;
+	std::vector<VertexVoxel>					vertices;
+	std::vector<uint32_t>						indices;
+	int											nbVertex = 0;
+
+	gm::Vec3f	pointLU, pointLD, pointRD, pointRU;
+
+	for (int y = 0; y < CHUNK_HEIGHT; y++)
+	{
+		for (int z = 0; z < CHUNK_SIZE; z++)
+		{
+			for (int x = 0; x < CHUNK_SIZE; x++)
+			{
+				const Cube	&type = this->at(x, y, z);
+				if (type != CUBE_WATER)
+					continue;
+
+				// Face up
+				if (y == CHUNK_MAX_H || this->at(x, y + 1, z) == CUBE_AIR)
+				{
+					pointLU = gm::Vec3f(x + 0, y + 1, z + 0);
+					pointLD = gm::Vec3f(x + 0, y + 1, z + 1);
+					pointRD = gm::Vec3f(x + 1, y + 1, z + 1);
+					pointRU = gm::Vec3f(x + 1, y + 1, z + 0);
+					createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+										pointLU, pointLD, pointRD, pointRU, normalUp, type);
+				}
+			}
+		}
+	}
+
+	this->waterMesh = ChunkMesh(vertices, indices);
+	this->waterMesh.createBuffers(*this->copyCommandPool);
 }
 
 //**** FUNCTIONS ***************************************************************
@@ -527,52 +589,58 @@ static void	createTriangleFace(
 }
 
 
-static bool	getCubeX(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z)
+static	bool	isCubeTransparent(const Cube &cube)
 {
-	return (cubesBitmap[z + y * CHUNK_SIZE] & (0b1 << x));
+	return (cube == CUBE_AIR || cube == CUBE_WATER);
 }
 
 
-static bool	getCubeZ(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z)
-{
-	return (cubesBitmap[x + y * CHUNK_SIZE] & (0b1 << z));
-}
+// static bool	getCubeX(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z)
+// {
+// 	return (cubesBitmap[z + y * CHUNK_SIZE] & (0b1 << x));
+// }
 
 
-static void	setCubeX(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z, bool cube)
-{
-	int		id = z + y * CHUNK_SIZE;
-	int32_t	mask = 0b1 << x;
-	if ((cubesBitmap[id] & mask) == cube)
-		return ;
-
-	if (cube)
-		cubesBitmap[id] += mask;
-	else
-		cubesBitmap[id] -= mask;
-}
+// static bool	getCubeZ(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z)
+// {
+// 	return (cubesBitmap[x + y * CHUNK_SIZE] & (0b1 << z));
+// }
 
 
-static void	setCubeZ(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z, bool cube)
-{
-	int		id = x + y * CHUNK_SIZE;
-	int32_t	mask = 0b1 << z;
-	if ((cubesBitmap[id] & mask) == cube)
-		return ;
+// static void	setCubeX(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z, bool cube)
+// {
+// 	int		id = z + y * CHUNK_SIZE;
+// 	int32_t	mask = 0b1 << x;
+// 	if ((cubesBitmap[id] & mask) == cube)
+// 		return ;
 
-	if (cube)
-		cubesBitmap[id] += mask;
-	else
-		cubesBitmap[id] -= mask;
-}
+// 	if (cube)
+// 		cubesBitmap[id] += mask;
+// 	else
+// 		cubesBitmap[id] -= mask;
+// }
 
 
-static int32_t	createLengthMask(int length)
-{
-	int32_t	res = 0;
+// static void	setCubeZ(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z, bool cube)
+// {
+// 	int		id = x + y * CHUNK_SIZE;
+// 	int32_t	mask = 0b1 << z;
+// 	if ((cubesBitmap[id] & mask) == cube)
+// 		return ;
 
-	for (int i = 0; i < length; i++)
-		res += (0b1 << i);
+// 	if (cube)
+// 		cubesBitmap[id] += mask;
+// 	else
+// 		cubesBitmap[id] -= mask;
+// }
 
-	return (res);
-}
+
+// static int32_t	createLengthMask(int length)
+// {
+// 	int32_t	res = 0;
+
+// 	for (int i = 0; i < length; i++)
+// 		res += (0b1 << i);
+
+// 	return (res);
+// }

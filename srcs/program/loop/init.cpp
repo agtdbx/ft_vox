@@ -75,21 +75,25 @@ static void loadShaders(
 	shaders.chunkShader.shaderFdfEnable = false;
 	shaders.chunkShader.shaderBorderEnable = false;
 
-	shaders.chunkShader.shader.init<VertexVoxel>(
-						engine, DEPTH_READ_WRITE, FCUL_COUNTER, DRAW_POLYGON,
+	shaders.chunkShader.shader.init<VertexVoxel>(engine,
+						DEPTH_READ_WRITE, FCUL_COUNTER, DRAW_POLYGON, ALPHA_OFF,
 						"shadersbin/chunk_vert.spv", "shadersbin/chunk_frag.spv",
 						bufferInfosChunk, imageInfosCubes);
-	shaders.chunkShader.shaderFdf.init<VertexVoxel>(
-						engine, DEPTH_READ_WRITE, FCUL_NONE, DRAW_LINE,
+	shaders.chunkShader.shaderWater.init<VertexVoxel>(engine,
+						DEPTH_READ, FCUL_COUNTER, DRAW_POLYGON, ALPHA_ON,
+						"shadersbin/chunk_vert.spv", "shadersbin/chunk_frag.spv",
+						bufferInfosChunk, imageInfosCubes);
+	shaders.chunkShader.shaderFdf.init<VertexVoxel>(engine,
+						DEPTH_READ_WRITE, FCUL_NONE, DRAW_LINE, ALPHA_OFF,
 						"shadersbin/chunk_vert.spv", "shadersbin/chunkFdf_frag.spv",
 						bufferInfosChunk);
-	shaders.chunkShader.shaderBorder.init<VertexPos>(
-						engine, DEPTH_READ_WRITE, FCUL_NONE, DRAW_LINE,
+	shaders.chunkShader.shaderBorder.init<VertexPos>(engine,
+						DEPTH_READ_WRITE, FCUL_NONE, DRAW_LINE, ALPHA_OFF,
 						"shadersbin/chunkBorder_vert.spv", "shadersbin/chunkBorder_frag.spv",
 						bufferInfosChunk);
 
-	shaders.skyboxShader.init<VertexPosTex>(
-						engine, DEPTH_DISABLE, FCUL_COUNTER, DRAW_POLYGON,
+	shaders.skyboxShader.init<VertexPosTex>(engine,
+						DEPTH_DISABLE, FCUL_COUNTER, DRAW_POLYGON, ALPHA_OFF,
 						"shadersbin/skybox_vert.spv", "shadersbin/skybox_frag.spv",
 						bufferInfosChunk, imageInfosSkybox);
 }

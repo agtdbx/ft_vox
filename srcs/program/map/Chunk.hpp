@@ -23,6 +23,7 @@ class Map;
 struct ChunkShader
 {
 	Shader	shader;
+	Shader	shaderWater;
 	Shader	shaderFdf;
 	Shader	shaderBorder;
 	bool	shaderFdfEnable;
@@ -36,6 +37,7 @@ struct ChunkShader
 	void	destroy(Engine &engine)
 	{
 		this->shader.destroy(engine);
+		this->shaderWater.destroy(engine);
 		this->shaderFdf.destroy(engine);
 		this->shaderBorder.destroy(engine);
 	}
@@ -186,6 +188,14 @@ public:
 	 */
 	void	draw(Engine &engine, Camera &camera, ChunkShader &chunkShader);
 	/**
+	 * @brief Draw chunk water mesh.
+	 *
+	 * @param engine Engine struct.
+	 * @param camera The camera.
+	 * @param chunkShader Shaders used to draw meshes.
+	 */
+	void	drawWater(Engine &engine, Camera &camera, ChunkShader &chunkShader);
+	/**
 	 * @brief Destroy chunk.
 	 *
 	 * @param engine Engine struct.
@@ -203,10 +213,11 @@ private:
 	Cube			cubes[CHUNK_TOTAL_SIZE]; // id = x + z * SIZE + y * SIZE2
 	int32_t			cubesBitmapX[CHUNK_MASK_SIZE]; // id = z + y * SIZE, 1 << x
 	int32_t			cubesBitmapZ[CHUNK_MASK_SIZE]; // id = x + y * SIZE, 1 << z
-	ChunkMesh		mesh;
+	ChunkMesh		mesh, waterMesh;
 	ChunkBorderMesh	borderMesh;
 	UBO3DChunkPos	uboPos;
-	ShaderParam		shaderParam, shaderParamFdf, shaderParamBorder;
+	ShaderParam		shaderParam, shaderParamWater, shaderParamFdf,
+					shaderParamFdfWater, shaderParamBorder;
 	BoundingCube	boundingCube;
 //---- Copy --------------------------------------------------------------------
 	VulkanCommandPool	*copyCommandPool;
@@ -217,11 +228,15 @@ private:
 	 */
 	void	createBorderMesh(void);
 	/**
-	 * @brief Create meshes.
+	 * @brief Create mesh.
 	 *
 	 * @param map Map that contain chunks.
 	 */
 	void	createMesh(Map &map);
+	/**
+	 * @brief Create water mesh.
+	 */
+	void	createWaterMesh(void);
 };
 
 //**** FUNCTIONS ***************************************************************

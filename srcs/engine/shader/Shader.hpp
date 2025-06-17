@@ -33,6 +33,12 @@ enum DrawMode
 	DRAW_POINT,
 };
 
+enum AlphaMode
+{
+	ALPHA_OFF,
+	ALPHA_ON,
+};
+
 //**** STATIC DEFINE FUNCTIONS *************************************************
 
 static inline std::vector<char>	readFile(const std::string &filename);
@@ -99,33 +105,39 @@ public:
 	 * @brief Init shader from parameters.
 	 *
 	 * @param engine The engine struct.
+	 * @param depthMode How do depth test. None, read, write or read_write.
 	 * @param faceCulling How do face culling. Clock wise, counter or disable it.
+	 * @param drawMode How to draw triangle. Point, line or polygone (fill).
+	 * @param alphaMode How do alpha. On or off.
 	 * @param vertexPath Path to compile vertex shader file.
 	 * @param fragmentPath Path to compile fragment shader file.
 	 */
 	template<typename VertexType>
-	void	init(
-				Engine &engine, DepthMode depthMode, FaceCulling faceCulling, DrawMode drawMode,
+	void	init(Engine &engine,
+				DepthMode depthMode, FaceCulling faceCulling, DrawMode drawMode, AlphaMode alphaMode,
 				std::string vertexPath, std::string fragmentPath)
 	{
 		VkDevice	device = engine.context.getDevice();
 
 		this->createDescriptorSetLayout(device);
 		this->createGraphicsPipeline<VertexType>(device, engine.window, vertexPath, fragmentPath,
-										depthMode, faceCulling, drawMode);
+										depthMode, faceCulling, drawMode, alphaMode);
 	}
 	/**
 	 * @brief Init shader from parameters.
 	 *
 	 * @param engine The engine struct.
+	 * @param depthMode How do depth test. None, read, write or read_write.
 	 * @param faceCulling How do face culling. Clock wise, counter or disable it.
+	 * @param drawMode How do draw triangle. Point, line or polygone (fill).
+	 * @param alphaMode How do alpha. On or off.
 	 * @param vertexPath Path to compile vertex shader file.
 	 * @param fragmentPath Path to compile fragment shader file.
 	 * @param bufferInfos Vector of buffer info.
 	 */
 	template<typename VertexType>
-	void	init(
-				Engine &engine, DepthMode depthMode, FaceCulling faceCulling, DrawMode drawMode,
+	void	init(Engine &engine,
+				DepthMode depthMode, FaceCulling faceCulling, DrawMode drawMode, AlphaMode alphaMode,
 				std::string vertexPath, std::string fragmentPath,
 				const std::vector<BufferInfo> &bufferInfos)
 	{
@@ -135,21 +147,24 @@ public:
 
 		this->createDescriptorSetLayout(device);
 		this->createGraphicsPipeline<VertexType>(device, engine.window, vertexPath, fragmentPath,
-										depthMode, faceCulling, drawMode);
+										depthMode, faceCulling, drawMode, alphaMode);
 	}
 	/**
 	 * @brief Init shader from parameters.
 	 *
 	 * @param engine The engine struct.
+	 * @param depthMode How do depth test. None, read, write or read_write.
 	 * @param faceCulling How do face culling. Clock wise, counter or disable it.
+	 * @param drawMode How do draw triangle. Point, line or polygone (fill).
+	 * @param alphaMode How do alpha. On or off.
 	 * @param vertexPath Path to compile vertex shader file.
 	 * @param fragmentPath Path to compile fragment shader file.
 	 * @param bufferInfos Vector of buffer info.
 	 * @param imageInfos Vector of image info.
 	 */
 	template<typename VertexType>
-	void	init(
-				Engine &engine, DepthMode depthMode, FaceCulling faceCulling, DrawMode drawMode,
+	void	init(Engine &engine,
+				DepthMode depthMode, FaceCulling faceCulling, DrawMode drawMode, AlphaMode alphaMode,
 				std::string vertexPath, std::string fragmentPath,
 				const std::vector<BufferInfo> &bufferInfos,
 				const std::vector<ImageInfo> &imageInfos)
@@ -161,7 +176,7 @@ public:
 
 		this->createDescriptorSetLayout(device);
 		this->createGraphicsPipeline<VertexType>(device, engine.window, vertexPath, fragmentPath,
-										depthMode, faceCulling, drawMode);
+										depthMode, faceCulling, drawMode, alphaMode);
 	}
 	/**
 	 * @brief Init a shaderParam
@@ -205,12 +220,16 @@ private:
 	 * @param window The Window class.
 	 * @param vertexPath Path to compile vertex shader file.
 	 * @param fragmentPath Path to compile fragment shader file.
+	 * @param depthMode How do depth test. None, read, write or read_write.
+	 * @param faceCulling How do face culling. Clock wise, counter or disable it.
+	 * @param drawMode How do draw triangle. Point, line or polygone (fill).
+	 * @param alphaMode How do alpha. On or off.
 	 */
 	template<typename VertexType>
 	void	createGraphicsPipeline(
 				VkDevice device, Window &window,
 				std::string vertexPath, std::string fragmentPath,
-				DepthMode depthMode, FaceCulling faceCulling, DrawMode drawMode)
+				DepthMode depthMode, FaceCulling faceCulling, DrawMode drawMode, AlphaMode alphaMode)
 	{
 		// Read files
 		std::vector<char> vertShaderCode = readFile(vertexPath);
@@ -299,17 +318,34 @@ private:
 
 		// Define color blending (by alpha here)
 		VkPipelineColorBlendAttachmentState colorBlendAttachment;
-		colorBlendAttachment.blendEnable = VK_FALSE;
-		colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-		colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-		colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-		colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-		colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-		colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
-		colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
-													VK_COLOR_COMPONENT_G_BIT |
-													VK_COLOR_COMPONENT_B_BIT |
-													VK_COLOR_COMPONENT_A_BIT;
+		if (alphaMode == ALPHA_OFF)
+		{
+			colorBlendAttachment.blendEnable = VK_FALSE;
+			colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+			colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+			colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+			colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+			colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+			colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+			colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
+														VK_COLOR_COMPONENT_G_BIT |
+														VK_COLOR_COMPONENT_B_BIT |
+														VK_COLOR_COMPONENT_A_BIT;
+		}
+		else
+		{
+			colorBlendAttachment.blendEnable = VK_TRUE;
+			colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+			colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+			colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+			colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+			colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
+														VK_COLOR_COMPONENT_G_BIT |
+														VK_COLOR_COMPONENT_B_BIT |
+														VK_COLOR_COMPONENT_A_BIT;
+		}
 
 		// Define blend constants
 		VkPipelineColorBlendStateCreateInfo colorBlending{};

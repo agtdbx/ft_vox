@@ -169,6 +169,12 @@ void	Map::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 			this->clusters[i].draw(engine, camera, chunkShader, drawCall);
 	}
 
+	for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
+	{
+		if (camera.isCubeInFrutum(this->clusters[i].getBoundingCube()))
+			this->clusters[i].drawWater(engine, camera, chunkShader);
+	}
+
 	// TODO: Remove draw call count
 	if (engine.inputManager.l.isPressed())
 	{
