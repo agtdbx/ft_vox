@@ -98,7 +98,8 @@ void	Map::init(
 		}
 	}
 
-	this->cameraChunkId = gm::Vec2i(0, 0);
+	this->cameraChunkId = gm::Vec2i(camera.getPosition().x / CHUNK_SIZE,
+									camera.getPosition().z / CHUNK_SIZE);
 
 	// Init generation info
 	this->generationProcess.running = true;
@@ -279,18 +280,11 @@ static void	firstGenerateChunk(
 	static Camera		&camera = *generationProcess->camera;
 	static ChunkShader	&chunkShader = *generationProcess->chunkShader;
 
-	PerfLogger	perfLogger;
-	resetLog(perfLogger.generation);
-	resetLog(perfLogger.createMesh);
-	perfLogger.nbTriangles = 0;
-
 	gm::Vec2i	minChunk = generationProcess->minChunkId + cameraChunkId - gm::Vec2i(1, 1);
 	gm::Vec2i	maxChunk = generationProcess->maxChunkId + cameraChunkId + gm::Vec2i(1, 1);
 	std::size_t	hash;
 
 	// Generate chunks
-	int	totalChunks = (maxChunk.x - minChunk.x) * (maxChunk.y - minChunk.y);
-	printf("Chunks generation : %i\n", totalChunks);
 	for (int x = minChunk.x; x < maxChunk.x; x++)
 	{
 		for (int y = minChunk.y; y < maxChunk.y; y++)
@@ -298,28 +292,22 @@ static void	firstGenerateChunk(
 			hash = gm::hash(gm::Vec2i(x, y));
 			chunks[hash] = Chunk();
 			chunks[hash].init(engine, camera, chunkShader);
-			chunks[hash].generate(gm::Vec2i(x, y), perfLogger);
+			chunks[hash].generate(gm::Vec2i(x, y));
 		}
 	}
 
 	minChunk += gm::Vec2i(1, 1);
 	maxChunk -= gm::Vec2i(1, 1);
-	totalChunks = (maxChunk.x - minChunk.x) * (maxChunk.y - minChunk.y);
 
-	printf("Chunks mesh creation : %i\n", totalChunks);
 	// Create chunks meshes
 	for (int x = minChunk.x; x < maxChunk.x; x++)
 	{
 		for (int y = minChunk.y; y < maxChunk.y; y++)
 		{
 			hash = gm::hash(gm::Vec2i(x, y));
-			chunks[hash].createMeshes(map, perfLogger);
+			chunks[hash].createMeshes(map);
 		}
 	}
-
-	printLog(perfLogger.generation, "Chunk generation");
-	printLog(perfLogger.createMesh, "Mesh creation");
-	printf("Number of triangle : %i\n", perfLogger.nbTriangles);
 }
 
 
@@ -337,19 +325,13 @@ static void	generateChunk(
 	if (cameraChunkId == oldCameraChunkId)
 		return ;
 
-	printf("\n--------------------------------\nGENERATION\n");
-
-	PerfLogger	perfLogger;
-	resetLog(perfLogger.generation);
-	resetLog(perfLogger.createMesh);
-	perfLogger.nbTriangles = 0;
-
+	// Compute min and max chunk
 	gm::Vec2i	movement = cameraChunkId - oldCameraChunkId;
 	gm::Vec2i	minChunk = generationProcess->minChunkId + cameraChunkId;
 	gm::Vec2i	maxChunk = generationProcess->maxChunkId + cameraChunkId;
 
-	std::cout << "Movement : "  << movement << std::endl;
-
+	std::cout << "\nGenerate movement : " << movement << std::endl;
+	// Update min and max to generate only necessary chunks
 	if (movement.x > 0 && movement.y == 0)
 	{
 		minChunk.x = maxChunk.x - movement.x;
@@ -375,14 +357,13 @@ static void	generateChunk(
 		gm::Vec2i	tmpCamera = oldCameraChunkId + gm::Vec2i(movement.x, 0);
 		generateChunk(generationProcess, tmpCamera, oldCameraChunkId);
 		generateChunk(generationProcess, cameraChunkId, tmpCamera);
+		std::cout << "Done diago" << std::endl;
 		return ;
 	}
 
 	std::size_t	hash;
 
 	// Generate chunks
-	int	totalChunks = (maxChunk.x - minChunk.x) * (maxChunk.y - minChunk.y);
-	printf("Chunks generation : %i\n", totalChunks);
 	for (int x = minChunk.x; x < maxChunk.x; x++)
 	{
 		for (int y = minChunk.y; y < maxChunk.y; y++)
@@ -393,7 +374,7 @@ static void	generateChunk(
 
 			chunks[hash] = Chunk();
 			chunks[hash].init(engine, camera, chunkShader);
-			chunks[hash].generate(gm::Vec2i(x, y), perfLogger);
+			chunks[hash].generate(gm::Vec2i(x, y));
 		}
 	}
 
@@ -406,20 +387,14 @@ static void	generateChunk(
 	else if (movement.x == 0 && movement.y < 0)
 		minChunk.y++;
 
-	totalChunks = (maxChunk.x - minChunk.x) * (maxChunk.y - minChunk.y);
-
-	printf("Chunks mesh creation : %i\n", totalChunks);
 	// Create chunks meshes
 	for (int x = minChunk.x; x < maxChunk.x; x++)
 	{
 		for (int y = minChunk.y; y < maxChunk.y; y++)
 		{
 			hash = gm::hash(gm::Vec2i(x, y));
-			chunks[hash].createMeshes(map, perfLogger);
+			chunks[hash].createMeshes(map);
 		}
 	}
-
-	printLog(perfLogger.generation, "Chunk generation");
-	printLog(perfLogger.createMesh, "Mesh creation");
-	printf("Number of triangle : %i\n", perfLogger.nbTriangles);
+	std::cout << "Done" << std::endl;
 }

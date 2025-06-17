@@ -52,27 +52,6 @@ struct Face
 };
 
 
-// TODO : REMOVE
-struct PerfField
-{
-	std::clock_t	start;
-	int				total;
-	int				nbCall;
-};
-
-void	startLog(PerfField &perfField);
-void	endLog(PerfField &perfField);
-void	resetLog(PerfField &perfField);
-void	printLog(PerfField &perfField, const char *msg);
-
-struct PerfLogger
-{
-	PerfField	generation;
-	PerfField	createMesh;
-	int			nbTriangles;
-};
-
-
 /**
  * @brief Chunk class.
  */
@@ -191,13 +170,13 @@ public:
 	 *
 	 * @param chunkId Id of the chunk.
 	 */
-	void	generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger);
+	void	generate(const gm::Vec2i &chunkId);
 	/**
 	 * @brief Create chunk meshes.
 	 *
 	 * @param map Map containing other chunks.
 	 */
-	void	createMeshes(Map &map, PerfLogger &perfLogger);
+	void	createMeshes(Map &map);
 	/**
 	 * @brief Draw chunk meshes.
 	 *

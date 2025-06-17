@@ -40,36 +40,6 @@ static void	setCubeX(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z, 
 static void	setCubeZ(int32_t cubesBitmap[CHUNK_MASK_SIZE], int x, int y, int z, bool cube);
 static int32_t	createLengthMask(int length);
 
-// TODO : Remove
-void	startLog(PerfField &perfField)
-{
-	perfField.start = std::clock();
-}
-
-void	endLog(PerfField &perfField)
-{
-	perfField.total += (std::clock() - perfField.start) * INV_CLOCKS_PER_USEC;
-	perfField.nbCall++;
-}
-
-void	resetLog(PerfField &perfField)
-{
-	perfField.start = 0.0;
-	perfField.total = 0.0;
-	perfField.nbCall = 0;
-}
-
-void	printLog(PerfField &perfField, const char *msg)
-{
-	if (perfField.nbCall == 0)
-		return ;
-
-	int	avg = perfField.total / perfField.nbCall;
-
-	printf("%s : total %i us, nb call %i, avg %i us\n",
-			msg, perfField.total, perfField.nbCall, avg);
-}
-
 //**** INITIALISION ************************************************************
 //---- Constructors ------------------------------------------------------------
 
@@ -216,7 +186,7 @@ void	Chunk::init(
 }
 
 
-void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
+void	Chunk::generate(const gm::Vec2i &chunkId)
 {
 	this->chunkId = chunkId;
 	this->chunkPosition.x = this->chunkId.x * CHUNK_SIZE;
@@ -224,8 +194,6 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 	this->chunkPosition.z = this->chunkId.y * CHUNK_SIZE;
 
 	this->boundingCube.center = this->chunkPosition;
-
-	startLog(perfLogger.generation);
 
 	float maxSize = 0;
 	float perlinX = 0;
@@ -310,8 +278,6 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 		}
 	}
 
-	endLog(perfLogger.generation);
-
 	for (int i = 0; i < CHUNK_SSBO_SIZE; i++)
 	{
 		id = i * 4;
@@ -323,15 +289,13 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 }
 
 
-void	Chunk::createMeshes(Map &map, PerfLogger &perfLogger)
+void	Chunk::createMeshes(Map &map)
 {
+	// if (this->mesh.getNbIndex() != 0)
+	// 	return ;
 	this->mesh.destroy();
 
-	startLog(perfLogger.createMesh);
 	this->createMesh(map);
-	endLog(perfLogger.createMesh);
-
-	perfLogger.nbTriangles += this->mesh.getNbIndex() / 3;
 
 	this->mesh.setPosition(this->chunkPosition);
 	this->uboPos.model = this->mesh.getModel();
@@ -423,7 +387,7 @@ void	Chunk::createMesh(Map &map)
 								facesLeft, facesUp, facesDown;
 	std::vector<VertexPosNrm>	vertices;
 	std::vector<uint32_t>		indices;
-	int						nbVertex = 0;
+	int							nbVertex = 0;
 	Chunk	*leftChunk = map.getChunk(this->chunkId.x - 1, this->chunkId.y);
 	Chunk	*rightChunk = map.getChunk(this->chunkId.x + 1, this->chunkId.y);
 	Chunk	*frontChunk = map.getChunk(this->chunkId.x, this->chunkId.y + 1);
