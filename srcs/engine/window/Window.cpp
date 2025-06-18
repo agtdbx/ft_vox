@@ -35,6 +35,7 @@ Window::Window(void)
 	glfwSetFramebufferSizeCallback(this->window, framebufferResizeCallback);
 
 	// Init vulkan variables
+	this->imageIndex = 0;
 	this->currentFrame = 0;
 	this->surface = NULL;
 	this->swapChain = NULL;

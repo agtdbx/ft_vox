@@ -72,7 +72,10 @@ void	Shader::destroy(Engine &engine)
 
 	// Free descriptor layout
 	if (this->descriptorSetLayout != NULL)
+	{
 		vkDestroyDescriptorSetLayout(device, this->descriptorSetLayout, nullptr);
+		descriptorSetLayout = NULL;
+	}
 
 	// Free pipeline
 	if (this->graphicsPipeline != NULL)

@@ -7,7 +7,7 @@
 
 # include <gmath.hpp>
 
-# ifndef DEBUG
+# ifdef DEBUG
 const bool enableValidationLayers = true;
 # else
 const bool enableValidationLayers = false;

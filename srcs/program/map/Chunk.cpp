@@ -56,7 +56,7 @@ Chunk::Chunk(void)
 		this->cubesBitmapX[i] = 0;
 		this->cubesBitmapZ[i] = 0;
 	}
-	this->copyCommandPool = NULL;
+	this->bufferCreate = false;
 
 	int	halfChunkSize = CHUNK_SIZE / 2;
 	int	halfChunkHeight = CHUNK_HEIGHT / 2;
@@ -76,7 +76,7 @@ Chunk::Chunk(const Chunk &obj)
 		this->cubesBitmapX[i] = obj.cubesBitmapX[i];
 		this->cubesBitmapZ[i] = obj.cubesBitmapZ[i];
 	}
-	this->copyCommandPool = obj.copyCommandPool;
+	this->bufferCreate = false;
 	this->mesh = obj.mesh;
 	this->boundingCube = obj.boundingCube;
 }
@@ -152,9 +152,6 @@ Chunk	&Chunk::operator=(const Chunk &obj)
 	for (int i = 0; i < CHUNK_TOTAL_SIZE; i++)
 		this->cubes[i] = obj.cubes[i];
 
-	if (!this->copyCommandPool)
-		this->copyCommandPool = obj.copyCommandPool;
-
 	this->mesh = obj.mesh;
 
 	for (int i = 0; i < CHUNK_MASK_SIZE; i++)
@@ -175,8 +172,6 @@ void	Chunk::init(
 				Camera &camera,
 				ChunkShader &chunkShader)
 {
-	this->copyCommandPool = &engine.commandPool;
-
 	chunkShader.shader.initShaderParam(engine, this->shaderParam, {"cubes"});
 	chunkShader.shaderWater.initShaderParam(engine, this->shaderParamWater, {"cubes"});
 	chunkShader.shaderFdf.initShaderParam(engine, this->shaderParamFdf, {});
@@ -300,6 +295,19 @@ void	Chunk::createMeshes(Map &map)
 }
 
 
+void	Chunk::createBuffers(VulkanCommandPool &commandPool)
+{
+	if (this->bufferCreate)
+		return ;
+
+	this->borderMesh.createBuffers(commandPool);
+	this->mesh.createBuffers(commandPool);
+	this->waterMesh.createBuffers(commandPool);
+
+	this->bufferCreate = true;
+}
+
+
 void	Chunk::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 {
 	this->uboPos.view = camera.getView();
@@ -349,8 +357,11 @@ void	Chunk::destroy(Engine &engine)
 	this->shaderParamWater.destroy(engine);
 	this->shaderParamFdf.destroy(engine);
 	this->shaderParamFdfWater.destroy(engine);
+	this->shaderParamBorder.destroy(engine);
 	this->mesh.destroy();
 	this->waterMesh.destroy();
+	this->borderMesh.destroy();
+	this->bufferCreate = false;
 }
 
 //**** STATIC METHODS **********************************************************
@@ -394,7 +405,6 @@ void	Chunk::createBorderMesh(void)
 	}
 
 	this->borderMesh = ChunkBorderMesh(vertices, indices);
-	this->borderMesh.createBuffers(*this->copyCommandPool);
 }
 
 
@@ -495,7 +505,6 @@ void	Chunk::createMesh(Map &map)
 	}
 
 	this->mesh = ChunkMesh(vertices, indices);
-	this->mesh.createBuffers(*this->copyCommandPool);
 }
 
 
@@ -533,7 +542,6 @@ void	Chunk::createWaterMesh(void)
 	}
 
 	this->waterMesh = ChunkMesh(vertices, indices);
-	this->waterMesh.createBuffers(*this->copyCommandPool);
 }
 
 //**** FUNCTIONS ***************************************************************

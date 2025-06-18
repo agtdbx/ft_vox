@@ -44,7 +44,7 @@ static void	loadTextures(Engine &engine)
 	engine.textureManager.addTexture("skybox", "data/skybox/skybox.png");
 	engine.textureManager.createImage(
 							engine,
-							{false, true, true, false},
+							{false, true, false, false},
 							"skybox", "skybox");
 
 	// Load cube texture and put them in an array.

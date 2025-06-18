@@ -59,7 +59,7 @@ Cluster	&Cluster::operator=(const Cluster &obj)
 
 //**** PUBLIC METHODS **********************************************************
 
-void	Cluster::setChunks(Map &map, const gm::Vec2i &middle)
+void	Cluster::setChunks(Engine &engine, Map &map, const gm::Vec2i &middle)
 {
 	int	cx, cy, id;
 
@@ -79,6 +79,7 @@ void	Cluster::setChunks(Map &map, const gm::Vec2i &middle)
 			cy = y - this->minChunk.y;
 			id = cx + cy * CLUSTER_SIZE;
 			this->chunks[id] = map.getChunk(x, y);
+			this->chunks[id]->createBuffers(engine.commandPool);
 		}
 	}
 }

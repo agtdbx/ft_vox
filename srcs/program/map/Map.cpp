@@ -121,7 +121,7 @@ void	Map::init(
 }
 
 
-void	Map::update(Camera &camera)
+void	Map::update(Engine &engine, Camera &camera)
 {
 	bool	mapChunksToClusters = false;
 
@@ -137,7 +137,7 @@ void	Map::update(Camera &camera)
 		if (mapChunksToClusters)
 		{
 			this->checkGeneration =  false;
-			this->mapChunksIntoClusters();
+			this->mapChunksIntoClusters(engine);
 		}
 	}
 	// TODO: Uncomment for enable infinite generation
@@ -218,17 +218,18 @@ void	Map::destroy(Engine &engine)
 	while (it != this->chunks.end())
 	{
 		it->second.destroy(engine);
+		it++;
 	}
 }
 
 //**** STATIC METHODS **********************************************************
 //**** PRIVATE METHODS *********************************************************
 
-void	Map::mapChunksIntoClusters(void)
+void	Map::mapChunksIntoClusters(Engine &engine)
 {
 	for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
 	{
-		this->clusters[i].setChunks(*this, this->clusterOffsets[i] + this->cameraChunkId);
+		this->clusters[i].setChunks(engine, *this, this->clusterOffsets[i] + this->cameraChunkId);
 	}
 }
 

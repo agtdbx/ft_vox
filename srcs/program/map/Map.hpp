@@ -99,7 +99,7 @@ public:
 	 *
 	 * @param camera The camera.
 	 */
-	void	update(Camera &camera);
+	void	update(Engine &engine, Camera &camera);
 	/**
 	 * @brief Draw chunks.
 	 *
@@ -132,7 +132,7 @@ private:
 	/**
 	 * @brief Put all chunks into clusters.
 	 */
-	void	mapChunksIntoClusters(void);
+	void	mapChunksIntoClusters(Engine &engine);
 
 };
 

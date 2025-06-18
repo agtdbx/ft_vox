@@ -27,15 +27,15 @@ void Skybox::init(Engine &engine, Camera &camera, Shader &skyboxShader)
 
 	skyboxShader.initShaderParam(engine, this->shaderParam, {"skybox"});
 
-	float	x0 =    0.0f;
-	float	x1 =  901.0f;
-	float	x2 = 1799.0f;
-	float	x3 = 2700.0f;
-	float	x4 = 3600.0f;
-	float	y0 =    0.0f;
-	float	y1 =  901.0f;
-	float	y2 = 1799.0f;
-	float	y3 = 2700.0f;
+	float	x0 =    0.0f / 3600.0f;
+	float	x1 =  901.0f / 3600.0f;
+	float	x2 = 1799.0f / 3600.0f;
+	float	x3 = 2700.0f / 3600.0f;
+	float	x4 = 3600.0f / 3600.0f;
+	float	y0 =    0.0f / 2700.0f;
+	float	y1 =  901.0f / 2700.0f;
+	float	y2 = 1799.0f / 2700.0f;
+	float	y3 = 2700.0f / 2700.0f;
 
 	vertices = {
 		{{-SKYBOX_DIST, SKYBOX_DIST,-SKYBOX_DIST}, {x1, y1}}, //  0

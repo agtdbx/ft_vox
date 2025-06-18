@@ -388,7 +388,7 @@ private:
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
 		createVulkanBuffer(copyDevice, copyPhysicalDevice,
-							bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+							bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 							VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 							stagingBuffer, stagingBufferMemory);
 
@@ -467,7 +467,7 @@ private:
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
 		createVulkanBuffer(copyDevice, copyPhysicalDevice,
-							bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+							bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 							VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 							stagingBuffer, stagingBufferMemory);
 

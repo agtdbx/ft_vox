@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/17 20:21:17 by gugus            ###   ########.fr       */
+/*   Updated: 2025/06/18 15:07:08 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ const std::vector<std::string>	CUBE_TEXTURES = {
 };
 
 // Cluster defines
-# define CLUSTER_SIZE 8
+# define CLUSTER_SIZE 2 // TODO: Reput to 8
 const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
 
 // Map defines

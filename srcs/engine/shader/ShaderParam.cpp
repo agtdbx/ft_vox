@@ -94,8 +94,10 @@ void	ShaderParam::destroy(Engine &engine)
 	}
 
 	// Free descriptor pool
+	// printf("Call free\n");
 	if (this->descriptorPool != NULL)
 	{
+		// printf("Destroy pool\n");
 		vkDestroyDescriptorPool(device, this->descriptorPool, nullptr);
 		this->descriptorPool = NULL;
 	}
@@ -145,8 +147,8 @@ void	ShaderParam::createUniformBuffers(VkDevice device, VkPhysicalDevice physica
 
 void	ShaderParam::createDescriptorPool(VkDevice device, size_t nbImages)
 {
-	uint32_t maxFramesInFlight = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 	size_t nbUbo = this->bufferInfos.size();
+	uint32_t maxFramesInFlight = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
 	std::vector<VkDescriptorPoolSize> poolSizes(nbUbo + nbImages);
 	for (size_t i = 0; i < nbUbo; i++)
@@ -171,6 +173,7 @@ void	ShaderParam::createDescriptorPool(VkDevice device, size_t nbImages)
 
 	if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &this->descriptorPool) != VK_SUCCESS)
 		throw std::runtime_error("Create descriptor pool failed");
+	// printf("Create pool\n");
 }
 
 

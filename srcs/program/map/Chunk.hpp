@@ -180,6 +180,10 @@ public:
 	 */
 	void	createMeshes(Map &map);
 	/**
+	 * @brief Create chunk meshes.
+	 */
+	void	createBuffers(VulkanCommandPool &commandPool);
+	/**
 	 * @brief Draw chunk meshes.
 	 *
 	 * @param engine Engine struct.
@@ -206,7 +210,6 @@ public:
 
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
-//---- Chunk properties --------------------------------------------------------
 	gm::Vec2i		chunkId;
 	gm::Vec3f		chunkPosition;
 	std::vector<gm::Vec3f>	positions;
@@ -219,8 +222,7 @@ private:
 	ShaderParam		shaderParam, shaderParamWater, shaderParamFdf,
 					shaderParamFdfWater, shaderParamBorder;
 	BoundingCube	boundingCube;
-//---- Copy --------------------------------------------------------------------
-	VulkanCommandPool	*copyCommandPool;
+	bool			bufferCreate;
 
 //**** PRIVATE METHODS *********************************************************
 	/**
