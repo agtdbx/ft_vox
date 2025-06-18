@@ -246,22 +246,27 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 				if (y > (int)maxSize && y > 58)
 					break;
 
-				idBitmapY = y * CHUNK_SIZE;
-				this->cubesBitmapX[z + idBitmapY] += maskX;
-				this->cubesBitmapZ[x + idBitmapY] += maskZ;
-
 				if (y > (int)maxSize && y <= 58)
 				{
 					if (Biome > 0.7)
-						this->cubes[id] = CUBE_LAVA;
+						this->cubes[id] = CUBE_LAVA; // TODO : Make lava transparent
 					else if (Biome < 0.3)
 						this->cubes[id] = CUBE_ICE;
 					else
+					{
 						this->cubes[id] = CUBE_WATER;
-				}
+						continue;
+					}
+					idBitmapY = y * CHUNK_SIZE;
+					this->cubesBitmapX[z + idBitmapY] += maskX;
+					this->cubesBitmapZ[x + idBitmapY] += maskZ;
+			}
 				// End
 				else
 				{
+					idBitmapY = y * CHUNK_SIZE;
+					this->cubesBitmapX[z + idBitmapY] += maskX;
+					this->cubesBitmapZ[x + idBitmapY] += maskZ;
 					if (y > 57 && y == (int)maxSize)
 					{
 						if (Biome > 0.7)
@@ -286,8 +291,6 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 
 void	Chunk::createMeshes(Map &map)
 {
-	this->mesh.destroy();
-
 	this->createMesh(map);
 	this->createWaterMesh();
 

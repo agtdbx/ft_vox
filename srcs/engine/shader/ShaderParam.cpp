@@ -81,15 +81,24 @@ void	ShaderParam::destroy(Engine &engine)
 	size_t nbBuffers = this->uniformBuffers.size();
 	for (size_t i = 0; i < nbBuffers; i++)
 	{
-		if (this->uniformBuffers[i])
+		if (this->uniformBuffers[i] != VK_NULL_HANDLE)
+		{
 			vkDestroyBuffer(device, this->uniformBuffers[i], nullptr);
-		if (this->uniformBuffersMemory[i])
+			this->uniformBuffers[i] = VK_NULL_HANDLE;
+		}
+		if (this->uniformBuffersMemory[i] != VK_NULL_HANDLE)
+		{
 			vkFreeMemory(device, this->uniformBuffersMemory[i], nullptr);
+			this->uniformBuffersMemory[i] = VK_NULL_HANDLE;
+		}
 	}
 
 	// Free descriptor pool
 	if (this->descriptorPool != NULL)
+	{
 		vkDestroyDescriptorPool(device, this->descriptorPool, nullptr);
+		this->descriptorPool = NULL;
+	}
 }
 
 

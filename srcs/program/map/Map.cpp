@@ -214,8 +214,11 @@ void	Map::destroy(Engine &engine)
 		this->generationThread = NULL;
 	}
 
-	for (int i = 0; i < CLUSTER_SIZE2; i++)
-		this->chunks[i].destroy(engine);
+	ChunkMap::iterator	it = this->chunks.begin();
+	while (it != this->chunks.end())
+	{
+		it->second.destroy(engine);
+	}
 }
 
 //**** STATIC METHODS **********************************************************
@@ -310,7 +313,7 @@ static void	firstGenerateChunk(
 		}
 	}
 	float	avg = (std::clock() - start) * INV_CLOCKS_PER_USEC / (float)totalChunk;
-	std::cout << "\navg  : " << avg << " us\n" << std::endl;
+	std::cout << "\navg time : " << avg << " us\n" << std::endl;
 
 	minChunk += gm::Vec2i(1, 1);
 	maxChunk -= gm::Vec2i(1, 1);
@@ -332,7 +335,7 @@ static void	firstGenerateChunk(
 		}
 	}
 	avg = (std::clock() - start) * INV_CLOCKS_PER_USEC / (float)totalChunk;
-	std::cout << "\navg  : " << avg << " us\n" << std::endl;
+	std::cout << "\navg time : " << avg << " us\n" << std::endl;
 }
 
 

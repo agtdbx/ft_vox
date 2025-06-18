@@ -361,7 +361,13 @@ void	TextureManager::createTextureSampler(
 		samplerInfo.magFilter = VK_FILTER_NEAREST;
 		samplerInfo.minFilter = VK_FILTER_NEAREST;
 	}
-	if (samplerInfoParam.repeat)
+	if (samplerInfoParam.intCoordonates)
+	{
+		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	}
+	else if (samplerInfoParam.repeat)
 	{
 		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
@@ -374,7 +380,7 @@ void	TextureManager::createTextureSampler(
 		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
 	}
 
-	if (samplerInfoParam.perfOverQuality)
+	if (samplerInfoParam.perfOverQuality || samplerInfoParam.intCoordonates)
 	{
 		// If anisotropy is lower, perf > quality
 		samplerInfo.anisotropyEnable = VK_FALSE;
@@ -390,12 +396,17 @@ void	TextureManager::createTextureSampler(
 
 	samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 	if (samplerInfoParam.intCoordonates)
+	{
 		samplerInfo.unnormalizedCoordinates = VK_TRUE; // True : pixel in range [0, width[
+		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+	}
 	else
+	{
 		samplerInfo.unnormalizedCoordinates = VK_FALSE; // False : pixel in range [0, 1[
+		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+	}
 	samplerInfo.compareEnable = VK_FALSE;
 	samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 	samplerInfo.mipLodBias = 0.0f;
 	samplerInfo.minLod = 0.0f;
 	samplerInfo.maxLod = 0.0f;
