@@ -90,12 +90,14 @@ void	Chunk::createMesh(Map &map)
 	CubeBitmap	*leftBitmap = map.getChunkBitmap(this->chunkId.x - 1, this->chunkId.y);
 
 	int	idY;
+	uint32_t	test;
 	gm::Vec3f	pointLU, pointLD, pointRD, pointRU;
 
 	for (int y = 0; y < CHUNK_HEIGHT; y++)
 	{
 		idY = y * CHUNK_SIZE;
 
+		// y axis
 		for (int z = 0; z < CHUNK_SIZE; z++)
 		{
 			for (int x = 0; x < CHUNK_SIZE; x++)
@@ -128,104 +130,99 @@ void	Chunk::createMesh(Map &map)
 			}
 		}
 
-		// Face front
+		// z axis
 		for (int z = 0; z < CHUNK_SIZE; z++)
 		{
-			uint32_t	test = 0;
-
+			// Face front
+			test = this->cubeBitmap.axisX[z + idY];
 			if (z != CHUNK_MAX)
-				test = this->cubeBitmap.axisX[z + idY];
+				test &= ~this->cubeBitmap.axisX[(z + 1) + idY];
 			else
-				test = frontBitmap->axisX[0 + idY];
+				test &= ~frontBitmap->axisX[0 + idY];
 
 			for (int x = 0; x < CHUNK_SIZE; x++)
 			{
-				// if (~test & (1 << x))
-				// 	continue;
 				if ((test & (1 << x)) == 0)
 					continue;
 
 				const Cube	&type = this->at(x, y, z);
-				if (type == CUBE_AIR || type == CUBE_WATER)
-					continue;
 
-				if ((z != CHUNK_MAX && this->cubeBitmap.getX(x, y, z + 1) == 0) ||
-					(z == CHUNK_MAX && frontBitmap->getX(x, y, 0) == 0))
-				{
-					pointLU = gm::Vec3f(x + 0, y + 1, z + 1);
-					pointLD = gm::Vec3f(x + 0, y + 0, z + 1);
-					pointRD = gm::Vec3f(x + 1, y + 0, z + 1);
-					pointRU = gm::Vec3f(x + 1, y + 1, z + 1);
-					createTriangleFace(vertexIndex, vertices, indices, nbVertex,
-										pointLU, pointLD, pointRD, pointRU, normalFront, type);
-				}
+				pointLU = gm::Vec3f(x + 0, y + 1, z + 1);
+				pointLD = gm::Vec3f(x + 0, y + 0, z + 1);
+				pointRD = gm::Vec3f(x + 1, y + 0, z + 1);
+				pointRU = gm::Vec3f(x + 1, y + 1, z + 1);
+				createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+									pointLU, pointLD, pointRD, pointRU, normalFront, type);
 			}
-		}
 
-		// Face back
-		for (int z = 0; z < CHUNK_SIZE; z++)
-		{
+			// Face back
+			test = this->cubeBitmap.axisX[z + idY];
+			if (z != 0)
+				test &= ~this->cubeBitmap.axisX[(z - 1) + idY];
+			else
+				test &= ~backBitmap->axisX[CHUNK_MAX + idY];
+
 			for (int x = 0; x < CHUNK_SIZE; x++)
 			{
-				const Cube	&type = this->at(x, y, z);
-				if (type == CUBE_AIR || type == CUBE_WATER)
+				if ((test & (1 << x)) == 0)
 					continue;
 
-				if ((z != 0 && this->cubeBitmap.getX(x, y, z - 1) == 0) ||
-					(z == 0 && backBitmap->getX(x, y, CHUNK_MAX) == 0))
-				{
-					pointLU = gm::Vec3f(x + 1, y + 1, z + 0);
-					pointLD = gm::Vec3f(x + 1, y + 0, z + 0);
-					pointRD = gm::Vec3f(x + 0, y + 0, z + 0);
-					pointRU = gm::Vec3f(x + 0, y + 1, z + 0);
-					createTriangleFace(vertexIndex, vertices, indices, nbVertex,
-										pointLU, pointLD, pointRD, pointRU, normalBack, type);
-				}
+				const Cube	&type = this->at(x, y, z);
 
+				pointLU = gm::Vec3f(x + 1, y + 1, z + 0);
+				pointLD = gm::Vec3f(x + 1, y + 0, z + 0);
+				pointRD = gm::Vec3f(x + 0, y + 0, z + 0);
+				pointRU = gm::Vec3f(x + 0, y + 1, z + 0);
+				createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+									pointLU, pointLD, pointRD, pointRU, normalBack, type);
 			}
 		}
 
-		// Face right
+		// x axis
 		for (int x = 0; x < CHUNK_SIZE; x++)
 		{
+			// Face right
+			test = this->cubeBitmap.axisZ[x + idY];
+			if (x != CHUNK_MAX)
+				test &= ~this->cubeBitmap.axisZ[(x + 1) + idY];
+			else
+				test &= ~rightBitmap->axisZ[0 + idY];
+
 			for (int z = 0; z < CHUNK_SIZE; z++)
 			{
-				const Cube	&type = this->at(x, y, z);
-				if (type == CUBE_AIR || type == CUBE_WATER)
+				if ((test & (1 << z)) == 0)
 					continue;
 
-				if ((x != CHUNK_MAX && this->cubeBitmap.getX(x + 1, y, z) == 0) ||
-					(x == CHUNK_MAX && rightBitmap->getX(0, y, z) == 0))
-				{
-					pointLU = gm::Vec3f(x + 1, y + 1, z + 1);
-					pointLD = gm::Vec3f(x + 1, y + 0, z + 1);
-					pointRD = gm::Vec3f(x + 1, y + 0, z + 0);
-					pointRU = gm::Vec3f(x + 1, y + 1, z + 0);
-					createTriangleFace(vertexIndex, vertices, indices, nbVertex,
-										pointLU, pointLD, pointRD, pointRU, normalRight, type);
-				}
+				const Cube	&type = this->at(x, y, z);
+
+				pointLU = gm::Vec3f(x + 1, y + 1, z + 1);
+				pointLD = gm::Vec3f(x + 1, y + 0, z + 1);
+				pointRD = gm::Vec3f(x + 1, y + 0, z + 0);
+				pointRU = gm::Vec3f(x + 1, y + 1, z + 0);
+				createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+									pointLU, pointLD, pointRD, pointRU, normalRight, type);
 			}
-		}
 
-		// Face left
-		for (int x = 0; x < CHUNK_SIZE; x++)
-		{
+			// Face left
+			test = this->cubeBitmap.axisZ[x + idY];
+			if (x != 0)
+				test &= ~this->cubeBitmap.axisZ[(x - 1) + idY];
+			else
+				test &= ~leftBitmap->axisZ[CHUNK_MAX + idY];
+
 			for (int z = 0; z < CHUNK_SIZE; z++)
 			{
-				const Cube	&type = this->at(x, y, z);
-				if (type == CUBE_AIR || type == CUBE_WATER)
+				if ((test & (1 << z)) == 0)
 					continue;
 
-				if ((x != 0 && this->cubeBitmap.getX(x - 1, y, z) == 0) ||
-					(x == 0 && leftBitmap->getX(CHUNK_MAX, y, z) == 0))
-				{
-					pointLU = gm::Vec3f(x + 0, y + 1, z + 0);
-					pointLD = gm::Vec3f(x + 0, y + 0, z + 0);
-					pointRD = gm::Vec3f(x + 0, y + 0, z + 1);
-					pointRU = gm::Vec3f(x + 0, y + 1, z + 1);
-					createTriangleFace(vertexIndex, vertices, indices, nbVertex,
-										pointLU, pointLD, pointRD, pointRU, normalLeft, type);
-				}
+				const Cube	&type = this->at(x, y, z);
+
+				pointLU = gm::Vec3f(x + 0, y + 1, z + 0);
+				pointLD = gm::Vec3f(x + 0, y + 0, z + 0);
+				pointRD = gm::Vec3f(x + 0, y + 0, z + 1);
+				pointRU = gm::Vec3f(x + 0, y + 1, z + 1);
+				createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+									pointLU, pointLD, pointRD, pointRU, normalLeft, type);
 			}
 		}
 	}
