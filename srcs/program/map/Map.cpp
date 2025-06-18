@@ -52,6 +52,20 @@ Chunk	*Map::getChunk(int x, int y)
 	return (NULL);
 }
 
+
+CubeBitmap	*Map::getChunkBitmap(int x, int y)
+{
+	std::size_t	hash = gm::hash(gm::Vec2i(x, y));
+
+	ChunkMap::iterator	chunkFind = this->chunks.find(hash);
+
+	if (chunkFind != this->chunks.end())
+		return (&chunkFind->second.getCubeBitmap());
+
+	return (NULL);
+}
+
+
 //---- Setters -----------------------------------------------------------------
 //---- Operators ---------------------------------------------------------------
 

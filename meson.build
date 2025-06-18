@@ -7,7 +7,9 @@ add_global_arguments('-g', language : 'cpp')
 
 srcs = [
   'srcs/program/parsing/string.cpp',
+  'srcs/program/map/Chunk_generation.cpp',
   'srcs/program/map/Chunk.cpp',
+  'srcs/program/map/Chunk_meshing.cpp',
   'srcs/program/map/PerlinNoise.cpp',
   'srcs/program/map/Map.cpp',
   'srcs/program/map/Cluster.cpp',

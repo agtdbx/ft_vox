@@ -71,6 +71,15 @@ public:
 	 * @return Pointer on chunk at this id, or NULL if the chunk doesn't exist.
 	 */
 	Chunk	*getChunk(int x, int y);
+	/**
+	 * @brief Get chunk cube bitmap by id.
+	 *
+	 * @param x Id x.
+	 * @param y Id y.
+	 *
+	 * @return Pointer on chunk cube bitmap at this id, or NULL if the chunk doesn't exist.
+	 */
+	CubeBitmap	*getChunkBitmap(int x, int y);
 //---- Setters -----------------------------------------------------------------
 //---- Operators ---------------------------------------------------------------
 	/**

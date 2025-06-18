@@ -8,8 +8,9 @@
 # include <engine/shader/Shader.hpp>
 # include <engine/camera/Camera.hpp>
 # include <engine/camera/BoundingCube.hpp>
-# include <program/map/Cube.hpp>
 # include <program/shaderStruct.hpp>
+# include <program/map/Cube.hpp>
+# include <program/map/CubeBitmap.hpp>
 # include <program/map/PerlinNoise.hpp>
 
 #include <chrono>
@@ -42,17 +43,6 @@ struct ChunkShader
 		this->shaderBorder.destroy(engine);
 	}
 };
-
-
-struct Face
-{
-	int	x;
-	int	y;
-	int	w;
-	int	h;
-	int	axis;
-};
-
 
 /**
  * @brief Chunk class.
@@ -92,6 +82,12 @@ public:
 	 * @return The const reference to bounding cube.
 	 */
 	const BoundingCube	&getBoundingCube(void) const;
+	/**
+	 * @brief Getter of cube bitmap.
+	 *
+	 * @return The reference to cube bitmap.
+	 */
+	CubeBitmap	&getCubeBitmap(void);
 	/**
 	 * @brief Getter of cube in a chunk.
 	 *
@@ -214,8 +210,7 @@ private:
 	gm::Vec3f		chunkPosition;
 	std::vector<gm::Vec3f>	positions;
 	Cube			cubes[CHUNK_TOTAL_SIZE]; // id = x + z * SIZE + y * SIZE2
-	int32_t			cubesBitmapX[CHUNK_MASK_SIZE]; // id = z + y * SIZE, 1 << x
-	int32_t			cubesBitmapZ[CHUNK_MASK_SIZE]; // id = x + y * SIZE, 1 << z
+	CubeBitmap		cubeBitmap;
 	ChunkMesh		mesh, waterMesh;
 	ChunkBorderMesh	borderMesh;
 	UBO3DChunkPos	uboPos;
