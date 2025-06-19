@@ -150,15 +150,16 @@ void	Chunk::init(
 
 	this->uboPos.proj = camera.getProjection();
 	this->uboPos.proj.at(1, 1) *= -1;
-
-	this->createBorderMesh();
 }
 
 
-void	Chunk::createMeshes(Map &map)
+void	Chunk::createMeshes(Map &map, PerfLogger &perfLogger)
 {
-	this->createMesh(map);
-	this->createWaterMesh();
+	perflogStart(perfLogger.chunkMeshing);
+	this->createBorderMesh(perfLogger);
+	this->createMesh(map, perfLogger);
+	this->createWaterMesh(perfLogger);
+	perflogEnd(perfLogger.chunkMeshing);
 
 	this->mesh.setPosition(this->chunkPosition);
 	this->uboPos.model = this->mesh.getModel();
@@ -166,16 +167,20 @@ void	Chunk::createMeshes(Map &map)
 }
 
 
-void	Chunk::createBuffers(VulkanCommandPool &commandPool)
+void	Chunk::createBuffers(VulkanCommandPool &commandPool, PerfLogger &perfLogger)
 {
 	if (this->bufferCreate)
 		return ;
+
+	perflogStart(perfLogger.createBuffer);
 
 	this->borderMesh.createBuffers(commandPool);
 	this->mesh.createBuffers(commandPool);
 	this->waterMesh.createBuffers(commandPool);
 
 	this->bufferCreate = true;
+
+	perflogEnd(perfLogger.createBuffer);
 }
 
 

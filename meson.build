@@ -15,6 +15,7 @@ srcs = [
   'srcs/program/map/Cluster.cpp',
   'srcs/program/skybox/Skybox.cpp',
   'srcs/program/main.cpp',
+  'srcs/program/perfLogger/PerfLogger.cpp',
   'srcs/program/loop/computation.cpp',
   'srcs/program/loop/draw.cpp',
   'srcs/program/loop/init.cpp',

@@ -40,8 +40,10 @@ static inline uint64_t	reverseBytes(uint64_t bytes);
 //**** STATIC METHODS **********************************************************
 //**** PRIVATE METHODS *********************************************************
 
-void	Chunk::createBorderMesh(void)
+void	Chunk::createBorderMesh(PerfLogger &perfLogger)
 {
+	perflogStart(perfLogger.meshChunk);
+
 	int	nbVertex = 0;
 	std::vector<VertexPos>	vertices;
 	std::vector<uint32_t>	indices;
@@ -77,12 +79,18 @@ void	Chunk::createBorderMesh(void)
 		nbVertex += 8;
 	}
 
+	perflogEnd(perfLogger.meshChunk);
+
+	perflogStart(perfLogger.setMeshChunk);
 	this->borderMesh = ChunkBorderMesh(vertices, indices);
+	perflogEnd(perfLogger.setMeshChunk);
 }
 
 
-void	Chunk::createMesh(Map &map)
+void	Chunk::createMesh(Map &map, PerfLogger &perfLogger)
 {
+	perflogStart(perfLogger.meshBlock);
+
 	std::unordered_map<std::size_t, uint32_t>	vertexIndex;
 	std::vector<VertexVoxel>					vertices;
 	std::vector<uint32_t>						indices;
@@ -102,6 +110,7 @@ void	Chunk::createMesh(Map &map)
 		idY = y * CHUNK_SIZE;
 
 		// y axis
+		perflogStart(perfLogger.meshBlockYaxis);
 		for (int z = 0; z < CHUNK_SIZE; z++)
 		{
 			for (int x = 0; x < CHUNK_SIZE; x++)
@@ -133,8 +142,10 @@ void	Chunk::createMesh(Map &map)
 				}
 			}
 		}
+		perflogEnd(perfLogger.meshBlockYaxis);
 
 		// z axis
+		perflogStart(perfLogger.meshBlockZaxis);
 		for (int x = 0; x < CHUNK_SIZE; x++)
 		{
 			// Contruct chunk line
@@ -195,8 +206,10 @@ void	Chunk::createMesh(Map &map)
 									pointLU, pointLD, pointRD, pointRU, normalBack, type);
 			}
 		}
+		perflogEnd(perfLogger.meshBlockZaxis);
 
 		// x axis
+		perflogStart(perfLogger.meshBlockXaxis);
 		for (int z = 0; z < CHUNK_SIZE; z++)
 		{
 			// Contruct chunk line
@@ -257,14 +270,21 @@ void	Chunk::createMesh(Map &map)
 									pointLU, pointLD, pointRD, pointRU, normalLeft, type);
 			}
 		}
+		perflogEnd(perfLogger.meshBlockXaxis);
 	}
 
+	perflogEnd(perfLogger.meshBlock);
+
+	perflogStart(perfLogger.setMeshBlock);
 	this->mesh = ChunkMesh(vertices, indices);
+	perflogEnd(perfLogger.setMeshBlock);
 }
 
 
-void	Chunk::createWaterMesh(void)
+void	Chunk::createWaterMesh(PerfLogger &perfLogger)
 {
+	perflogStart(perfLogger.meshWater);
+
 	std::unordered_map<std::size_t, uint32_t>	vertexIndex;
 	std::vector<VertexVoxel>					vertices;
 	std::vector<uint32_t>						indices;
@@ -296,7 +316,11 @@ void	Chunk::createWaterMesh(void)
 		}
 	}
 
+	perflogEnd(perfLogger.meshWater);
+
+	perflogStart(perfLogger.setMeshWater);
 	this->waterMesh = ChunkMesh(vertices, indices);
+	perflogEnd(perfLogger.setMeshWater);
 }
 
 //**** FUNCTIONS ***************************************************************

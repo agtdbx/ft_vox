@@ -11,8 +11,10 @@ PerlinNoise PerlinBiome(654, 4096);
 
 //**** STATIC FUNCTIONS DEFINE *************************************************
 //**** PUBLIC METHODS **********************************************************
-void	Chunk::generate(const gm::Vec2i &chunkId)
+void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 {
+	perflogStart(perfLogger.generateChunk);
+
 	this->chunkId = chunkId;
 	this->chunkPosition.x = this->chunkId.x * CHUNK_SIZE;
 	this->chunkPosition.y = 0.0f;
@@ -101,6 +103,8 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 			}
 		}
 	}
+
+	perflogEnd(perfLogger.generateChunk);
 }
 
 //**** FUNCTIONS ***************************************************************

@@ -12,8 +12,8 @@
 # include <program/map/Cube.hpp>
 # include <program/map/CubeBitmap.hpp>
 # include <program/map/PerlinNoise.hpp>
+# include <program/perfLogger/PerfLogger.hpp> // TODO : Remove
 
-#include <chrono>
 
 using ChunkMesh = Mesh<VertexVoxel>;
 using ChunkBorderMesh = Mesh<VertexPos>;
@@ -168,17 +168,17 @@ public:
 	 *
 	 * @param chunkId Id of the chunk.
 	 */
-	void	generate(const gm::Vec2i &chunkId);
+	void	generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger);
 	/**
 	 * @brief Create chunk meshes.
 	 *
 	 * @param map Map containing other chunks.
 	 */
-	void	createMeshes(Map &map);
+	void	createMeshes(Map &map, PerfLogger &perfLogger);
 	/**
 	 * @brief Create chunk meshes.
 	 */
-	void	createBuffers(VulkanCommandPool &commandPool);
+	void	createBuffers(VulkanCommandPool &commandPool, PerfLogger &perfLogger);
 	/**
 	 * @brief Draw chunk meshes.
 	 *
@@ -223,17 +223,17 @@ private:
 	/**
 	 * @brief Create borderMesh.
 	 */
-	void	createBorderMesh(void);
+	void	createBorderMesh(PerfLogger &perfLogger);
 	/**
 	 * @brief Create mesh.
 	 *
 	 * @param map Map that contain chunks.
 	 */
-	void	createMesh(Map &map);
+	void	createMesh(Map &map, PerfLogger &perfLogger);
 	/**
 	 * @brief Create water mesh.
 	 */
-	void	createWaterMesh(void);
+	void	createWaterMesh(PerfLogger &perfLogger);
 };
 
 //**** FUNCTIONS ***************************************************************

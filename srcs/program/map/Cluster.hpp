@@ -61,7 +61,11 @@ public:
 	 * @param map Map containing chunks.
 	 * @param middle Middle position of the cluster.
 	 */
-	void	setChunks(Engine &engine, Map &map, const gm::Vec2i &middle);
+	void	setChunks(
+				Engine &engine,
+				Map &map,
+				const gm::Vec2i &middle,
+				PerfLogger &perfLogger);
 	/**
 	 * @brief Draw chunks.
 	 *
