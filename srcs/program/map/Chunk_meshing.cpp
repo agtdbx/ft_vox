@@ -29,7 +29,12 @@ static void	createTriangleFace(
 				const gm::Vec3f &posRU,
 				const gm::Vec3f &normal,
 				const Cube &type);
-// static int32_t	createLengthMask(int length);
+static inline int	trailingZero(uint64_t bytes);
+static inline int	trailingOne(uint64_t bytes);
+static inline uint64_t	createLengthMask(int length);
+static inline uint64_t	reverseBytes(uint64_t bytes);
+static void	printUINT32(uint32_t line);
+static void	printUINT64(uint64_t line);
 
 //**** INITIALISION ************************************************************
 //---- Constructors ------------------------------------------------------------
@@ -91,6 +96,8 @@ void	Chunk::createMesh(Map &map)
 
 	int	idY;
 	uint32_t	test;
+	uint64_t	chunkLineL, chunkLineR;
+	uint64_t	chunkLeftLine, chunkCurrLine, chunkRightLine;
 	gm::Vec3f	pointLU, pointLD, pointRD, pointRU;
 
 	for (int y = 0; y < CHUNK_HEIGHT; y++)
@@ -131,41 +138,152 @@ void	Chunk::createMesh(Map &map)
 		}
 
 		// z axis
+		for (int x = 0; x < CHUNK_SIZE; x++)
+		{
+			// Contruct chunk line
+			if (backBitmap)
+				chunkLeftLine = ((backBitmap->axisZ[x + idY] >> CHUNK_MAX) & 1) & UINT32_MAX;
+			else
+				chunkLeftLine = 0ull;
+
+			chunkCurrLine = this->cubeBitmap.axisZ[x + idY] & UINT32_MAX;
+
+			if (frontBitmap)
+				chunkRightLine = ((frontBitmap->axisZ[x + idY] >> 0) & 1) & UINT32_MAX;
+			else
+				chunkRightLine = 0ull;
+
+			chunkLineL = (chunkRightLine << 33) | (chunkCurrLine << 1) | chunkLeftLine;
+			chunkLineR = reverseBytes(chunkLineL);
+
+			if (this->chunkId ==  gm::Vec2i(0, 0) && x == 28 && y == 64)
+			{
+				printf("\n");
+				printf("back  chunk : ");
+				printUINT64(chunkLeftLine);
+				printf("curr  chunk : ");
+				printUINT64(chunkCurrLine);
+				printf("front chunk : ");
+				printUINT64(chunkRightLine);
+				printf("chunkLineL  : ");
+				printUINT64(chunkLineL);
+				printf("chunkLineR  : ");
+				printUINT64(chunkLineR);
+
+				printf("\n");
+				while (chunkLineR != 0)
+				{
+					printf("\nLoop\n");
+					printf("chunkLineR  : ");
+					printUINT64(chunkLineR);
+					int z = trailingZero(chunkLineR);
+					printf("z : %i\n", z);
+					int	length = trailingOne(chunkLineR >> z);
+					printf("l : %i\n", length);
+
+					chunkLineR -= createLengthMask(length) << z;
+					printf("chunkLineR  : ");
+					printUINT64(chunkLineR);
+
+					if (z == 0)
+						continue;
+
+					z--;
+					printf("Front face at z %i\n", z);
+
+					const Cube	&type = this->at(x, y, z);
+					pointLU = gm::Vec3f(x + 0, y + 1, z + 1);
+					pointLD = gm::Vec3f(x + 0, y + 0, z + 1);
+					pointRD = gm::Vec3f(x + 1, y + 0, z + 1);
+					pointRU = gm::Vec3f(x + 1, y + 1, z + 1);
+					createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+										pointLU, pointLD, pointRD, pointRU, normalFront, type);
+				}
+			}
+
+			// // Face Front
+			// while (chunkLineR != 0)
+			// {
+			// 	int z = trailingZero(chunkLineR);
+			// 	int	length = trailingOne(chunkLineR >> z);
+
+			// 	chunkLineR -= createLengthMask(length) << z;
+
+			// 	if (z == 0)
+			// 		continue;
+
+			// 	z--;
+			// 	const Cube	&type = this->at(x, y, z);
+
+			// 	pointLU = gm::Vec3f(x + 0, y + 1, z + 1);
+			// 	pointLD = gm::Vec3f(x + 0, y + 0, z + 1);
+			// 	pointRD = gm::Vec3f(x + 1, y + 0, z + 1);
+			// 	pointRU = gm::Vec3f(x + 1, y + 1, z + 1);
+			// 	createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+			// 						pointLU, pointLD, pointRD, pointRU, normalFront, type);
+			// }
+
+			// Face back
+			// while (chunkLineL != 0)
+			// {
+			// 	int z = trailingZero(chunkLineL);
+			// 	int	length = trailingOne(chunkLineL >> z);
+
+			// 	chunkLineL -= createLengthMask(length) << z;
+
+			// 	if (z == 0)
+			// 		continue;
+
+			// 	// z--;
+			// 	const Cube	&type = this->at(x, y, z);
+
+			// 	pointLU = gm::Vec3f(x + 1, y + 1, z + 0);
+			// 	pointLD = gm::Vec3f(x + 1, y + 0, z + 0);
+			// 	pointRD = gm::Vec3f(x + 0, y + 0, z + 0);
+			// 	pointRU = gm::Vec3f(x + 0, y + 1, z + 0);
+			// 	createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+			// 						pointLU, pointLD, pointRD, pointRU, normalBack, type);
+			// }
+		}
+
+
 		for (int z = 0; z < CHUNK_SIZE; z++)
 		{
 			// Face front
-			test = this->cubeBitmap.axisX[z + idY];
-			if (z != CHUNK_MAX)
-				test &= ~this->cubeBitmap.axisX[(z + 1) + idY];
-			else
-				test &= ~frontBitmap->axisX[0 + idY];
+			// if (z != CHUNK_MAX)
+			// 	test = this->cubeBitmap.axisX[z + idY] & (~this->cubeBitmap.axisX[(z + 1) + idY]);
+			// else if (frontBitmap)
+			// 	test = this->cubeBitmap.axisX[z + idY] & (~frontBitmap->axisX[0 + idY]);
+			// else
+			// 	test = 0;
 
-			for (int x = 0; x < CHUNK_SIZE; x++)
-			{
-				if ((test & (1 << x)) == 0)
-					continue;
+			// while (test != 0)
+			// {
+			// 	int x = trailingZero(test);
+			// 	test &= test - 1;
 
-				const Cube	&type = this->at(x, y, z);
+			// 	const Cube	&type = this->at(x, y, z);
 
-				pointLU = gm::Vec3f(x + 0, y + 1, z + 1);
-				pointLD = gm::Vec3f(x + 0, y + 0, z + 1);
-				pointRD = gm::Vec3f(x + 1, y + 0, z + 1);
-				pointRU = gm::Vec3f(x + 1, y + 1, z + 1);
-				createTriangleFace(vertexIndex, vertices, indices, nbVertex,
-									pointLU, pointLD, pointRD, pointRU, normalFront, type);
-			}
+			// 	pointLU = gm::Vec3f(x + 0, y + 1, z + 1);
+			// 	pointLD = gm::Vec3f(x + 0, y + 0, z + 1);
+			// 	pointRD = gm::Vec3f(x + 1, y + 0, z + 1);
+			// 	pointRU = gm::Vec3f(x + 1, y + 1, z + 1);
+			// 	createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+			// 						pointLU, pointLD, pointRD, pointRU, normalFront, type);
+			// }
 
 			// Face back
-			test = this->cubeBitmap.axisX[z + idY];
 			if (z != 0)
-				test &= ~this->cubeBitmap.axisX[(z - 1) + idY];
+				test = this->cubeBitmap.axisX[z + idY] & (~this->cubeBitmap.axisX[(z - 1) + idY]);
+			else if (backBitmap)
+				test = this->cubeBitmap.axisX[z + idY] & (~backBitmap->axisX[CHUNK_MAX + idY]);
 			else
-				test &= ~backBitmap->axisX[CHUNK_MAX + idY];
+				test = 0;
 
-			for (int x = 0; x < CHUNK_SIZE; x++)
+			while (test != 0)
 			{
-				if ((test & (1 << x)) == 0)
-					continue;
+				int x = trailingZero(test);
+				test &= test - 1;
 
 				const Cube	&type = this->at(x, y, z);
 
@@ -182,16 +300,17 @@ void	Chunk::createMesh(Map &map)
 		for (int x = 0; x < CHUNK_SIZE; x++)
 		{
 			// Face right
-			test = this->cubeBitmap.axisZ[x + idY];
 			if (x != CHUNK_MAX)
-				test &= ~this->cubeBitmap.axisZ[(x + 1) + idY];
+				test = this->cubeBitmap.axisZ[x + idY] & (~this->cubeBitmap.axisZ[(x + 1) + idY]);
+			else if (rightBitmap)
+				test = this->cubeBitmap.axisZ[x + idY] & (~rightBitmap->axisZ[0 + idY]);
 			else
-				test &= ~rightBitmap->axisZ[0 + idY];
+				test = 0;
 
-			for (int z = 0; z < CHUNK_SIZE; z++)
+			while (test != 0)
 			{
-				if ((test & (1 << z)) == 0)
-					continue;
+				int z = trailingZero(test);
+				test &= test - 1;
 
 				const Cube	&type = this->at(x, y, z);
 
@@ -204,16 +323,17 @@ void	Chunk::createMesh(Map &map)
 			}
 
 			// Face left
-			test = this->cubeBitmap.axisZ[x + idY];
 			if (x != 0)
-				test &= ~this->cubeBitmap.axisZ[(x - 1) + idY];
+				test = this->cubeBitmap.axisZ[x + idY] & (~this->cubeBitmap.axisZ[(x - 1) + idY]);
+			else if (leftBitmap)
+				test = this->cubeBitmap.axisZ[x + idY] & (~leftBitmap->axisZ[CHUNK_MAX + idY]);
 			else
-				test &= ~leftBitmap->axisZ[CHUNK_MAX + idY];
+				test = 0;
 
-			for (int z = 0; z < CHUNK_SIZE; z++)
+			while (test != 0)
 			{
-				if ((test & (1 << z)) == 0)
-					continue;
+				int z = trailingZero(test);
+				test &= test - 1;
 
 				const Cube	&type = this->at(x, y, z);
 
@@ -322,12 +442,66 @@ static void	createTriangleFace(
 	indices.push_back(RU_id);
 }
 
-// static int32_t	createLengthMask(int length)
-// {
-// 	int32_t	res = 0;
 
-// 	for (int i = 0; i < length; i++)
-// 		res += (0b1 << i);
+static inline int	trailingZero(uint64_t bytes)
+{
+	if (bytes == 0)
+		return (64ull);
+	return (__builtin_ctzll(bytes));
+}
 
-// 	return (res);
-// }
+
+static inline int	trailingOne(uint64_t bytes)
+{
+	if (bytes == UINT64_MAX)
+		return (64ull);
+	return (__builtin_ctzll(~bytes));
+}
+
+
+static inline uint64_t	createLengthMask(int length)
+{
+	if (length <= 0)
+		return (0ull);
+	if (length >= 64)
+		return (UINT64_MAX);
+
+	return ((1ull << length) - 1ull);
+}
+
+
+static inline uint64_t reverseBytes(uint64_t bytes)
+{
+	bytes = ((bytes >> 1 ) & 0x5555555555555555ULL) | ((bytes & 0x5555555555555555ULL) << 1 );
+	bytes = ((bytes >> 2 ) & 0x3333333333333333ULL) | ((bytes & 0x3333333333333333ULL) << 2 );
+	bytes = ((bytes >> 4 ) & 0x0F0F0F0F0F0F0F0FULL) | ((bytes & 0x0F0F0F0F0F0F0F0FULL) << 4 );
+	bytes = ((bytes >> 8 ) & 0x00FF00FF00FF00FFULL) | ((bytes & 0x00FF00FF00FF00FFULL) << 8 );
+	bytes = ((bytes >> 16) & 0x0000FFFF0000FFFFULL) | ((bytes & 0x0000FFFF0000FFFFULL) << 16);
+	bytes = (bytes >> 32) | (bytes << 32);
+	return (bytes);
+}
+
+
+static void	printUINT32(uint32_t line) //  TODO : Remove
+{
+	for (int i = 31; i >= 0; i--)
+	{
+		if (line & (1u << i))
+			printf("1");
+		else
+			printf("0");
+	}
+	printf("\n");
+}
+
+static void	printUINT64(uint64_t line) //  TODO : Remove
+{
+	for (int i = 63; i >= 0; i--)
+	{
+		if (line & (1ull << i))
+			printf("1");
+		else
+			printf("0");
+	}
+	printf("\n");
+}
