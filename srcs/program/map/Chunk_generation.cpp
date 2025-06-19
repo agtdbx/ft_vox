@@ -63,11 +63,11 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 			for (int y = 0; y < CHUNK_HEIGHT; y++)
 			{
 				// //with this setup stone cannot be seen on the surface
-				if (y > (int)maxSize && y > 58)
+				if (y > (int)maxSize && y > CHUNK_WATER_LEVEL)
 					break;
 				id = x + idZ + y * CHUNK_SIZE2;
 
-				if (y > (int)maxSize && y <= 58)
+				if (y > (int)maxSize && y <= CHUNK_WATER_LEVEL)
 				{
 					if (Biome > 0.7)
 						this->cubes[id] = CUBE_LAVA; // TODO : Make lava transparent

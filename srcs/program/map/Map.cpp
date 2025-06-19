@@ -81,6 +81,35 @@ Map	&Map::operator=(const Map &obj)
 	return (*this);
 }
 
+/*
+-------------------------------------AVANT-------------------------------------
+Generation :
+1764/1764
+total 12811996.00 us, nb call 1764, avg 7263.04 us
+Chunk generation : total 3258831.00 us, nb call 1764, avg 1847.41 us
+
+
+Create mesh :
+1600/1600
+total 17277234.00 us, nb call 1600, avg 10798.27 us
+Meshing : total 17257248.00 us, nb call 1600, avg 10785.78 us
+
+Mesh chunk : total 47360.00 us, nb call 1600, avg 29.60 us
+Set mesh chunk : total 14118.00 us, nb call 1600, avg 8.82 us
+
+Mesh block : total 13769870.00 us, nb call 1600, avg 8606.17 us
+Mesh x axis : total 1664359.00 us, nb call 409600, avg 4.06 us
+Mesh y axis : total 9289380.00 us, nb call 409600, avg 22.68 us
+Mesh z axis : total 1671248.00 us, nb call 409600, avg 4.08 us
+Set mesh block : total 743421.00 us, nb call 1600, avg 464.64 us
+
+Mesh water : total 2208474.00 us, nb call 1600, avg 1380.30 us
+Set mesh water : total 22967.00 us, nb call 1600, avg 14.35 us
+
+
+Buffer creation : total 4806045.00 us, nb call 1600, avg 3003.78 us
+*/
+
 //**** PUBLIC METHODS **********************************************************
 
 void	Map::init(
@@ -334,6 +363,7 @@ static void	firstGenerateChunk(
 		}
 	}
 	perflogEnd(perfLogger.generation);
+	perfLogger.generation.nbCall = totalChunk;
 	printf("\n");
 	perflogPrint(perfLogger.generation);
 	perflogPrint(perfLogger.generateChunk, "Chunk generation");
@@ -358,6 +388,7 @@ static void	firstGenerateChunk(
 		}
 	}
 	perflogEnd(perfLogger.createMesh);
+	perfLogger.createMesh.nbCall = totalChunk;
 	printf("\n");
 	perflogPrint(perfLogger.createMesh);
 	perflogPrint(perfLogger.chunkMeshing, "Meshing");

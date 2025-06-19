@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/19 16:55:11 by gugus            ###   ########.fr       */
+/*   Updated: 2025/06/19 20:30:11 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,8 @@
 
 // Global defines
 # define PRINT_FPS_TIME 1.0
+# define MAX_FPS 500.0
+const float MIN_DELTA = 1.0 / MAX_FPS;
 
 // Window defines
 # define WIN_TITLE "vox"
@@ -50,6 +52,7 @@ const float SKYBOX_DIST2 = SKYBOX_DIST * 2.0f;
 // Chunk defines
 # define CHUNK_SIZE 32
 # define CHUNK_HEIGHT 256
+# define CHUNK_WATER_LEVEL 58
 const int	CHUNK_MAX = CHUNK_SIZE - 1;
 const int	CHUNK_MAX_H = CHUNK_HEIGHT - 1;
 const int	CHUNK_SIZE2 = CHUNK_SIZE * CHUNK_SIZE;
@@ -71,7 +74,7 @@ const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
 
 // Map defines
 # define MAP_SIZE 4096
-const int	MAP_CLUSTER_ARROUND = 1; // Map have x cluster arround center one
+const int	MAP_CLUSTER_ARROUND = 2; // Map have x cluster arround center one
 const int	MAP_CLUSTER_WIDTH = MAP_CLUSTER_ARROUND + 1 + MAP_CLUSTER_ARROUND;
 const int	MAP_CLUSTER_SIZE = MAP_CLUSTER_WIDTH * MAP_CLUSTER_WIDTH;
 

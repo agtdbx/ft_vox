@@ -6,13 +6,14 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 15:33:15 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/18 15:30:34 by gugus            ###   ########.fr       */
+/*   Updated: 2025/06/19 20:07:16 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <program/loop/loop.hpp>
 
 #include <iostream>
+#include <unistd.h>
 
 int	main(void)
 {
@@ -44,7 +45,7 @@ int	main(void)
 	}
 
 	// Main loop
-	double	delta;
+	double	delta = MIN_DELTA;
 	double	currentTime = 0;
 	double	lastTime = 0;
 	while (!glfwWindowShouldClose(engine.glfwWindow))
@@ -52,6 +53,12 @@ int	main(void)
 		currentTime = glfwGetTime();
 		delta = currentTime - lastTime;
 		lastTime = currentTime;
+
+		if (MIN_DELTA != 0.0f && MIN_DELTA > delta)
+		{
+			usleep((MIN_DELTA - delta) * 1000000.0f);
+			delta = MIN_DELTA;
+		}
 
 		events(engine);
 
