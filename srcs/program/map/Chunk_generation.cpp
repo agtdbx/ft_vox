@@ -60,10 +60,10 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 				maxSize = 1;
 			for (int y = 0; y < CHUNK_HEIGHT; y++)
 			{
-				//with this setup stone cannot be seen on the surface
-				id = x + idZ + y * CHUNK_SIZE2;
+				// //with this setup stone cannot be seen on the surface
 				if (y > (int)maxSize && y > 58)
 					break;
+				id = x + idZ + y * CHUNK_SIZE2;
 
 				if (y > (int)maxSize && y <= 58)
 				{
@@ -77,7 +77,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 						continue;
 					}
 					this->cubeBitmap.set(x, y, z, true);
-			}
+				}
 				// End
 				else
 				{

@@ -101,7 +101,12 @@ void	Chunk::setCube(int x, int y, int z, Cube cube)
 		|| y < 0 || y >= CHUNK_HEIGHT
 		|| z < 0 || z >= CHUNK_SIZE)
 		return ;
+
 	this->cubes[x + z * CHUNK_SIZE + y * CHUNK_SIZE2] = cube;
+	if (cube == CUBE_AIR || cube == CUBE_WATER)
+		this->cubeBitmap.set(x, y, z, false);
+	else
+		this->cubeBitmap.set(x, y, z, true);
 }
 
 //---- Operators ---------------------------------------------------------------
