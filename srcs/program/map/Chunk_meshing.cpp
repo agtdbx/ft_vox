@@ -1,6 +1,7 @@
 #include <program/map/Chunk.hpp>
 
 #include <program/map/Map.hpp>
+#include <program/bytes/bitFunctions.hpp>
 
 #include <unordered_map>
 
@@ -29,10 +30,6 @@ static void	createTriangleFace(
 				const gm::Vec3f &posRU,
 				const gm::Vec3f &normal,
 				const Cube &type);
-static inline int	trailingZero(uint64_t bytes);
-static inline int	trailingOne(uint64_t bytes);
-static inline uint64_t	createLengthMask(int length);
-static inline uint64_t	reverseBytes(uint64_t bytes);
 
 //**** INITIALISION ************************************************************
 //---- Constructors ------------------------------------------------------------
@@ -379,43 +376,4 @@ static void	createTriangleFace(
 	indices.push_back(LU_id);
 	indices.push_back(RD_id);
 	indices.push_back(RU_id);
-}
-
-
-static inline int	trailingZero(uint64_t bytes)
-{
-	if (bytes == 0)
-		return (64ull);
-	return (__builtin_ctzll(bytes));
-}
-
-
-static inline int	trailingOne(uint64_t bytes)
-{
-	if (bytes == UINT64_MAX)
-		return (64ull);
-	return (__builtin_ctzll(~bytes));
-}
-
-
-static inline uint64_t	createLengthMask(int length)
-{
-	if (length <= 0)
-		return (0ull);
-	if (length >= 64)
-		return (UINT64_MAX);
-
-	return ((1ull << length) - 1ull);
-}
-
-
-static inline uint64_t reverseBytes(uint64_t bytes)
-{
-	bytes = ((bytes >> 1 ) & 0x5555555555555555ULL) | ((bytes & 0x5555555555555555ULL) << 1 );
-	bytes = ((bytes >> 2 ) & 0x3333333333333333ULL) | ((bytes & 0x3333333333333333ULL) << 2 );
-	bytes = ((bytes >> 4 ) & 0x0F0F0F0F0F0F0F0FULL) | ((bytes & 0x0F0F0F0F0F0F0F0FULL) << 4 );
-	bytes = ((bytes >> 8 ) & 0x00FF00FF00FF00FFULL) | ((bytes & 0x00FF00FF00FF00FFULL) << 8 );
-	bytes = ((bytes >> 16) & 0x0000FFFF0000FFFFULL) | ((bytes & 0x0000FFFF0000FFFFULL) << 16);
-	bytes = (bytes >> 32) | (bytes << 32);
-	return (bytes);
 }

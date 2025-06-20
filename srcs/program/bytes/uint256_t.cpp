@@ -1,10 +1,6 @@
-// #include <program/bytes/uint256_t.hpp> // Todo : Reput correct include
-#include "srcs/program/bytes/uint256_t.hpp"
+#include <program/bytes/uint256_t.hpp>
 
-//**** STATIC VARIABLES DEFINE *************************************************
-
-const	uint64_t	ONE_LEFT =  0b1000000000000000000000000000000000000000000000000000000000000000;
-const	uint64_t	ZERO_LEFT = 0b0111111111111111111111111111111111111111111111111111111111111111;
+#include <program/bytes/bitFunctions.hpp>
 
 //**** STATIC FUNCTIONS DEFINE *************************************************
 //**** INITIALISION ************************************************************
@@ -49,6 +45,198 @@ uint256_t	&uint256_t::operator=(const uint256_t &obj)
 	this->parts[1] = obj.parts[1];
 	this->parts[2] = obj.parts[2];
 	this->parts[3] = obj.parts[3];
+
+	return (*this);
+}
+
+
+uint256_t	&uint256_t::operator+=(const uint256_t &obj)
+{
+	uint64_t	carry = 0ull;
+
+	for (int i = 3; i >= 0; --i)
+	{
+		uint64_t a = this->parts[i];
+		uint64_t b = obj.parts[i];
+
+		uint64_t sum = a + b + carry;
+		carry = (sum < a || (carry && sum == a)) ? 1 : 0;
+
+		this->parts[i] = sum;
+	}
+
+	return (*this);
+}
+
+
+uint256_t	&uint256_t::operator-=(const uint256_t &obj)
+{
+	uint64_t borrow = 0;
+
+	for (int i = 3; i >= 0; --i)
+	{
+		uint64_t a = this->parts[i];
+		uint64_t b = obj.parts[i];
+
+		uint64_t sub = a - b - borrow;
+
+		// Borrow if a < b + borrow
+		if (a < b + borrow)
+			borrow = 1;
+		else
+			borrow = 0;
+
+		this->parts[i] = sub;
+	}
+
+	return (*this);
+}
+
+
+uint256_t	&uint256_t::operator&=(const uint256_t &obj)
+{
+	for (int i = 0; i <  4; i++)
+		this->parts[i] &= obj.parts[i];
+
+	return (*this);
+}
+
+
+uint256_t	&uint256_t::operator|=(const uint256_t &obj)
+{
+	for (int i = 0; i <  4; i++)
+		this->parts[i] |= obj.parts[i];
+
+	return (*this);
+}
+
+
+uint256_t	&uint256_t::operator^=(const uint256_t &obj)
+{
+	for (int i = 0; i <  4; i++)
+		this->parts[i] ^= obj.parts[i];
+
+	return (*this);
+}
+
+
+uint256_t	&uint256_t::operator>>=(int shift)
+{
+	if (shift >= 256)
+	{
+		this->parts[3] = 0ull;
+		this->parts[2] = 0ull;
+		this->parts[1] = 0ull;
+		this->parts[0] = 0ull;
+		return (*this);
+	}
+
+	if (shift >= 192)
+	{
+		this->parts[3] = this->parts[0];
+		this->parts[2] = 0ull;
+		this->parts[1] = 0ull;
+		this->parts[0] = 0ull;
+		shift -= 192;
+	}
+	else if (shift >= 128)
+	{
+		this->parts[3] = this->parts[1];
+		this->parts[2] = this->parts[0];
+		this->parts[1] = 0ull;
+		this->parts[0] = 0ull;
+		shift -= 128;
+	}
+	else if (shift >= 64)
+	{
+		this->parts[3] = this->parts[2];
+		this->parts[2] = this->parts[1];
+		this->parts[1] = this->parts[0];
+		this->parts[0] = 0ull;
+		shift -= 64;
+	}
+
+	if (shift == 0)
+		return (*this);
+
+	int			invShift = 64 - shift;
+	uint64_t	mask = createLengthMask(shift);
+
+	// Part 3
+	this->parts[3] = this->parts[3] >> shift;
+	this->parts[3] |= (this->parts[2] & mask) << invShift;
+
+	// Part 2
+	this->parts[2] = this->parts[2] >> shift;
+	this->parts[2] |= (this->parts[1] & mask) << invShift;
+
+	// Part 1
+	this->parts[1] = this->parts[1] >> shift;
+	this->parts[1] |= (this->parts[0] & mask) << invShift;
+
+	// Part 0
+	this->parts[0] = this->parts[0] >> shift;
+
+	return (*this);
+}
+
+
+uint256_t	&uint256_t::operator<<=(int shift)
+{
+	if (shift >= 256)
+	{
+		this->parts[0] = 0ull;
+		this->parts[1] = 0ull;
+		this->parts[2] = 0ull;
+		this->parts[3] = 0ull;
+		return (*this);
+	}
+
+	if (shift >= 192)
+	{
+		this->parts[0] = this->parts[3];
+		this->parts[1] = 0ull;
+		this->parts[2] = 0ull;
+		this->parts[3] = 0ull;
+		shift -= 192;
+	}
+	else if (shift >= 128)
+	{
+		this->parts[0] = this->parts[2];
+		this->parts[1] = this->parts[3];
+		this->parts[2] = 0ull;
+		this->parts[3] = 0ull;
+		shift -= 128;
+	}
+	else if (shift >= 64)
+	{
+		this->parts[0] = this->parts[1];
+		this->parts[1] = this->parts[2];
+		this->parts[2] = this->parts[3];
+		this->parts[3] = 0ull;
+		shift -= 64;
+	}
+
+	if (shift == 0)
+		return (*this);
+
+	int			invShift = 64 - shift;
+	uint64_t	mask = createLengthMask(shift) << invShift;
+
+	// Part 0
+	this->parts[0] = this->parts[0] << shift;
+	this->parts[0] |= (this->parts[1] & mask) >> invShift;
+
+	// Part 1
+	this->parts[1] = this->parts[1] << shift;
+	this->parts[1] |= (this->parts[2] & mask) >> invShift;
+
+	// Part 2
+	this->parts[2] = this->parts[2] << shift;
+	this->parts[2] |= (this->parts[3] & mask) >> invShift;
+
+	// Part 3
+	this->parts[3] = this->parts[3] << shift;
 
 	return (*this);
 }
@@ -145,6 +333,160 @@ bool	uint256_t::operator>=(const uint256_t &obj) const
 }
 
 //---- Binary operators --------------------------------------------------------
+
+uint256_t	uint256_t::operator&(const uint256_t &obj) const
+{
+	uint256_t	result;
+
+	for (int i = 0; i <  4; i++)
+		result.parts[i] = this->parts[i] & obj.parts[i];
+
+	return (result);
+}
+
+
+uint256_t	uint256_t::operator|(const uint256_t &obj) const
+{
+	uint256_t	result;
+
+	for (int i = 0; i <  4; i++)
+		result.parts[i] = this->parts[i] | obj.parts[i];
+
+	return (result);
+}
+
+
+uint256_t	uint256_t::operator^(const uint256_t &obj) const
+{
+	uint256_t	result;
+
+	for (int i = 0; i <  4; i++)
+		result.parts[i] = this->parts[i] ^ obj.parts[i];
+
+	return (result);
+}
+
+
+uint256_t	uint256_t::operator~(void) const
+{
+	uint256_t	result;
+
+	for (int i = 0; i <  4; i++)
+		result.parts[i] = ~this->parts[i];
+
+	return (result);
+}
+
+
+uint256_t	uint256_t::operator>>(int shift) const
+{
+	uint256_t	result;
+
+	if (shift >= 256)
+		return (result);
+
+	if (shift >= 192)
+	{
+		result.parts[3] = this->parts[0];
+		shift -= 192;
+	}
+	else if (shift >= 128)
+	{
+		result.parts[2] = this->parts[0];
+		result.parts[3] = this->parts[1];
+		shift -= 128;
+	}
+	else if (shift >= 64)
+	{
+		result.parts[1] = this->parts[0];
+		result.parts[2] = this->parts[1];
+		result.parts[3] = this->parts[2];
+		shift -= 64;
+	}
+	else
+	{
+		result = *this;
+	}
+
+	if (shift == 0)
+		return (result);
+
+	int			invShift = 64 - shift;
+	uint64_t	mask = createLengthMask(shift);
+
+	// Part 3
+	result.parts[3] = result.parts[3] >> shift;
+	result.parts[3] |= (result.parts[2] & mask) << invShift;
+
+	// Part 2
+	result.parts[2] = result.parts[2] >> shift;
+	result.parts[2] |= (result.parts[1] & mask) << invShift;
+
+	// Part 1
+	result.parts[1] = result.parts[1] >> shift;
+	result.parts[1] |= (result.parts[0] & mask) << invShift;
+
+	// Part 0
+	result.parts[0] = result.parts[0] >> shift;
+
+	return (result);
+}
+
+
+uint256_t	uint256_t::operator<<(int shift) const
+{
+	uint256_t	result;
+
+	if (shift >= 256)
+		return (result);
+
+	if (shift >= 192)
+	{
+		result.parts[0] = this->parts[3];
+		shift -= 192;
+	}
+	else if (shift >= 128)
+	{
+		result.parts[0] = this->parts[2];
+		result.parts[1] = this->parts[3];
+		shift -= 128;
+	}
+	else if (shift >= 64)
+	{
+		result.parts[0] = this->parts[1];
+		result.parts[1] = this->parts[2];
+		result.parts[2] = this->parts[3];
+		shift -= 64;
+	}
+	else
+	{
+		result = *this;
+	}
+
+	if (shift == 0)
+		return (result);
+
+	int			invShift = 64 - shift;
+	uint64_t	mask = createLengthMask(shift) << invShift;
+
+	// Part 0
+	result.parts[0] = result.parts[0] << shift;
+	result.parts[0] |= (result.parts[1] & mask) >> invShift;
+
+	// Part 1
+	result.parts[1] = result.parts[1] << shift;
+	result.parts[1] |= (result.parts[2] & mask) >> invShift;
+
+	// Part 2
+	result.parts[2] = result.parts[2] << shift;
+	result.parts[2] |= (result.parts[3] & mask) >> invShift;
+
+	// Part 3
+	result.parts[3] = result.parts[3] << shift;
+
+	return (result);
+}
+
 //---- Unary operators ---------------------------------------------------------
 
 uint256_t	&uint256_t::operator++(void)

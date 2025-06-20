@@ -13,6 +13,8 @@ srcs = [
   'srcs/program/map/PerlinNoise.cpp',
   'srcs/program/map/Map.cpp',
   'srcs/program/map/Cluster.cpp',
+  'srcs/program/bytes/bitFunctions.cpp',
+  'srcs/program/bytes/uint256_t.cpp',
   'srcs/program/skybox/Skybox.cpp',
   'srcs/program/main.cpp',
   'srcs/program/perfLogger/PerfLogger.cpp',

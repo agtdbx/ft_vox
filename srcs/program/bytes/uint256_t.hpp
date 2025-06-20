@@ -47,6 +47,62 @@ public:
 	 * @return The uint256_t copied from parameter.
 	 */
 	uint256_t	&operator=(const uint256_t &obj);
+	/**
+	 * @brief Operator += of uint256_t class.
+	 *
+	 * @param obj The uint256_t to add.
+	 *
+	 * @return The uint256_t + obj.
+	 */
+	uint256_t	&operator+=(const uint256_t &obj);
+	/**
+	 * @brief Operator -= of uint256_t class.
+	 *
+	 * @param obj The uint256_t to sub.
+	 *
+	 * @return The uint256_t - obj.
+	 */
+	uint256_t	&operator-=(const uint256_t &obj);
+		/**
+	 * @brief And bit operation.
+	 *
+	 * @param obj The uint256_t to and with.
+	 *
+	 * @return The uint256_t & obj.
+	 */
+	uint256_t	&operator&=(const uint256_t &obj);
+	/**
+	 * @brief Or bit operation.
+	 *
+	 * @param obj The uint256_t to or with.
+	 *
+	 * @return The uint256_t | obj.
+	 */
+	uint256_t	&operator|=(const uint256_t &obj);
+	/**
+	 * @brief Xor bit operation.
+	 *
+	 * @param obj The uint256_t to xor with.
+	 *
+	 * @return The uint256_t ^ obj.
+	 */
+	uint256_t	&operator^=(const uint256_t &obj);
+	/**
+	 * @brief Not bit operation.
+	 *
+	 * @param shift How many bits to shift.
+	 *
+	 * @return Bit shift to left.
+	 */
+	uint256_t	&operator>>=(int shift);
+	/**
+	 * @brief Not bit operation.
+	 *
+	 * @param shift How many bits to shift.
+	 *
+	 * @return Bit shift to right.
+	 */
+	uint256_t	&operator<<=(int shift);
 //---- Comparaison operators ---------------------------------------------------
 	/**
 	 * @brief Operator ==.
@@ -97,6 +153,52 @@ public:
 	 */
 	bool	operator>=(const uint256_t &obj) const;
 //---- Binary operators --------------------------------------------------------
+	/**
+	 * @brief And bit operation.
+	 *
+	 * @param obj The uint256_t to and with.
+	 *
+	 * @return uint256_t & obj.
+	 */
+	uint256_t	operator&(const uint256_t &obj) const;
+	/**
+	 * @brief Or bit operation.
+	 *
+	 * @param obj The uint256_t to or with.
+	 *
+	 * @return uint256_t | obj.
+	 */
+	uint256_t	operator|(const uint256_t &obj) const;
+	/**
+	 * @brief Xor bit operation.
+	 *
+	 * @param obj The uint256_t to xor with.
+	 *
+	 * @return uint256_t ^ obj.
+	 */
+	uint256_t	operator^(const uint256_t &obj) const;
+	/**
+	 * @brief Reverse bit operation (010 -> 101).
+	 *
+	 * @return Reverse bit value.
+	 */
+	uint256_t	operator~(void) const;
+	/**
+	 * @brief Not bit operation.
+	 *
+	 * @param shift How many bits to shift.
+	 *
+	 * @return Bit shift to left.
+	 */
+	uint256_t	operator>>(int shift) const;
+	/**
+	 * @brief Not bit operation.
+	 *
+	 * @param shift How many bits to shift.
+	 *
+	 * @return Bit shift to right.
+	 */
+	uint256_t	operator<<(int shift) const;
 //---- Unary operators ---------------------------------------------------------
 	/**
 	 * @brief Operator ++uint256_t.
