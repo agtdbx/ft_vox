@@ -44,8 +44,8 @@ void	Chunk::createBorderMesh(PerfLogger &perfLogger)
 {
 	perflogStart(perfLogger.meshChunk);
 
-	std::vector<VertexPos>	vertices;
-	std::vector<uint32_t>	indices;
+	std::vector<VertexPos>	&vertices = this->borderMesh.getVertices();
+	std::vector<uint32_t>	&indices = this->borderMesh.getIndices();
 	float	h0, h1;
 	int		nbVertex = 0;
 
@@ -81,9 +81,7 @@ void	Chunk::createBorderMesh(PerfLogger &perfLogger)
 
 	perflogEnd(perfLogger.meshChunk);
 
-	perflogStart(perfLogger.setMeshChunk);
-	this->borderMesh = ChunkBorderMesh(vertices, indices);
-	perflogEnd(perfLogger.setMeshChunk);
+	this->borderMesh.updateMeshInfo();
 }
 
 
@@ -92,8 +90,8 @@ void	Chunk::createMesh(Map &map, PerfLogger &perfLogger)
 	perflogStart(perfLogger.meshBlock);
 
 	std::unordered_map<std::size_t, uint32_t>	vertexIndex;
-	std::vector<VertexVoxel>					vertices;
-	std::vector<uint32_t>						indices;
+	std::vector<VertexVoxel>					&vertices = this->mesh.getVertices();
+	std::vector<uint32_t>						&indices = this->mesh.getIndices();
 	int											nbVertex = 0;
 	CubeBitmap	*frontBitmap = map.getChunkBitmap(this->chunkId.x, this->chunkId.y + 1);
 	CubeBitmap	*backBitmap = map.getChunkBitmap(this->chunkId.x, this->chunkId.y - 1);
@@ -275,9 +273,7 @@ void	Chunk::createMesh(Map &map, PerfLogger &perfLogger)
 
 	perflogEnd(perfLogger.meshBlock);
 
-	perflogStart(perfLogger.setMeshBlock);
-	this->mesh = ChunkMesh(vertices, indices);
-	perflogEnd(perfLogger.setMeshBlock);
+	this->mesh.updateMeshInfo();
 }
 
 
@@ -286,8 +282,8 @@ void	Chunk::createWaterMesh(PerfLogger &perfLogger)
 	perflogStart(perfLogger.meshWater);
 
 	std::unordered_map<std::size_t, uint32_t>	vertexIndex;
-	std::vector<VertexVoxel>					vertices;
-	std::vector<uint32_t>						indices;
+	std::vector<VertexVoxel>					&vertices = this->waterMesh.getVertices();
+	std::vector<uint32_t>						&indices = this->waterMesh.getIndices();
 	int											nbVertex = 0;
 
 	gm::Vec3f	pointLU, pointLD, pointRD, pointRU;
@@ -327,9 +323,7 @@ void	Chunk::createWaterMesh(PerfLogger &perfLogger)
 
 	perflogEnd(perfLogger.meshWater);
 
-	perflogStart(perfLogger.setMeshWater);
-	this->waterMesh = ChunkMesh(vertices, indices);
-	perflogEnd(perfLogger.setMeshWater);
+	this->waterMesh.updateMeshInfo();
 }
 
 //**** FUNCTIONS ***************************************************************

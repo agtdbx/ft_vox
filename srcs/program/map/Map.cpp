@@ -357,8 +357,15 @@ static void	firstGenerateChunk(
 			std::cout << "\r" << nbChunk  << "/" << totalChunk << std::flush;
 
 			hash = gm::hash(gm::Vec2i(x, y));
+
+			perflogStart(perfLogger.generateInMap);
 			chunks[hash] = Chunk();
+			perflogEnd(perfLogger.generateInMap);
+
+			perflogStart(perfLogger.generateInit);
 			chunks[hash].init(engine, camera, chunkShader);
+			perflogEnd(perfLogger.generateInit);
+
 			chunks[hash].generate(gm::Vec2i(x, y), perfLogger);
 		}
 	}
@@ -366,6 +373,8 @@ static void	firstGenerateChunk(
 	perfLogger.generation.nbCall = totalChunk;
 	printf("\n");
 	perflogPrint(perfLogger.generation);
+	perflogPrint(perfLogger.generateInMap, "Put chunk in map");
+	perflogPrint(perfLogger.generateInit, "Chunk init      ");
 	perflogPrint(perfLogger.generateChunk, "Chunk generation");
 
 	minChunk += gm::Vec2i(1, 1);
@@ -384,6 +393,7 @@ static void	firstGenerateChunk(
 			std::cout << "\r" << nbChunk  << "/" << totalChunk << std::flush;
 
 			hash = gm::hash(gm::Vec2i(x, y));
+
 			chunks[hash].createMeshes(map, perfLogger);
 		}
 	}
@@ -391,19 +401,16 @@ static void	firstGenerateChunk(
 	perfLogger.createMesh.nbCall = totalChunk;
 	printf("\n");
 	perflogPrint(perfLogger.createMesh);
-	perflogPrint(perfLogger.chunkMeshing, "Meshing");
+	perflogPrint(perfLogger.chunkMeshing, "Meshing   ");
 	printf("\n");
 	perflogPrint(perfLogger.meshChunk, "Mesh chunk");
-	perflogPrint(perfLogger.setMeshChunk, "Set mesh chunk");
 	printf("\n");
-	perflogPrint(perfLogger.meshBlock, "Mesh block");
+	perflogPrint(perfLogger.meshBlock, "Mesh block ");
 	perflogPrint(perfLogger.meshBlockXaxis, "Mesh x axis");
 	perflogPrint(perfLogger.meshBlockYaxis, "Mesh y axis");
 	perflogPrint(perfLogger.meshBlockZaxis, "Mesh z axis");
-	perflogPrint(perfLogger.setMeshBlock, "Set mesh block");
 	printf("\n");
 	perflogPrint(perfLogger.meshWater, "Mesh water");
-	perflogPrint(perfLogger.setMeshWater, "Set mesh water");
 	printf("\n");
 	printf("\n");
 }

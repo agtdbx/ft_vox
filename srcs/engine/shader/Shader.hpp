@@ -183,6 +183,15 @@ public:
 	 *
 	 * @param engine The engine struct.
 	 * @param shaderParam The shaderParam to init.
+	 */
+	void	initShaderParam(
+				Engine &engine,
+				ShaderParam &shaderParam);
+	/**
+	 * @brief Init a shaderParam
+	 *
+	 * @param engine The engine struct.
+	 * @param shaderParam The shaderParam to init.
 	 * @param imageIds Vector of image id to used in shader.
 	 */
 	void	initShaderParam(

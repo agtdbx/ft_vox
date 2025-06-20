@@ -113,16 +113,34 @@ public:
 	/**
 	 * @brief Getter of vertices.
 	 *
-	 * @return A vector of Vertex.
+	 * @return A reference to vector of VertexType.
 	 */
-	const std::vector<Vertex>	&getVertices(void) const
+	std::vector<VertexType>	&getVertices(void)
+	{
+		return (this->vertices);
+	}
+	/**
+	 * @brief Getter of vertices.
+	 *
+	 * @return A const reference to vector of VertexType.
+	 */
+	const std::vector<VertexType>	&getVertices(void) const
 	{
 		return (this->vertices);
 	}
 	/**
 	 * @brief Getter of indices.
 	 *
-	 * @return A vector of index as int32.
+	 * @return A reference to vector of index as int32.
+	 */
+	std::vector<uint32_t>	&getIndices(void)
+	{
+		return (this->indices);
+	}
+	/**
+	 * @brief Getter of indices.
+	 *
+	 * @return A const reference to vector of index as int32.
 	 */
 	const std::vector<uint32_t>	&getIndices(void) const
 	{
@@ -251,6 +269,17 @@ public:
 		this->scalingFactor = 1.0f;
 		this->vertices = vertices;
 		this->indices = indices;
+		this->nbVertex = static_cast<uint32_t>(this->vertices.size());
+		this->nbIndex = static_cast<uint32_t>(this->indices.size());
+	}
+	/**
+	 * @brief Update some mesh info when vertices or indices vector has been modifed outside the class.
+	 */
+	void	updateMeshInfo(void)
+	{
+		this->position = gm::Vec3f(0.0f);
+		this->model = gm::Mat4f(1.0f);
+		this->scalingFactor = 1.0f;
 		this->nbVertex = static_cast<uint32_t>(this->vertices.size());
 		this->nbIndex = static_cast<uint32_t>(this->indices.size());
 	}

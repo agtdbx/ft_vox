@@ -43,12 +43,12 @@ void	perflogPrint(PerfField &perfField, const char *msg)
 
 	if (perfField.nbCall == 1)
 	{
-		printf("total %.2f us\n", perfField.total);
+		printf("total %11.2f us\n", perfField.total);
 		return ;
 	}
 
 	float	avg = perfField.total / (float)perfField.nbCall;
-	printf("%s : total %.2f us, nb call %i, avg %.2f us\n",
+	printf("%s : total %11.2f us, nb call %6i, avg %8.2f us\n",
 			msg, perfField.total, perfField.nbCall, avg);
 }
 
@@ -63,11 +63,11 @@ void	perflogPrint(PerfField &perfField)
 
 	if (perfField.nbCall == 1)
 	{
-		printf("total %.2f us\n", perfField.total);
+		printf("total %11.2f us\n", perfField.total);
 		return ;
 	}
 
 	float	avg = perfField.total / (float)perfField.nbCall;
-	printf("total %.2f us, nb call %i, avg %.2f us\n",
+	printf("total %11.2f us, nb call %6i, avg %8.2f us\n",
 			perfField.total, perfField.nbCall, avg);
 }

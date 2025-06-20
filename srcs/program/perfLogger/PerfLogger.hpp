@@ -21,6 +21,8 @@ void	perflogPrint(PerfField &perfField);
 struct PerfLogger
 {
 	PerfField	generation;
+	PerfField	generateInMap;
+	PerfField	generateInit;
 	PerfField	generateChunk;
 
 
@@ -28,16 +30,13 @@ struct PerfLogger
 	PerfField	chunkMeshing;
 
 	PerfField	meshChunk;
-	PerfField	setMeshChunk;
 
 	PerfField	meshBlock;
 	PerfField	meshBlockXaxis;
 	PerfField	meshBlockYaxis;
 	PerfField	meshBlockZaxis;
-	PerfField	setMeshBlock;
 
 	PerfField	meshWater;
-	PerfField	setMeshWater;
 
 
 	PerfField	createBuffer;

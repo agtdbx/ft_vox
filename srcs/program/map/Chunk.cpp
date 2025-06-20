@@ -144,9 +144,9 @@ void	Chunk::init(
 {
 	chunkShader.shader.initShaderParam(engine, this->shaderParam, {"cubes"});
 	chunkShader.shaderWater.initShaderParam(engine, this->shaderParamWater, {"cubes"});
-	chunkShader.shaderFdf.initShaderParam(engine, this->shaderParamFdf, {});
-	chunkShader.shaderFdf.initShaderParam(engine, this->shaderParamFdfWater, {});
-	chunkShader.shaderBorder.initShaderParam(engine, this->shaderParamBorder, {});
+	chunkShader.shaderFdf.initShaderParam(engine, this->shaderParamFdf);
+	chunkShader.shaderFdf.initShaderParam(engine, this->shaderParamFdfWater);
+	chunkShader.shaderBorder.initShaderParam(engine, this->shaderParamBorder);
 
 	this->uboPos.proj = camera.getProjection();
 	this->uboPos.proj.at(1, 1) *= -1;

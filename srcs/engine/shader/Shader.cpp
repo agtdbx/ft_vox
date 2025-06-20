@@ -58,6 +58,15 @@ Shader	&Shader::operator=(const Shader &obj)
 
 void	Shader::initShaderParam(
 					Engine &engine,
+					ShaderParam &shaderParam)
+{
+	shaderParam.init(engine, this->descriptorSetLayout,
+						this->bufferInfos, this->imageInfos, {});
+}
+
+
+void	Shader::initShaderParam(
+					Engine &engine,
 					ShaderParam &shaderParam,
 					const std::vector<std::string> &imageIds)
 {
