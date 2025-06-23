@@ -105,27 +105,6 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 	}
 
 	perflogEnd(perfLogger.generateChunk);
-
-	// TODO : REMOVE
-	if (this->chunkId == gm::Vec2i(0, 0))
-	{
-		this->setCube(10, 200, 10, CUBE_STONE);
-		this->setCube(11, 200, 10, CUBE_STONE);
-		this->setCube(11, 200, 11, CUBE_STONE);
-		this->setCube(10, 200, 11, CUBE_STONE);
-		this->setCube(10, 201, 10, CUBE_STONE);
-		this->setCube(11, 201, 10, CUBE_STONE);
-		this->setCube(11, 201, 11, CUBE_STONE);
-		this->setCube(10, 201, 11, CUBE_STONE);
-		this->setCube(11, 200, 12, CUBE_SAND);
-		this->setCube(10, 200, 12, CUBE_SAND);
-		this->setCube(11, 201, 12, CUBE_SAND);
-		this->setCube(10, 201, 12, CUBE_SAND);
-		this->setCube(12, 200, 10, CUBE_SAND);
-		this->setCube(12, 201, 10, CUBE_SAND);
-		this->setCube(12, 200, 12, CUBE_STONE);
-		this->setCube(12, 201, 12, CUBE_STONE);
-	}
 }
 
 //**** FUNCTIONS ***************************************************************

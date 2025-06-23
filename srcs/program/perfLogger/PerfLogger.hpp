@@ -28,6 +28,7 @@ struct PerfLogger
 
 	PerfField	createMesh;
 	PerfField	chunkMeshing;
+	int			nbTriangle = 0;
 
 	PerfField	meshChunk;
 

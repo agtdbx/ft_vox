@@ -412,7 +412,7 @@ static void	firstGenerateChunk(
 	perflogPrint(perfLogger.meshBlockYaxis, "Mesh y axis");
 	perfLogger.meshBlockZaxis.nbCall = perfLogger.meshBlock.nbCall;
 	perflogPrint(perfLogger.meshBlockZaxis, "Mesh z axis");
-	printf("\n");
+	printf("Nb triangle : %i\n\n", perfLogger.nbTriangle);
 	perflogPrint(perfLogger.meshWater, "Mesh water");
 	printf("\n");
 	printf("\n");

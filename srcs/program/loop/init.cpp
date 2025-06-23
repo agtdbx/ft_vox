@@ -16,10 +16,6 @@ bool init(
 	camera.setPosition(gm::Vec3f(0.0f, 100.0f, 0.0f));
 	camera.setRotation(-30.0f, -90.0f, 0.0f);
 
-	// TODO : Remove
-	camera.setPosition(gm::Vec3f(10.0f, 203.0f, 15.0f));
-	camera.setRotation(-28.67f, -73.83f, 0.0f);
-
 	try
 	{
 		// Init engine
