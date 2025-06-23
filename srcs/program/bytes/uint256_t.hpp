@@ -27,6 +27,14 @@ public:
 	 * @return The uint256_t copied from parameter.
 	 */
 	uint256_t(const uint256_t &obj);
+	/**
+	 * @brief Constructor of uint256_t class.
+	 *
+	 * @param value The default value as an uint64.
+	 *
+	 * @return The uint256_t with default value of parameter.
+	 */
+	uint256_t(uint64_t value);
 
 //---- Destructor --------------------------------------------------------------
 	/**

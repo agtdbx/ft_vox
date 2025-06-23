@@ -14,6 +14,7 @@ const gm::Vec3f	normalBack(0, 0, -1);
 const gm::Vec3f	normalLeft(-1, 0, 0);
 const gm::Vec3f	normalRight(1, 0, 0);
 const uint256_t	zero256;
+const uint256_t	one256(1ull);
 
 static uint32_t	getVetrexId(
 					std::unordered_map<std::size_t, uint32_t> &vertexIndex,
@@ -98,9 +99,18 @@ void	Chunk::createMesh(Map &map, PerfLogger &perfLogger)
 
 	int	idY, idZ;
 	uint64_t	chunkLineL, chunkLineR;
-	uint256_t	chunkLineU, chunkLineD;
+	uint256_t	chunkLineU, chunkLineD, chunkLineTmp, cubeMask256, airMask256;
 	uint64_t	chunkLeftLine, chunkCurrLine, chunkRightLine;
 	gm::Vec3f	pointLU, pointLD, pointRD, pointRU;
+
+	CubeBitmap	cBitmapL = this->cubeBitmap;
+	CubeBitmap	cBitmapR = this->cubeBitmap;
+
+	for (int i = 0; i < CHUNK_SIZE2; i++)
+	{
+		cBitmapR.axisY[i] = reverse256Bytes(cBitmapR.axisY[i]);
+		// TODO : Reverse other axis and use reversed version for line computation.
+	}
 
 	// y axis
 	perflogStart(perfLogger.meshBlockYaxis);
@@ -109,47 +119,134 @@ void	Chunk::createMesh(Map &map, PerfLogger &perfLogger)
 		idZ = z * CHUNK_SIZE;
 		for (int x = 0; x < CHUNK_SIZE; x++)
 		{
-			// Contruct chunk line
-			chunkLineD = this->cubeBitmap.axisY[x + idZ];
-			chunkLineU = reverse256Bytes(chunkLineD);
-
 			// Face up
+			chunkLineU = cBitmapR.axisY[x + idZ];
 			while (chunkLineU != zero256)
 			{
+				// Get face position
 				int y = trailing256Zero(chunkLineU);
 				int	length = trailing256One(chunkLineU >> y);
 
-				chunkLineU -= create256LengthMask(length) << y;
+				uint256_t cubeSubMask = create256LengthMask(length) << y;
+				chunkLineU -= cubeSubMask;
 
 				if (y >= CHUNK_HEIGHT)
 					continue;
-				y = CHUNK_MAX_H - y;
 
+				// Create masks
+				cubeMask256 = one256 << y;
+				if (y == 0)
+					airMask256 = zero256;
+				else
+					airMask256 = one256 << (y - 1);
+
+				// Get real y and cube type
+				y = CHUNK_MAX_H - y;
 				const Cube	&type = this->at(x, y, z);
+
+				// Extend in x axis
+				int w = 1;
+				while (x + w < CHUNK_SIZE)
+				{
+					chunkLineTmp = cBitmapR.axisY[(x + w) + idZ];
+
+					if ((chunkLineTmp & cubeMask256) == zero256)
+						break;
+
+					if ((chunkLineTmp & airMask256) != zero256)
+						break;
+
+					if (this->at(x + w, y, z) != type)
+						break;
+
+					cBitmapR.axisY[(x + w) + idZ] -= cubeSubMask;
+					w++;
+				}
+
+				int d = 1;
+				while (z + d < CHUNK_SIZE)
+				{
+					int idZ2 = (z + d) * CHUNK_SIZE;
+					int tmpW = 0;
+					while (tmpW < w)
+					{
+						chunkLineTmp = cBitmapR.axisY[(x + tmpW) + idZ2];
+
+						if ((chunkLineTmp & cubeMask256) == zero256)
+							break;
+
+						if ((chunkLineTmp & airMask256) != zero256)
+							break;
+
+						if (this->at(x + tmpW, y, z + d) != type)
+							break;
+
+						tmpW++;
+					}
+
+					if (tmpW != w)
+						break;
+
+					for (int i = 0; i < w; i++)
+						cBitmapR.axisY[(x + i) + idZ2] -= cubeSubMask;
+					d++;
+				}
+
 				pointLU = gm::Vec3f(x    , y + 1, z    );
-				pointLD = gm::Vec3f(x    , y + 1, z + 1);
-				pointRD = gm::Vec3f(x + 1, y + 1, z + 1);
-				pointRU = gm::Vec3f(x + 1, y + 1, z    );
+				pointLD = gm::Vec3f(x    , y + 1, z + d);
+				pointRD = gm::Vec3f(x + w, y + 1, z + d);
+				pointRU = gm::Vec3f(x + w, y + 1, z    );
 				createTriangleFace(vertexIndex, vertices, indices, nbVertex,
 									pointLU, pointLD, pointRD, pointRU, normalUp, type);
 			}
 
 			// Face down
+			chunkLineD = cBitmapL.axisY[x + idZ];
 			while (chunkLineD != zero256)
 			{
 				int y = trailing256Zero(chunkLineD);
 				int	length = trailing256One(chunkLineD >> y);
 
-				chunkLineD -= create256LengthMask(length) << y;
+				uint256_t	cubeSubMask = create256LengthMask(length) << y;
+				chunkLineD -= cubeSubMask;
 
 				if (y >= CHUNK_HEIGHT)
 					continue;
 
+				// Create masks
+				cubeMask256 = one256 << y;
+				if (y == 0)
+					airMask256 = zero256;
+				else
+					airMask256 = one256 << (y - 1);
+
+				// Get cube type
 				const Cube	&type = this->at(x, y, z);
-				pointLU = gm::Vec3f(x    , y    , z + 1);
+
+				// Extend in x axis
+				int w = 1;
+				// while (x + w < CHUNK_SIZE)
+				// {
+				// 	chunkLineTmp = cBitmapL.axisY[(x + w) + idZ];
+
+				// 	if ((chunkLineTmp & cubeMask256) == zero256)
+				// 		break;
+
+				// 	if ((chunkLineTmp & airMask256) != zero256)
+				// 		break;
+
+				// 	if (this->at(x + w, y, z) != type)
+				// 		break;
+
+				// 	cBitmapL.axisY[(x + w) + idZ] -= cubeSubMask;
+				// 	w++;
+				// }
+				int	d = 1;
+
+				pointLU = gm::Vec3f(x    , y    , z + d);
 				pointLD = gm::Vec3f(x    , y    , z    );
-				pointRD = gm::Vec3f(x + 1, y    , z    );
-				pointRU = gm::Vec3f(x + 1, y    , z + 1);
+				pointRD = gm::Vec3f(x + w, y    , z    );
+				pointRU = gm::Vec3f(x + w, y    , z + d);
 				createTriangleFace(vertexIndex, vertices, indices, nbVertex,
 									pointLU, pointLD, pointRD, pointRU, normalDown, type);
 			}

@@ -23,6 +23,15 @@ uint256_t::uint256_t(const uint256_t &obj)
 	this->parts[3] = obj.parts[3];
 }
 
+
+uint256_t::uint256_t(uint64_t value)
+{
+	this->parts[0] = 0ull;
+	this->parts[1] = 0ull;
+	this->parts[2] = 0ull;
+	this->parts[3] = value;
+}
+
 //---- Destructor --------------------------------------------------------------
 
 uint256_t::~uint256_t()
