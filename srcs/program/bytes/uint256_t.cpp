@@ -244,7 +244,7 @@ uint256_t	&uint256_t::operator>>=(int shift)
 		return (*this);
 
 	int			invShift = 64 - shift;
-	uint64_t	mask = createLengthMask(shift);
+	uint64_t	mask = create64LengthMask(shift);
 
 	// Part 3
 	this->parts[3] = this->parts[3] >> shift;
@@ -305,7 +305,7 @@ uint256_t	&uint256_t::operator<<=(int shift)
 		return (*this);
 
 	int			invShift = 64 - shift;
-	uint64_t	mask = createLengthMask(shift) << invShift;
+	uint64_t	mask = create64LengthMask(shift) << invShift;
 
 	// Part 0
 	this->parts[0] = this->parts[0] << shift;
@@ -496,7 +496,7 @@ uint256_t	uint256_t::operator>>(int shift) const
 		return (result);
 
 	int			invShift = 64 - shift;
-	uint64_t	mask = createLengthMask(shift);
+	uint64_t	mask = create64LengthMask(shift);
 
 	// Part 3
 	result.parts[3] = result.parts[3] >> shift;
@@ -551,7 +551,7 @@ uint256_t	uint256_t::operator<<(int shift) const
 		return (result);
 
 	int			invShift = 64 - shift;
-	uint64_t	mask = createLengthMask(shift) << invShift;
+	uint64_t	mask = create64LengthMask(shift) << invShift;
 
 	// Part 0
 	result.parts[0] = result.parts[0] << shift;

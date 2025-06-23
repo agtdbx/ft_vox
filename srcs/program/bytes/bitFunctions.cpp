@@ -3,7 +3,7 @@
 //**** STATIC FUNCTIONS DEFINE *************************************************
 //**** FUNCTIONS ***************************************************************
 
-int	trailingZero(uint64_t bytes)
+int	trailing64Zero(uint64_t bytes)
 {
 	if (bytes == 0)
 		return (64);
@@ -27,7 +27,7 @@ int	trailing256Zero(const uint256_t &bytes)
 }
 
 
-int	trailingOne(uint64_t bytes)
+int	trailing64One(uint64_t bytes)
 {
 	if (bytes == UINT64_MAX)
 		return (64);
@@ -51,7 +51,7 @@ int	trailing256One(const uint256_t &bytes)
 }
 
 
-uint64_t	createLengthMask(int length)
+uint64_t	create64LengthMask(int length)
 {
 	if (length <= 0)
 		return (0ull);
@@ -94,7 +94,19 @@ uint256_t	create256LengthMask(int length)
 }
 
 
-uint64_t reverseBytes(uint64_t bytes)
+uint32_t reverse32Bytes(uint32_t bytes)
+{
+	bytes = ((bytes >> 1 ) & 0x55555555) | ((bytes & 0x55555555) << 1 );
+	bytes = ((bytes >> 2 ) & 0x33333333) | ((bytes & 0x33333333) << 2 );
+	bytes = ((bytes >> 4 ) & 0x0F0F0F0F) | ((bytes & 0x0F0F0F0F) << 4 );
+	bytes = ((bytes >> 8 ) & 0x00FF00FF) | ((bytes & 0x00FF00FF) << 8 );
+	bytes = ((bytes >> 16) & 0x0000FFFF) | ((bytes & 0x0000FFFF) << 16);
+
+	return (bytes);
+}
+
+
+uint64_t reverse64Bytes(uint64_t bytes)
 {
 	bytes = ((bytes >> 1 ) & 0x5555555555555555ULL) | ((bytes & 0x5555555555555555ULL) << 1 );
 	bytes = ((bytes >> 2 ) & 0x3333333333333333ULL) | ((bytes & 0x3333333333333333ULL) << 2 );
@@ -111,10 +123,10 @@ uint256_t	reverse256Bytes(const uint256_t &bytes)
 {
 	uint256_t	result;
 
-	result.parts[0] = reverseBytes(bytes.parts[3]);
-	result.parts[1] = reverseBytes(bytes.parts[2]);
-	result.parts[2] = reverseBytes(bytes.parts[1]);
-	result.parts[3] = reverseBytes(bytes.parts[0]);
+	result.parts[0] = reverse64Bytes(bytes.parts[3]);
+	result.parts[1] = reverse64Bytes(bytes.parts[2]);
+	result.parts[2] = reverse64Bytes(bytes.parts[1]);
+	result.parts[3] = reverse64Bytes(bytes.parts[0]);
 
 	return (result);
 }
