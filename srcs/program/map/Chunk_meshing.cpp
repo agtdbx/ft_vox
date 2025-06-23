@@ -127,8 +127,7 @@ void	Chunk::createMesh(Map &map, PerfLogger &perfLogger)
 				int y = trailing256Zero(chunkLineU);
 				int	length = trailing256One(chunkLineU >> y);
 
-				uint256_t cubeSubMask = create256LengthMask(length) << y;
-				chunkLineU -= cubeSubMask;
+				chunkLineU -= create256LengthMask(length) << y;
 
 				if (y >= CHUNK_HEIGHT)
 					continue;
@@ -141,6 +140,7 @@ void	Chunk::createMesh(Map &map, PerfLogger &perfLogger)
 					airMask256 = one256 << (y - 1);
 
 				// Get real y and cube type
+				int	yShift = y;
 				y = CHUNK_MAX_H - y;
 				const Cube	&type = this->at(x, y, z);
 
@@ -159,10 +159,12 @@ void	Chunk::createMesh(Map &map, PerfLogger &perfLogger)
 					if (this->at(x + w, y, z) != type)
 						break;
 
-					cBitmapR.axisY[(x + w) + idZ] -= cubeSubMask;
+					length = trailing256One(chunkLineTmp >> yShift);
+					cBitmapR.axisY[(x + w) + idZ] -= create256LengthMask(length) << yShift;
 					w++;
 				}
 
+				// Extend in z axis
 				int d = 1;
 				while (z + d < CHUNK_SIZE)
 				{
@@ -188,7 +190,10 @@ void	Chunk::createMesh(Map &map, PerfLogger &perfLogger)
 						break;
 
 					for (int i = 0; i < w; i++)
-						cBitmapR.axisY[(x + i) + idZ2] -= cubeSubMask;
+					{
+						length = trailing256One(cBitmapR.axisY[(x + i) + idZ2] >> yShift);
+						cBitmapR.axisY[(x + i) + idZ2] -= create256LengthMask(length) << yShift;
+					}
 					d++;
 				}
 
@@ -207,8 +212,7 @@ void	Chunk::createMesh(Map &map, PerfLogger &perfLogger)
 				int y = trailing256Zero(chunkLineD);
 				int	length = trailing256One(chunkLineD >> y);
 
-				uint256_t	cubeSubMask = create256LengthMask(length) << y;
-				chunkLineD -= cubeSubMask;
+				chunkLineD -= create256LengthMask(length) << y;
 
 				if (y >= CHUNK_HEIGHT)
 					continue;
@@ -225,23 +229,56 @@ void	Chunk::createMesh(Map &map, PerfLogger &perfLogger)
 
 				// Extend in x axis
 				int w = 1;
-				// while (x + w < CHUNK_SIZE)
-				// {
-				// 	chunkLineTmp = cBitmapL.axisY[(x + w) + idZ];
+				while (x + w < CHUNK_SIZE)
+				{
+					chunkLineTmp = cBitmapL.axisY[(x + w) + idZ];
 
-				// 	if ((chunkLineTmp & cubeMask256) == zero256)
-				// 		break;
+					if ((chunkLineTmp & cubeMask256) == zero256)
+						break;
 
-				// 	if ((chunkLineTmp & airMask256) != zero256)
-				// 		break;
+					if ((chunkLineTmp & airMask256) != zero256)
+						break;
 
-				// 	if (this->at(x + w, y, z) != type)
-				// 		break;
+					if (this->at(x + w, y, z) != type)
+						break;
 
-				// 	cBitmapL.axisY[(x + w) + idZ] -= cubeSubMask;
-				// 	w++;
-				// }
+					length = trailing256One(chunkLineTmp >> y);
+					cBitmapL.axisY[(x + w) + idZ] -= create256LengthMask(length) << y;
+					w++;
+				}
+
+				// Extend in z axis
 				int	d = 1;
+				while (z + d < CHUNK_SIZE)
+				{
+					int idZ2 = (z + d) * CHUNK_SIZE;
+					int tmpW = 0;
+					while (tmpW < w)
+					{
+						chunkLineTmp = cBitmapL.axisY[(x + tmpW) + idZ2];
+
+						if ((chunkLineTmp & cubeMask256) == zero256)
+							break;
+
+						if ((chunkLineTmp & airMask256) != zero256)
+							break;
+
+						if (this->at(x + tmpW, y, z + d) != type)
+							break;
+
+						tmpW++;
+					}
+
+					if (tmpW != w)
+						break;
+
+					for (int i = 0; i < w; i++)
+					{
+						length = trailing256One(cBitmapL.axisY[(x + i) + idZ2] >> y);
+						cBitmapL.axisY[(x + i) + idZ2] -= create256LengthMask(length) << y;
+					}
+					d++;
+				}
 
 				pointLU = gm::Vec3f(x    , y    , z + d);
 				pointLD = gm::Vec3f(x    , y    , z    );
