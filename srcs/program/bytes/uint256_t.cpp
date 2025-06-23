@@ -32,7 +32,82 @@ uint256_t::~uint256_t()
 
 //**** ACCESSORS ***************************************************************
 //---- Getters -----------------------------------------------------------------
+
+bool	uint256_t::get(int offset)
+{
+	if (offset < 0 || offset >= 256)
+		return (false);
+
+	if (offset < 64)
+		return (this->parts[3] & (1ull << offset));
+
+	if (offset < 128)
+		return (this->parts[2] & (1ull << (offset - 64)));
+
+	if (offset < 192)
+		return (this->parts[1] & (1ull << (offset - 128)));
+
+	return (this->parts[0] & (1ull << (offset - 192)));
+}
+
 //---- Setters -----------------------------------------------------------------
+
+void	uint256_t::set(int offset, bool status)
+{
+	if (offset < 0 || offset >= 256)
+		return ;
+
+
+	if (offset < 64)
+	{
+		const uint64_t	mask = 1ull << offset;
+
+		if ((this->parts[3] & mask) == status)
+			return ;
+
+		if (status)
+			this->parts[3] += mask;
+		else
+			this->parts[3] -= mask;
+	}
+	else if (offset < 128)
+	{
+		const uint64_t	mask = 1ull << (offset - 64);
+
+		if ((this->parts[2] & mask) == status)
+			return ;
+
+		if (status)
+			this->parts[2] += mask;
+		else
+			this->parts[2] -= mask;
+	}
+	else if (offset < 192)
+	{
+		const uint64_t	mask = 1ull << (offset - 128);
+
+		if ((this->parts[1] & mask) == status)
+			return ;
+
+		if (status)
+			this->parts[1] += mask;
+		else
+			this->parts[1] -= mask;
+	}
+	else
+	{
+		const uint64_t	mask = 1ull << (offset - 192);
+
+		if ((this->parts[0] & mask) == status)
+			return ;
+
+		if (status)
+			this->parts[0] += mask;
+		else
+			this->parts[0] -= mask;
+	}
+}
+
 //**** OPERATORS ***************************************************************
 //---- Equal operators ---------------------------------------------------------
 

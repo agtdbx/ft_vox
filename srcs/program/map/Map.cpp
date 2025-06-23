@@ -406,8 +406,11 @@ static void	firstGenerateChunk(
 	perflogPrint(perfLogger.meshChunk, "Mesh chunk");
 	printf("\n");
 	perflogPrint(perfLogger.meshBlock, "Mesh block ");
+	perfLogger.meshBlockXaxis.nbCall = perfLogger.meshBlock.nbCall;
 	perflogPrint(perfLogger.meshBlockXaxis, "Mesh x axis");
+	perfLogger.meshBlockYaxis.nbCall = perfLogger.meshBlock.nbCall;
 	perflogPrint(perfLogger.meshBlockYaxis, "Mesh y axis");
+	perfLogger.meshBlockZaxis.nbCall = perfLogger.meshBlock.nbCall;
 	perflogPrint(perfLogger.meshBlockZaxis, "Mesh z axis");
 	printf("\n");
 	perflogPrint(perfLogger.meshWater, "Mesh water");

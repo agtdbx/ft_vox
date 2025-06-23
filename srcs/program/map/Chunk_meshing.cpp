@@ -13,6 +13,7 @@ const gm::Vec3f	normalFront(0, 0, 1);
 const gm::Vec3f	normalBack(0, 0, -1);
 const gm::Vec3f	normalLeft(-1, 0, 0);
 const gm::Vec3f	normalRight(1, 0, 0);
+const uint256_t	zero256;
 
 static uint32_t	getVetrexId(
 					std::unordered_map<std::size_t, uint32_t> &vertexIndex,
@@ -95,49 +96,71 @@ void	Chunk::createMesh(Map &map, PerfLogger &perfLogger)
 	CubeBitmap	*rightBitmap = map.getChunkBitmap(this->chunkId.x + 1, this->chunkId.y);
 	CubeBitmap	*leftBitmap = map.getChunkBitmap(this->chunkId.x - 1, this->chunkId.y);
 
-	int	idY;
+	int	idY, idZ;
 	uint64_t	chunkLineL, chunkLineR;
+	uint256_t	chunkLineU, chunkLineD;
 	uint64_t	chunkLeftLine, chunkCurrLine, chunkRightLine;
 	gm::Vec3f	pointLU, pointLD, pointRD, pointRU;
+
+	// y axis
+	perflogStart(perfLogger.meshBlockYaxis);
+	for (int z = 0; z < CHUNK_SIZE; z++)
+	{
+		idZ = z * CHUNK_SIZE;
+		for (int x = 0; x < CHUNK_SIZE; x++)
+		{
+			// Contruct chunk line
+			chunkLineD = this->cubeBitmap.axisY[x + idZ];
+			chunkLineU = reverse256Bytes(chunkLineD);
+
+			// Face up
+			while (chunkLineU != zero256)
+			{
+				int y = trailing256Zero(chunkLineU);
+				int	length = trailing256One(chunkLineU >> y);
+
+				chunkLineU -= create256LengthMask(length) << y;
+
+				if (y >= CHUNK_HEIGHT)
+					continue;
+				y = CHUNK_MAX_H - y;
+
+				const Cube	&type = this->at(x, y, z);
+				pointLU = gm::Vec3f(x    , y + 1, z    );
+				pointLD = gm::Vec3f(x    , y + 1, z + 1);
+				pointRD = gm::Vec3f(x + 1, y + 1, z + 1);
+				pointRU = gm::Vec3f(x + 1, y + 1, z    );
+				createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+									pointLU, pointLD, pointRD, pointRU, normalUp, type);
+			}
+
+			// Face down
+			while (chunkLineD != zero256)
+			{
+				int y = trailing256Zero(chunkLineD);
+				int	length = trailing256One(chunkLineD >> y);
+
+				chunkLineD -= create256LengthMask(length) << y;
+
+				if (y >= CHUNK_HEIGHT)
+					continue;
+
+				const Cube	&type = this->at(x, y, z);
+				pointLU = gm::Vec3f(x    , y    , z + 1);
+				pointLD = gm::Vec3f(x    , y    , z    );
+				pointRD = gm::Vec3f(x + 1, y    , z    );
+				pointRU = gm::Vec3f(x + 1, y    , z + 1);
+				createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+									pointLU, pointLD, pointRD, pointRU, normalDown, type);
+			}
+		}
+	}
+	perflogEnd(perfLogger.meshBlockYaxis);
+
 
 	for (int y = 0; y < CHUNK_HEIGHT; y++)
 	{
 		idY = y * CHUNK_SIZE;
-
-		// y axis
-		perflogStart(perfLogger.meshBlockYaxis);
-		for (int z = 0; z < CHUNK_SIZE; z++)
-		{
-			for (int x = 0; x < CHUNK_SIZE; x++)
-			{
-				const Cube	&type = this->at(x, y, z);
-				if (type == CUBE_AIR || type == CUBE_WATER)
-					continue;
-
-				// Face up
-				if (y == CHUNK_MAX_H || this->cubeBitmap.getX(x, y + 1, z) == 0)
-				{
-					pointLU = gm::Vec3f(x    , y + 1, z    );
-					pointLD = gm::Vec3f(x    , y + 1, z + 1);
-					pointRD = gm::Vec3f(x + 1, y + 1, z + 1);
-					pointRU = gm::Vec3f(x + 1, y + 1, z    );
-					createTriangleFace(vertexIndex, vertices, indices, nbVertex,
-										pointLU, pointLD, pointRD, pointRU, normalUp, type);
-				}
-
-				// Face down
-				if (y == 0 || this->cubeBitmap.getX(x, y - 1, z) == 0)
-				{
-					pointLU = gm::Vec3f(x    , y    , z + 1);
-					pointLD = gm::Vec3f(x    , y    , z    );
-					pointRD = gm::Vec3f(x + 1, y    , z    );
-					pointRU = gm::Vec3f(x + 1, y    , z + 1);
-					createTriangleFace(vertexIndex, vertices, indices, nbVertex,
-										pointLU, pointLD, pointRD, pointRU, normalDown, type);
-				}
-			}
-		}
-		perflogEnd(perfLogger.meshBlockYaxis);
 
 		// z axis
 		perflogStart(perfLogger.meshBlockZaxis);

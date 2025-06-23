@@ -21,7 +21,7 @@ int	trailingZero(uint64_t bytes);
  *
  * @return The number of 1 before a 0.
  */
-int	trailing256Zero(uint256_t &bytes);
+int	trailing256Zero(const uint256_t &bytes);
 /**
  * @brief Get the number of 0 before a 1. For 1000, it will return 3.
  *
@@ -37,7 +37,7 @@ int	trailingOne(uint64_t bytes);
  *
  * @return The number of 0 before a 1.
  */
-int	trailing256One(uint256_t &bytes);
+int	trailing256One(const uint256_t &bytes);
 /**
  * @brief Create a mask of parameter length. For length = 3, mask = 0111.
  *
@@ -69,6 +69,6 @@ uint64_t	reverseBytes(uint64_t bytes);
  *
  * @return Number reversed.
  */
-uint256_t	reverse256Bytes(uint256_t &bytes);
+uint256_t	reverse256Bytes(const uint256_t &bytes);
 
 #endif

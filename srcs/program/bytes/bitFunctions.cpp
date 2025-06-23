@@ -11,7 +11,7 @@ int	trailingZero(uint64_t bytes)
 }
 
 
-int	trailing256Zero(uint256_t &bytes)
+int	trailing256Zero(const uint256_t &bytes)
 {
 	int	res = 0;
 
@@ -35,7 +35,7 @@ int	trailingOne(uint64_t bytes)
 }
 
 
-int	trailing256One(uint256_t &bytes)
+int	trailing256One(const uint256_t &bytes)
 {
 	int	res = 0;
 
@@ -107,7 +107,7 @@ uint64_t reverseBytes(uint64_t bytes)
 }
 
 
-uint256_t	reverse256Bytes(uint256_t &bytes)
+uint256_t	reverse256Bytes(const uint256_t &bytes)
 {
 	uint256_t	result;
 

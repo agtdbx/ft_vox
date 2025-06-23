@@ -281,12 +281,13 @@ void	TextureManager::createTextureImageArray(
 
 	// Copy image into temporary texture buffer
 	void	*data;
-	vkMapMemory(device, stagingBufferMemory, 0, layerSize, 0, &data);
+	vkMapMemory(device, stagingBufferMemory, 0, totalArraySize, 0, &data);
+	char	*pixelData = (char *)data;
 	for (uint32_t i = 0; i < nbLayer; i++)
 	{
-		memcpy((char *)data + i * layerSize,
+		memcpy(pixelData + i * layerSize,
 				textures[i]->pixels,
-				static_cast<size_t>(layerSize));
+				layerSize);
 	}
 	vkUnmapMemory(device, stagingBufferMemory);
 

@@ -36,7 +36,23 @@ public:
 
 //**** ACCESSORS ***************************************************************
 //---- Getters -----------------------------------------------------------------
+	/**
+	 * @brief Get the status of bit at the offset.
+	 *
+	 * @param offset The offset of the bit.
+	 *
+	 * @return The status of the bit, or false in case of bad offset.
+	 */
+	bool	get(int offset);
 //---- Setters -----------------------------------------------------------------
+	/**
+	 * @brief Get the status of bit at the offset.
+	 *
+	 * @param offset The offset of the bit.
+	 * @param status The new status of the bit.
+	 */
+	void	set(int offset, bool status);
+
 //**** OPERATORS ***************************************************************
 //---- Equal operators ---------------------------------------------------------
 	/**
