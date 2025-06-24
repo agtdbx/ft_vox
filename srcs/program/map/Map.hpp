@@ -12,23 +12,60 @@
 using ChunkMap = std::unordered_map<std::size_t, Chunk>;
 
 
-struct GenerationProcess
+enum ThreadStatus
 {
-	std::mutex	mutex; // Mutex for the struct
-	bool		running; // Know if thread is running
-	bool		mustRun;  // Ask thread to still run or stop
-	bool		generating; // Know if the thread is generating chunks
-	bool		mustGenerate; // Ask thread to generate chunks
-	gm::Vec2i	minChunkId; // Min id of chunk to generate
-	gm::Vec2i	maxChunkId; // Max id of chunk to generate
-	gm::Vec2i	cameraChunkId; // Chunk id for the camera
-	ChunkMap	*chunks; // Chunks container
-	Map			*map;
-	Engine		*engine;
-	Camera		*camera;
-	ChunkShader	*chunkShader;
+	THREAD_RUNNING,
+	THREAD_NEED_GENERATE,
+	THREAD_GENERATING,
+	THREAD_GENERATE_END,
+	THREAD_NEED_MESH,
+	THREAD_MESHING,
+	THREAD_MESH_END,
+	THREAD_STOPPING,
+	THREAD_STOP,
 };
 
+
+struct GenerationProcess
+{
+	std::mutex		mutex; // Mutex for the struct
+	ThreadStatus	status;
+	gm::Vec2i		minChunkId; // Min id of chunk to generate or mesh
+	gm::Vec2i		maxChunkId; // Max id of chunk to generate or mesh
+	gm::Vec2i		cameraChunkId; // Chunk id for the camera
+	ChunkMap		*chunks; // Chunks container
+	Map				*map;
+	Engine			*engine;
+	Camera			*camera;
+	ChunkShader		*chunkShader;
+};
+
+
+enum	MapStatus
+{
+	MAP_NONE,
+	MAP_GENERATING,
+	MAP_MESHING,
+};
+
+
+struct	MapView
+{
+	gm::Vec2i	minGenChunk;
+	gm::Vec2i	maxGenChunk;
+	gm::Vec2i	minMeshChunk;
+	gm::Vec2i	maxMeshChunk;
+	gm::Vec2i	tmpId;
+
+	bool	operator==(const MapView &obj)
+	{
+		return (this->minGenChunk == obj.minGenChunk
+				&& this->maxGenChunk == obj.maxGenChunk
+				&& this->minMeshChunk == obj.minMeshChunk
+				&& this->maxMeshChunk == obj.maxMeshChunk
+				&& this->tmpId == obj.tmpId);
+	}
+};
 
 /**
  * @brief Map class.
@@ -133,6 +170,7 @@ private:
 	std::vector<Cluster>	clusters;
 	std::vector<gm::Vec2i>	clusterOffsets;
 	gm::Vec2i				minChunkIdOffset, maxChunkIdOffset, cameraChunkId;
+	MapView					currentView, targetView;
 	GenerationProcess		generationProcess;
 	std::thread				*generationThread;
 	bool					checkGeneration;
