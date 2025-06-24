@@ -290,12 +290,34 @@ public:
 	 */
 	void	createBuffers(VulkanCommandPool &commandPool)
 	{
+		if (this->nbVertex == 0)
+			return ;
+
 		this->destroyBuffers();
 
 		this->commandPool = &commandPool;
 
-		this->createVertexBuffer();
-		this->createIndexBuffer();
+		VkDevice			copyDevice = this->commandPool->getCopyDevice();
+		VkPhysicalDevice	copyPhysicalDevice = this->commandPool->getCopyPhysicalDevice();
+
+		VkDeviceSize	bufferSizeVertex = sizeof(this->vertices[0]) * this->nbVertex;
+		VkDeviceSize	bufferSizeIndex = sizeof(this->indices[0]) * this->nbIndex;
+		VkDeviceSize	bufferSize = gm::max(bufferSizeVertex, bufferSizeIndex);
+
+		// Create temp buffers
+		VkBuffer stagingBuffer;
+		VkDeviceMemory stagingBufferMemory;
+		createVulkanBuffer(copyDevice, copyPhysicalDevice,
+							bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+							VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+							stagingBuffer, stagingBufferMemory);
+
+		this->createVertexBuffer(stagingBuffer, stagingBufferMemory);
+		this->createIndexBuffer(stagingBuffer, stagingBufferMemory);
+
+		// Release temp buffer
+		vkDestroyBuffer(copyDevice, stagingBuffer, nullptr);
+		vkFreeMemory(copyDevice, stagingBufferMemory, nullptr);
 	}
 	/**
 	 * @brief Clear allocated memory.
@@ -403,7 +425,7 @@ private:
 	/**
 	 * @brief Create vertex buffer and vertex buffer memory.
 	 */
-	void	createVertexBuffer(void)
+	void	createVertexBuffer(VkBuffer stagingBuffer, VkDeviceMemory stagingBufferMemory)
 	{
 		if (this->commandPool == NULL || this->nbVertex == 0)
 			return ;
@@ -412,14 +434,6 @@ private:
 		VkPhysicalDevice	copyPhysicalDevice = this->commandPool->getCopyPhysicalDevice();
 
 		VkDeviceSize	bufferSize = sizeof(this->vertices[0]) * this->nbVertex;
-
-		// Create temp buffers
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		createVulkanBuffer(copyDevice, copyPhysicalDevice,
-							bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-							VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-							stagingBuffer, stagingBufferMemory);
 
 		// Map data to vertex buffer
 		void	*data;
@@ -435,15 +449,11 @@ private:
 
 		// Copy data form temp to final buffer
 		copyBuffer(*commandPool, stagingBuffer, this->vertexBuffer, bufferSize);
-
-		// Release temp buffer
-		vkDestroyBuffer(copyDevice, stagingBuffer, nullptr);
-		vkFreeMemory(copyDevice, stagingBufferMemory, nullptr);
 	}
 	/**
 	 * @brief Create index buffer and index buffer memory.
 	 */
-	void	createIndexBuffer(void)
+	void	createIndexBuffer(VkBuffer stagingBuffer, VkDeviceMemory stagingBufferMemory)
 	{
 		if (this->commandPool == NULL || this->nbIndex == 0)
 			return ;
@@ -452,14 +462,6 @@ private:
 		VkPhysicalDevice	copyPhysicalDevice = this->commandPool->getCopyPhysicalDevice();
 
 		VkDeviceSize bufferSize = sizeof(this->indices[0]) * this->nbIndex;
-
-		// Create temp buffers
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		createVulkanBuffer(copyDevice, copyPhysicalDevice,
-							bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-							VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-							stagingBuffer, stagingBufferMemory);
 
 		// Map data to vertex buffer
 		void* data;
@@ -474,10 +476,6 @@ private:
 
 		// Copy data form temp to final buffer
 		copyBuffer(*commandPool, stagingBuffer, this->indexBuffer, bufferSize);
-
-		// Release temp buffer
-		vkDestroyBuffer(copyDevice, stagingBuffer, nullptr);
-		vkFreeMemory(copyDevice, stagingBufferMemory, nullptr);
 	}
 	/**
 	 * @brief Update vertex buffer.

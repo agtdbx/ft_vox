@@ -164,6 +164,9 @@ void	Map::update(Engine &engine, Camera &camera)
 	static MapStatus	status = MAP_NONE;
 	ThreadStatus		threadStatus;
 	static PerfLogger	perfLogger; // TODO : remove
+	static int			nbGeneration = 0;
+	static int			nbMesh = 0;
+	static int			nbBuffer = 0;
 
 	// TODO : Update targetView if cameraChunkId change
 
@@ -202,19 +205,13 @@ void	Map::update(Engine &engine, Camera &camera)
 
 			if (threadStatus == THREAD_RUNNING)
 			{
-				if (this->currentView.tmpId != this->targetView.maxGenChunk)
+				if (this->currentView.tmpId.y != this->targetView.maxGenChunk.y)
 				{
 					int	chunkLeftBeforeEndLine = this->targetView.maxGenChunk.x - this->currentView.tmpId.x;
 
-					if (chunkLeftBeforeEndLine == 0)
-					{
-						this->currentView.tmpId.x = this->targetView.minGenChunk.x;
-						this->currentView.tmpId.y++;
-						chunkLeftBeforeEndLine = this->targetView.maxGenChunk.x - this->currentView.tmpId.x;
-					}
-
 					gm::Vec2i	minId = this->currentView.tmpId;
 					this->currentView.tmpId += gm::Vec2i(gm::min(chunkLeftBeforeEndLine, widthGeneratePerThread), 0);
+					nbGeneration += gm::min(chunkLeftBeforeEndLine, widthGeneratePerThread);
 					gm::Vec2i	maxId = this->currentView.tmpId + gm::Vec2i(0, 1);
 
 					std::cout << "  - generate " << minId << " -> " << maxId << std::endl;
@@ -232,6 +229,12 @@ void	Map::update(Engine &engine, Camera &camera)
 					this->threadsData[i].maxChunkId = maxId;
 					this->threadsData[i].status = THREAD_NEED_GENERATE;
 					this->threadsData[i].mutex.unlock();
+
+					if (chunkLeftBeforeEndLine == 0)
+					{
+						this->currentView.tmpId.x = this->targetView.minGenChunk.x;
+						this->currentView.tmpId.y++;
+					}
 
 					allGenerationDone = false;
 				}
@@ -288,6 +291,7 @@ void	Map::update(Engine &engine, Camera &camera)
 						gm::Vec2i	chunkPos = gm::Vec2i(x, y);
 						Chunk		*chunk = &this->chunks[gm::hash(chunkPos)];
 						chunk->createBuffers(engine.commandPool, perfLogger);
+						nbBuffer++;
 
 						for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
 						{
@@ -300,19 +304,13 @@ void	Map::update(Engine &engine, Camera &camera)
 
 			if (threadStatus == THREAD_RUNNING)
 			{
-				if (this->currentView.tmpId != this->targetView.maxMeshChunk)
+				if (this->currentView.tmpId.y != this->targetView.maxMeshChunk.y)
 				{
 					int	chunkLeftBeforeEndLine = this->targetView.maxMeshChunk.x - this->currentView.tmpId.x;
 
-					if (chunkLeftBeforeEndLine == 0)
-					{
-						this->currentView.tmpId.x = this->targetView.minMeshChunk.x;
-						this->currentView.tmpId.y++;
-						chunkLeftBeforeEndLine = this->targetView.maxMeshChunk.x - this->currentView.tmpId.x;
-					}
-
 					gm::Vec2i	minId = this->currentView.tmpId;
 					this->currentView.tmpId += gm::Vec2i(gm::min(chunkLeftBeforeEndLine, widthMeshPerThread), 0);
+					nbMesh += gm::min(chunkLeftBeforeEndLine, widthMeshPerThread);
 					gm::Vec2i	maxId = this->currentView.tmpId + gm::Vec2i(0, 1);
 
 					std::cout << "  - mesh " << minId << " -> " << maxId << std::endl;
@@ -322,6 +320,13 @@ void	Map::update(Engine &engine, Camera &camera)
 					this->threadsData[i].maxChunkId = maxId;
 					this->threadsData[i].status = THREAD_NEED_MESH;
 					this->threadsData[i].mutex.unlock();
+
+					if (chunkLeftBeforeEndLine == 0)
+					{
+						this->currentView.tmpId.x = this->targetView.minMeshChunk.x;
+						this->currentView.tmpId.y++;
+					}
+
 					allMeshDone = false;
 				}
 				else
@@ -345,6 +350,9 @@ void	Map::update(Engine &engine, Camera &camera)
 			status = MAP_NONE;
 
 			perflogPrint(perfLogger.createBuffer, "Create buffer time");
+			printf("Nb generation %i\n", nbGeneration);
+			printf("Nb mesh %i\n", nbMesh);
+			printf("Nb buffer %i\n", nbBuffer);
 		}
 	}
 }
