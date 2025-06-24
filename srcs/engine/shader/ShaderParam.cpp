@@ -104,9 +104,9 @@ void	ShaderParam::destroy(Engine &engine)
 }
 
 
-void	ShaderParam::updateBuffer(Window &window, void *buffer, int bufferId)
+void	ShaderParam::updateBuffer(Window &window, void *buffer, size_t bufferId)
 {
-	int	id = window.getCurrentFrame() * this->bufferInfos.size() + bufferId;
+	size_t	id = window.getCurrentFrame() * this->bufferInfos.size() + bufferId;
 	memcpy(this->uniformBuffersMapped[id], buffer, this->bufferInfos[bufferId].size);
 }
 

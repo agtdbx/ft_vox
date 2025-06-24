@@ -26,7 +26,7 @@ enum ThreadStatus
 };
 
 
-struct GenerationProcess
+struct ThreadData
 {
 	std::mutex		mutex; // Mutex for the struct
 	ThreadStatus	status;
@@ -171,16 +171,11 @@ private:
 	std::vector<gm::Vec2i>	clusterOffsets;
 	gm::Vec2i				minChunkIdOffset, maxChunkIdOffset, cameraChunkId;
 	MapView					currentView, targetView;
-	GenerationProcess		generationProcess;
-	std::thread				*generationThread;
-	bool					checkGeneration;
+	int						nbThread;
+	ThreadData				*threadsData;
+	std::thread				*threads;
 
 //**** PRIVATE METHODS *********************************************************
-	/**
-	 * @brief Put all chunks into clusters.
-	 */
-	void	mapChunksIntoClusters(Engine &engine);
-
 };
 
 //**** FUNCTIONS ***************************************************************

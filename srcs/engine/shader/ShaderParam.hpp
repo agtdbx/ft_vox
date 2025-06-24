@@ -125,7 +125,7 @@ public:
 	 *
 	 * @warning Id isn't check for speed, will crash if pass an incorect id.
 	 */
-	void	updateBuffer(Window &window, void *buffer, int bufferId);
+	void	updateBuffer(Window &window, void *buffer, size_t bufferId);
 
 //**** STATIC METHODS **********************************************************
 

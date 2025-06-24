@@ -56,16 +56,18 @@ public:
 
 //**** PUBLIC METHODS **********************************************************
 	/**
-	 * @brief Set all chunks into cluster.
+	 * @brief Set min and max chunks of cluster.
 	 *
-	 * @param map Map containing chunks.
 	 * @param middle Middle position of the cluster.
 	 */
-	void	setChunks(
-				Engine &engine,
-				Map &map,
-				const gm::Vec2i &middle,
-				PerfLogger &perfLogger);
+	void	setPosition(const gm::Vec2i &middle);
+	/**
+	 * @brief Give a chunk completed to the cluster.
+	 *
+	 * @param chunkPos The position of the chunk.
+	 * @param chunk The chunk to add.
+	 */
+	void	giveChunk(const gm::Vec2i &chunkPos, Chunk *chunk);
 	/**
 	 * @brief Draw chunks.
 	 *

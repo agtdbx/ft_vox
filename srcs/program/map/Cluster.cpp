@@ -59,33 +59,24 @@ Cluster	&Cluster::operator=(const Cluster &obj)
 
 //**** PUBLIC METHODS **********************************************************
 
-void	Cluster::setChunks(
-					Engine &engine,
-					Map &map,
-					const gm::Vec2i &middle,
-					PerfLogger &perfLogger)
+void	Cluster::setPosition(const gm::Vec2i &middle)
 {
-	int	cx, cy, id;
-
-	int	halfClusterHeight = CHUNK_HEIGHT / 2;
-	this->boundingCube.center = gm::Vec3f(middle.x * CHUNK_SIZE,
-											halfClusterHeight,
-											middle.y * CHUNK_SIZE);
-
 	this->minChunk = middle - gm::Vec2i(CLUSTER_SIZE / 2, CLUSTER_SIZE / 2);
 	this->maxChunk = middle + gm::Vec2i(CLUSTER_SIZE / 2, CLUSTER_SIZE / 2);
+}
 
-	for (int x = this->minChunk.x; x < this->maxChunk.x; x++)
-	{
-		cx = x - this->minChunk.x;
-		for (int y = this->minChunk.y; y < this->maxChunk.y; y++)
-		{
-			cy = y - this->minChunk.y;
-			id = cx + cy * CLUSTER_SIZE;
-			this->chunks[id] = map.getChunk(x, y);
-			this->chunks[id]->createBuffers(engine.commandPool, perfLogger);
-		}
-	}
+
+void	Cluster::giveChunk(const gm::Vec2i &chunkPos, Chunk *chunk)
+{
+	if (chunkPos.x < this->minChunk.x || chunkPos.y < this->minChunk.y
+		|| chunkPos.x >= this->maxChunk.x || chunkPos.y >= this->maxChunk.y)
+		return ;
+
+	int	cx = chunkPos.x - this->minChunk.x;
+	int	cy = chunkPos.y - this->minChunk.y;
+	int	id = cx + cy * CLUSTER_SIZE;
+
+	this->chunks[id] = chunk;
 }
 
 
@@ -99,11 +90,12 @@ void	Cluster::draw(
 	{
 		if (this->chunks[i] != NULL)
 		{
-			if (camera.isCubeInFrutum(this->chunks[i]->getBoundingCube()))
-			{
-				this->chunks[i]->draw(engine, camera, chunkShader);
-				nbDrawCall++;
-			}
+			this->chunks[i]->draw(engine, camera, chunkShader);
+			// if (camera.isCubeInFrutum(this->chunks[i]->getBoundingCube()))
+			// {
+			// 	this->chunks[i]->draw(engine, camera, chunkShader);
+			// 	nbDrawCall++;
+			// }
 		}
 	}
 }
@@ -118,8 +110,9 @@ void	Cluster::drawWater(
 	{
 		if (this->chunks[i] != NULL)
 		{
-			if (camera.isCubeInFrutum(this->chunks[i]->getBoundingCube()))
-				this->chunks[i]->drawWater(engine, camera, chunkShader);
+			this->chunks[i]->drawWater(engine, camera, chunkShader);
+			// if (camera.isCubeInFrutum(this->chunks[i]->getBoundingCube()))
+			// 	this->chunks[i]->drawWater(engine, camera, chunkShader);
 		}
 	}
 }
