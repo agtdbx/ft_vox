@@ -198,6 +198,17 @@ void	copyBuffer(
 			const VulkanCommandPool &commandPool,
 			VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 /**
+ * @brief Copy srcBuffer to dstBuffer.
+ *
+ * @param commandBuffer The command buffer for run the copy.
+ * @param srcBuffer The buffer that will be copied.
+ * @param dstBuffer Where the buffer will be copied.
+ * @param size The size of buffer that will be copied. Can be smaller thant srcBuffer size for copy only a part.
+ */
+void	copyBufferAsync(
+			VkCommandBuffer commandBuffer,
+			VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+/**
  * @brief Copy buffer to image.
  *
  * @param commandPool The command pool for run the copy.

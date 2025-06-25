@@ -188,6 +188,8 @@ void	Map::update(Engine &engine, Camera &camera)
 	{
 		bool	allGenerationDone = true;
 		int		totalWidthGenerate = this->targetView.maxGenChunk.x - this->targetView.minGenChunk.x;
+		int		totalHeightGenerate = this->targetView.maxGenChunk.y - this->targetView.minGenChunk.y;
+		int		totalGenerate = totalWidthGenerate * totalHeightGenerate;
 		int		widthGeneratePerThread = gm::max(4, totalWidthGenerate / nbThread);
 
 		for (int i = 0; i < this->nbThread; i++)
@@ -213,7 +215,8 @@ void	Map::update(Engine &engine, Camera &camera)
 					nbGeneration += gm::min(chunkLeftBeforeEndLine, widthGeneratePerThread);
 					gm::Vec2i	maxId = this->currentView.tmpId + gm::Vec2i(0, 1);
 
-					std::cout << "  - generate " << minId << " -> " << maxId << std::endl;
+					// std::cout << "  - generate " << minId << " -> " << maxId << std::endl;
+					std::cout << "\r  - generate " << nbGeneration << " / " << totalGenerate << std::flush;
 
 					for (int x = minId.x; x < maxId.x; x++)
 					{
@@ -250,7 +253,8 @@ void	Map::update(Engine &engine, Camera &camera)
 
 		if (allGenerationDone)
 		{
-			std::cout << "\nBegin meshing :" << std::endl;
+			// std::cout << "\nBegin meshing :" << std::endl;
+			std::cout << "\n\nBegin meshing :" << std::endl;
 
 			this->currentView.maxGenChunk = this->targetView.maxGenChunk;
 			this->currentView.minMeshChunk = this->targetView.minMeshChunk;
@@ -264,9 +268,10 @@ void	Map::update(Engine &engine, Camera &camera)
 	if (status == MAP_MESHING)
 	{
 		bool	allMeshDone = true;
-		// int		totalWidthMesh = this->targetView.maxGenChunk.x - this->targetView.minGenChunk.x;
-		// int		widthMeshPerThread = gm::min(gm::max(4, totalWidthMesh / nbThread), 8);
-		int		widthMeshPerThread = 1;
+		int		totalWidthMesh = this->targetView.maxGenChunk.x - this->targetView.minGenChunk.x;
+		int		totalHeightMesh = this->targetView.maxGenChunk.y - this->targetView.minGenChunk.y;
+		int		totalMesh = totalWidthMesh * totalHeightMesh;
+		int		widthMeshPerThread = gm::min(gm::max(4, totalWidthMesh / nbThread), 8);
 
 		for (int i = 0; i < this->nbThread; i++)
 		{
@@ -277,30 +282,30 @@ void	Map::update(Engine &engine, Camera &camera)
 			// Update when thread end creating mesh for asked chunks
 			if (threadStatus == THREAD_MESH_END)
 			{
-				this->threadsData[i].mutex.lock();
-				gm::Vec2i	minId = this->threadsData[i].minChunkId;
-				gm::Vec2i	maxId = this->threadsData[i].maxChunkId;
-				this->threadsData[i].mutex.unlock();
+				// this->threadsData[i].mutex.lock();
+				// gm::Vec2i	minId = this->threadsData[i].minChunkId;
+				// gm::Vec2i	maxId = this->threadsData[i].maxChunkId;
+				// this->threadsData[i].mutex.unlock();
 
-				// When mesh is created, create buffer
-				for (int x = minId.x; x < maxId.x; x++)
-				{
-					for (int y = minId.y; y < maxId.y; y++)
-					{
-						gm::Vec2i	chunkPos = gm::Vec2i(x, y);
-						ChunkMap::iterator	it = this->chunks.find(gm::hash(chunkPos));
+				// // When mesh is created, create buffer
+				// for (int x = minId.x; x < maxId.x; x++)
+				// {
+				// 	for (int y = minId.y; y < maxId.y; y++)
+				// 	{
+				// 		gm::Vec2i	chunkPos = gm::Vec2i(x, y);
+				// 		ChunkMap::iterator	it = this->chunks.find(gm::hash(chunkPos));
 
-						if (it == this->chunks.end())
-							continue;
+				// 		if (it == this->chunks.end())
+				// 			continue;
 
-						it->second.createBuffers(engine.commandPool, this->stagingBuffer, perfLogger);
+				// 		it->second.createBuffers(engine.commandPool, this->stagingBuffer, perfLogger);
 
-						for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
-						{
-							this->clusters[i].giveChunk(chunkPos, &it->second);
-						}
-					}
-				}
+				// 		for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
+				// 		{
+				// 			this->clusters[i].giveChunk(chunkPos, &it->second);
+				// 		}
+				// 	}
+				// }
 				threadStatus = THREAD_RUNNING;
 			}
 
@@ -315,7 +320,8 @@ void	Map::update(Engine &engine, Camera &camera)
 					nbMesh += gm::min(chunkLeftBeforeEndLine, widthMeshPerThread);
 					gm::Vec2i	maxId = this->currentView.tmpId + gm::Vec2i(0, 1);
 
-					std::cout << "  - mesh " << minId << " -> " << maxId << std::endl;
+					// std::cout << "  - mesh " << minId << " -> " << maxId << std::endl;
+					std::cout << "\r  - mesh " << nbMesh << " / " << totalMesh << std::flush;
 
 					this->threadsData[i].mutex.lock();
 					this->threadsData[i].minChunkId = minId;
@@ -344,26 +350,76 @@ void	Map::update(Engine &engine, Camera &camera)
 
 		if (allMeshDone)
 		{
-			std::cout << "End generate chunks" << std::endl;
+			// std::cout << "\nBuffering chunks :" << std::endl;
+			std::cout << "\n\nBuffering chunks :" << std::endl;
+			// std::cout << "End generate chunks" << std::endl;
 
-			this->currentView.maxMeshChunk = this->targetView.maxMeshChunk;
-			this->currentView.tmpId = this->targetView.tmpId;
+			// this->currentView.maxMeshChunk = this->targetView.maxMeshChunk;
+			// this->currentView.tmpId = this->targetView.tmpId;
 
-			status = MAP_NONE;
+			status = MAP_BUFFERING;
+			// status = MAP_NONE;
 
-			printf("Nb generation %i\n", nbGeneration);
-			printf("Nb mesh %i\n", nbMesh);
-			perflogPrint(perfLogger.createBuffer, "Create buffer time");
-			perflogPrint(perfLogger.createUpdateStaging, "Update staging buffer time");
-			printf("Vertex buffer :\n");
-			perflogPrint(perfLogger.mapVertexBuffer, "  - map buffer");
-			perflogPrint(perfLogger.createVertexBuffer, "  - create buffer");
-			perflogPrint(perfLogger.copyVertexBuffer, "  - copy buffer");
-			printf("Index buffer :\n");
-			perflogPrint(perfLogger.mapIndexBuffer, "  - map buffer");
-			perflogPrint(perfLogger.createIndexBuffer, "  - create buffer");
-			perflogPrint(perfLogger.copyIndexBuffer, "  - copy buffer");
+			// printf("Nb generation %i\n", nbGeneration);
+			// printf("Nb mesh %i\n", nbMesh);
+			// perflogPrint(perfLogger.createBuffer, "Create buffer time");
+			// perflogPrint(perfLogger.createUpdateStaging, "Update staging buffer time");
+			// printf("Vertex buffer :\n");
+			// perflogPrint(perfLogger.mapVertexBuffer, "  - map buffer");
+			// perflogPrint(perfLogger.createVertexBuffer, "  - create buffer");
+			// perflogPrint(perfLogger.copyVertexBuffer, "  - copy buffer");
+			// printf("Index buffer :\n");
+			// perflogPrint(perfLogger.mapIndexBuffer, "  - map buffer");
+			// perflogPrint(perfLogger.createIndexBuffer, "  - create buffer");
+			// perflogPrint(perfLogger.copyIndexBuffer, "  - copy buffer");
 		}
+	}
+
+	if (status == MAP_BUFFERING)
+	{
+		// When mesh is created, create buffer
+		int	nbBuffer = 0;
+		for (int x = this->targetView.minMeshChunk.x; x < this->targetView.maxMeshChunk.x; x++)
+		{
+			for (int y = this->targetView.minMeshChunk.y; y < this->targetView.maxMeshChunk.y; y++)
+			{
+				gm::Vec2i	chunkPos = gm::Vec2i(x, y);
+				ChunkMap::iterator	it = this->chunks.find(gm::hash(chunkPos));
+
+				nbBuffer++;
+				std::cout << "\r - buffer " << nbBuffer << "/" << nbMesh << std::flush;
+
+				if (it == this->chunks.end())
+					continue;
+
+				it->second.createBuffers(engine.commandPool, this->stagingBuffer, perfLogger);
+
+				for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
+				{
+					this->clusters[i].giveChunk(chunkPos, &it->second);
+				}
+			}
+		}
+
+		std::cout << "\nEnd generate chunks" << std::endl;
+
+		this->currentView.maxMeshChunk = this->targetView.maxMeshChunk;
+		this->currentView.tmpId = this->targetView.tmpId;
+
+		status = MAP_NONE;
+
+		printf("Nb generation %i\n", nbGeneration);
+		printf("Nb mesh %i\n", nbMesh);
+		perflogPrint(perfLogger.createBuffer, "Create buffer time");
+		perflogPrint(perfLogger.createUpdateStaging, "Update staging buffer time");
+		printf("Vertex buffer :\n");
+		perflogPrint(perfLogger.mapVertexBuffer, "  - map buffer");
+		perflogPrint(perfLogger.createVertexBuffer, "  - create buffer");
+		perflogPrint(perfLogger.copyVertexBuffer, "  - copy buffer");
+		printf("Index buffer :\n");
+		perflogPrint(perfLogger.mapIndexBuffer, "  - map buffer");
+		perflogPrint(perfLogger.createIndexBuffer, "  - create buffer");
+		perflogPrint(perfLogger.copyIndexBuffer, "  - copy buffer");
 	}
 }
 

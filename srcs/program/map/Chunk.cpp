@@ -179,8 +179,8 @@ void	Chunk::createBuffers(
 
 	perflogStart(perfLogger.createBuffer);
 
-	this->borderMesh.createBuffers(commandPool, stagingBuffer, perfLogger);
 	this->mesh.createBuffers(commandPool, stagingBuffer, perfLogger);
+	this->borderMesh.createBuffers(commandPool, stagingBuffer, perfLogger);
 	this->waterMesh.createBuffers(commandPool, stagingBuffer, perfLogger);
 
 	this->bufferCreate = true;

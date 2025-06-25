@@ -312,6 +312,19 @@ void	copyBuffer(
 }
 
 
+void	copyBufferAsync(
+			VkCommandBuffer commandBuffer,
+			VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+{
+	// Define copy region
+	VkBufferCopy copyRegion{};
+	copyRegion.srcOffset = 0; // Optional
+	copyRegion.dstOffset = 0; // Optional
+	copyRegion.size = size;
+	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+}
+
+
 void	copyBufferToImage(
 			const VulkanCommandPool &commandPool,
 			VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)

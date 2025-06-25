@@ -46,6 +46,7 @@ enum	MapStatus
 	MAP_NONE,
 	MAP_GENERATING,
 	MAP_MESHING,
+	MAP_BUFFERING,
 };
 
 

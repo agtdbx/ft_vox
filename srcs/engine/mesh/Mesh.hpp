@@ -454,7 +454,10 @@ private:
 	/**
 	 * @brief Create vertex buffer and vertex buffer memory.
 	 */
-	void	createVertexBuffer(VkBuffer stagingBuffer, VkDeviceMemory stagingBufferMemory, PerfLogger &perfLogger)
+	void	createVertexBuffer(
+				VkBuffer stagingBuffer,
+				VkDeviceMemory stagingBufferMemory,
+				PerfLogger &perfLogger)
 	{
 		if (this->commandPool == NULL || this->nbVertex == 0)
 			return ;
@@ -464,8 +467,8 @@ private:
 
 		VkDeviceSize	bufferSize = sizeof(this->vertices[0]) * this->nbVertex;
 
-		perflogStart(perfLogger.mapVertexBuffer);
 		// Map data to vertex buffer
+		perflogStart(perfLogger.mapVertexBuffer);
 		void	*data;
 		vkMapMemory(copyDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
 		memcpy(data, this->vertices.data(), (size_t) bufferSize);
@@ -488,7 +491,10 @@ private:
 	/**
 	 * @brief Create index buffer and index buffer memory.
 	 */
-	void	createIndexBuffer(VkBuffer stagingBuffer, VkDeviceMemory stagingBufferMemory, PerfLogger &perfLogger)
+	void	createIndexBuffer(
+				VkBuffer stagingBuffer,
+				VkDeviceMemory stagingBufferMemory,
+				PerfLogger &perfLogger)
 	{
 		if (this->commandPool == NULL || this->nbIndex == 0)
 			return ;
