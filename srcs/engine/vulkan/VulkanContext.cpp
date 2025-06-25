@@ -37,6 +37,7 @@ VulkanContext::VulkanContext(void)
 {
 	this->instance = NULL;
 	this->device = NULL;
+	this->transferQueue = NULL;
 }
 
 //---- Destructor --------------------------------------------------------------
@@ -66,15 +67,21 @@ VkInstance	VulkanContext::getInstance(void) const
 }
 
 
-VkQueue	VulkanContext::getGraphicsQueue(void) const
+const VulkanQueue	&VulkanContext::getGraphicsQueue(void) const
 {
 	return (this->graphicsQueue);
 }
 
 
-VkQueue	VulkanContext::getPresentQueue(void) const
+const VulkanQueue	&VulkanContext::getPresentQueue(void) const
 {
 	return (this->presentQueue);
+}
+
+
+const VulkanQueue	&VulkanContext::getTransferQueue(int id) const
+{
+	return (this->transferQueue[id]);
 }
 
 //---- Setters -----------------------------------------------------------------
@@ -94,12 +101,15 @@ void	VulkanContext::init(VulkanCommandPool &commandPool, Window &window)
 	commandPool.create(this->device, this->physicalDevice,
 						window.getSurface(), this->graphicsQueue);
 
-	window.init(commandPool);
+	window.init(*this, commandPool);
 }
 
 
 void	VulkanContext::destroy(void)
 {
+	if (this->transferQueue != NULL)
+		delete [] this->transferQueue;
+
 	if (this->device != NULL)
 	{
 		vkDestroyDevice(this->device, nullptr);
@@ -219,12 +229,12 @@ void	VulkanContext::findPhysicalDevice(Window &window)
 
 void	VulkanContext::createLogicalDevice(Window &window)
 {
-	QueueFamilyIndices QueueIndices = findQueueFamilies(physicalDevice,
+	QueueFamilyIndices queueIndices = findQueueFamilies(physicalDevice,
 														window.getSurface());
 
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-	std::set<uint32_t> uniqueQueueFamilies = {QueueIndices.graphicsFamily.value(),
-												QueueIndices.presentFamily.value()};
+	std::set<uint32_t> uniqueQueueFamilies = {queueIndices.graphicsFamily.value(),
+												queueIndices.presentFamily.value()};
 
 	float queuePriority = 1.0f;
 	for (uint32_t queueFamily : uniqueQueueFamilies) {
@@ -260,8 +270,18 @@ void	VulkanContext::createLogicalDevice(Window &window)
 	if (vkCreateDevice(this->physicalDevice, &createInfo, nullptr, &this->device) != VK_SUCCESS)
 		throw std::runtime_error("Logical device creation failed");
 
-	vkGetDeviceQueue(this->device, QueueIndices.graphicsFamily.value(), 0, &this->graphicsQueue);
-	vkGetDeviceQueue(this->device, QueueIndices.presentFamily.value(), 0, &this->presentQueue);
+	this->graphicsQueue.id = queueIndices.graphicsFamily.value();
+	vkGetDeviceQueue(this->device, queueIndices.graphicsFamily.value(), 0, &this->graphicsQueue.value);
+	this->presentQueue.id = queueIndices.presentFamily.value();
+	vkGetDeviceQueue(this->device, queueIndices.presentFamily.value(), 0, &this->presentQueue.value);
+
+	this->transferQueue = new VulkanQueue[MAP_NB_THREAD];
+
+	for (int i = 0; i < MAP_NB_THREAD; i++)
+	{
+		this->transferQueue[i].id = queueIndices.transferFamily.value();
+		vkGetDeviceQueue(this->device, queueIndices.transferFamily.value(), 0, &this->transferQueue[i].value);
+	}
 }
 
 //---- Utils -------------------------------------------------------------------

@@ -14,24 +14,22 @@ VulkanCommandPool::VulkanCommandPool(void)
 	this->copyDevice = NULL;
 	this->copyPhysicalDevice = NULL;
 	this->copySurface = NULL;
-	this->copyGraphicsQueue = NULL;
+	this->copyQueue = NULL;
 }
 
 
 VulkanCommandPool::VulkanCommandPool(VkDevice device, VkPhysicalDevice physicalDevice,
-										VkSurfaceKHR surface, VkQueue graphicsQueue)
+										VkSurfaceKHR surface, const VulkanQueue &queue)
 {
 	this->copyDevice = device;
 	this->copyPhysicalDevice = physicalDevice;
 	this->copySurface = surface;
-	this->copyGraphicsQueue = graphicsQueue;
-
-	QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice, surface);
+	this->copyQueue = queue.value;
 
 	VkCommandPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+	poolInfo.queueFamilyIndex = queue.id;
 
 	if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
 		throw std::runtime_error("Command pool creation failed");
@@ -69,7 +67,7 @@ VkPhysicalDevice	VulkanCommandPool::getCopyPhysicalDevice()
 //---- Creation ----------------------------------------------------------------
 
 void	VulkanCommandPool::create(VkDevice device, VkPhysicalDevice physicalDevice,
-									VkSurfaceKHR surface, VkQueue graphicsQueue)
+									VkSurfaceKHR surface, const VulkanQueue &queue)
 {
 	if (this->commandPool != NULL)
 		this->destroy(device);
@@ -77,14 +75,12 @@ void	VulkanCommandPool::create(VkDevice device, VkPhysicalDevice physicalDevice,
 	this->copyDevice = device;
 	this->copyPhysicalDevice = physicalDevice;
 	this->copySurface = surface;
-	this->copyGraphicsQueue = graphicsQueue;
-
-	QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice, surface);
+	this->copyQueue = queue.value;
 
 	VkCommandPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+	poolInfo.queueFamilyIndex = queue.id;
 
 	if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
 		throw std::runtime_error("Command pool creation failed");
@@ -112,7 +108,7 @@ void	VulkanCommandPool::destroy(VkDevice device)
 		this->copyDevice = NULL;
 		this->copyPhysicalDevice = NULL;
 		this->copySurface = NULL;
-		this->copyGraphicsQueue = NULL;
+		this->copyQueue = NULL;
 	}
 }
 
@@ -157,8 +153,8 @@ void	VulkanCommandPool::endSingleTimeCommands(VkCommandBuffer commandBuffer) con
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &commandBuffer;
 
-	vkQueueSubmit(this->copyGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-	vkQueueWaitIdle(this->copyGraphicsQueue);
+	vkQueueSubmit(this->copyQueue, 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(this->copyQueue);
 
 	// Release command
 	vkFreeCommandBuffers(this->copyDevice, this->commandPool, 1, &commandBuffer);

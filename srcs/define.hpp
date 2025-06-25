@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/25 12:25:01 by gugus            ###   ########.fr       */
+/*   Updated: 2025/06/25 16:57:21 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 // Standar libs
 # include <string>
 # include <vector>
+# include <thread>
 
 // GLFW and Vulkan
 # define VK_USE_PLATFORM_XCB_KHR
@@ -74,6 +75,7 @@ const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
 
 // Map defines
 # define MAP_SIZE 4096
+const int	MAP_NB_THREAD = std::thread::hardware_concurrency() - 1;
 const int	MAP_CLUSTER_ARROUND = 1; // Map have x cluster arround center one
 const int	MAP_CLUSTER_WIDTH = MAP_CLUSTER_ARROUND + 1 + MAP_CLUSTER_ARROUND;
 const int	MAP_CLUSTER_SIZE = MAP_CLUSTER_WIDTH * MAP_CLUSTER_WIDTH;

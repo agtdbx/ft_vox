@@ -3,6 +3,7 @@
 
 # include <define.hpp>
 # include <engine/vulkan/VulkanCommandPool.hpp>
+# include <engine/vulkan/VulkanQueue.hpp>
 # include <engine/window/Window.hpp>
 
 # include <gmath.hpp>
@@ -72,13 +73,19 @@ public:
 	 *
 	 * @return The vulkan graphic queue.
 	 */
-	VkQueue	getGraphicsQueue(void) const;
+	const VulkanQueue	&getGraphicsQueue(void) const;
 	/**
 	 * @brief Getter for present queue.
 	 *
 	 * @return The vulkan present queue.
 	 */
-	VkQueue	getPresentQueue(void) const;
+	const VulkanQueue	&getPresentQueue(void) const;
+	/**
+	 * @brief Getter for transfer queue.
+	 *
+	 * @return The vulkan transfer queue.
+	 */
+	const VulkanQueue	&getTransferQueue(int id) const;
 
 //---- Setters -----------------------------------------------------------------
 //---- Operators ---------------------------------------------------------------
@@ -102,11 +109,11 @@ public:
 
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
-	VkInstance						instance;
-	VkDebugUtilsMessengerEXT		debugMessenger;
-	VkPhysicalDevice				physicalDevice;
-	VkDevice						device;
-	VkQueue							graphicsQueue, presentQueue;
+	VkInstance					instance;
+	VkDebugUtilsMessengerEXT	debugMessenger;
+	VkPhysicalDevice			physicalDevice;
+	VkDevice					device;
+	VulkanQueue					graphicsQueue, presentQueue, *transferQueue;
 
 //**** PRIVATE METHODS *********************************************************
 //---- Init sub part -----------------------------------------------------------

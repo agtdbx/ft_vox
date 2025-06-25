@@ -2,6 +2,7 @@
 # define VULKAN_COMMAND_POOL_HPP
 
 # include <define.hpp>
+# include <engine/vulkan/VulkanQueue.hpp>
 
 # include <vector>
 
@@ -27,13 +28,13 @@ public:
 	 * @param device The device of VulkanContext class.
  	 * @param physicalDevice The physicalDevice of VulkanContext class.
  	 * @param surface The surface of VulkanContext class.
-	 * @param graphicsQueue The graphics queue to where execute the command.
+	 * @param queue The queue to where execute the command.
 	 *
 	 * @return The VulkanCommandPool.
 	 * @exception Throw a runtime_error if pool creation failed.
 	 */
 	VulkanCommandPool(VkDevice device, VkPhysicalDevice physicalDevice,
-						VkSurfaceKHR surface, VkQueue graphicsQueue);
+						VkSurfaceKHR surface, const VulkanQueue &queue);
 
 //---- Destructor --------------------------------------------------------------
 	/**
@@ -73,14 +74,14 @@ public:
 	 * @param device The device of VulkanContext class.
  	 * @param physicalDevice The physicalDevice of VulkanContext class.
  	 * @param surface The surface of VulkanContext class.
-	 * @param graphicsQueue The graphics queue to where execute the command.
+	 * @param queue The queue where execute the commands.
 	 *
 	 * @warning Will destroy the previous command pool if there is one.
 	 * @exception Throw a runtime_error if pool creation failed.
 	 *
 	 */
 	void	create(VkDevice device, VkPhysicalDevice physicalDevice,
-						VkSurfaceKHR surface, VkQueue graphicsQueue);
+						VkSurfaceKHR surface, const VulkanQueue &queue);
 
 //---- Free --------------------------------------------------------------------
 	/**
@@ -115,7 +116,7 @@ private:
 	VkDevice						copyDevice;
 	VkPhysicalDevice				copyPhysicalDevice;
 	VkSurfaceKHR					copySurface;
-	VkQueue							copyGraphicsQueue;
+	VkQueue							copyQueue;
 
 //**** PRIVATE METHODS *********************************************************
 };

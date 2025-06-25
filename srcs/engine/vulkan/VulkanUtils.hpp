@@ -11,10 +11,13 @@ typedef struct QueueFamilyIndices_s
 {
 	std::optional<uint32_t>	graphicsFamily;
 	std::optional<uint32_t>	presentFamily;
+	std::optional<uint32_t>	transferFamily;
 
 	bool	isComplete(void)
 	{
-		return (this->graphicsFamily.has_value() && this->presentFamily.has_value());
+		return (this->graphicsFamily.has_value()
+				&& this->presentFamily.has_value()
+				&& this->transferFamily.has_value());
 	}
 }	QueueFamilyIndices;
 

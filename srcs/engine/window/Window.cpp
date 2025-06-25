@@ -171,12 +171,14 @@ void	Window::createSurface(VkInstance instance)
 }
 
 
-void	Window::init(VulkanCommandPool &commandPool)
+void	Window::init(VulkanContext &context, VulkanCommandPool &commandPool)
 {
 	// Copy
 	this->copyDevice = commandPool.getCopyDevice();
 	this->copyPhysicalDevice = commandPool.getCopyPhysicalDevice();
 	this->copyCommandPool = &commandPool;
+	this->copyGraphicsQueue = context.getGraphicsQueue();
+	this->copyPresentQueue = context.getPresentQueue();
 
 	this->createSwapChain();
 	this->createImageViews();
@@ -317,16 +319,13 @@ void	Window::startDraw(void)
 }
 
 
-void	Window::endDraw(VulkanContext &context)
+void	Window::endDraw(void)
 {
 	VkCommandBuffer commandBuffer = this->copyCommandBuffers[this->currentFrame];
 	// Wait drawing end
 	vkCmdEndRenderPass(commandBuffer);
 	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
 		throw std::runtime_error("Command buffer record failed");
-
-	VkQueue graphicsQueue = context.getGraphicsQueue();
-	VkQueue presentQueue = context.getPresentQueue();
 
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -343,7 +342,7 @@ void	Window::endDraw(VulkanContext &context)
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
-	if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, this->inFlightFences[this->currentFrame]) != VK_SUCCESS)
+	if (vkQueueSubmit(this->copyGraphicsQueue.value, 1, &submitInfo, this->inFlightFences[this->currentFrame]) != VK_SUCCESS)
 		throw std::runtime_error("Draw command buffer submit failed");
 
 	VkPresentInfoKHR presentInfo{};
@@ -357,7 +356,7 @@ void	Window::endDraw(VulkanContext &context)
 	presentInfo.pImageIndices = &this->imageIndex;
 	presentInfo.pResults = nullptr; // Optional
 
-	VkResult result = vkQueuePresentKHR(presentQueue, &presentInfo);
+	VkResult result = vkQueuePresentKHR(this->copyPresentQueue.value, &presentInfo);
 	// Check if we need to recreate swap chain (because window size change)
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized)
 	{
@@ -395,10 +394,9 @@ void	Window::createSwapChain(void)
 	createInfo.imageArrayLayers = 1;
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-	QueueFamilyIndices QueueIndices = findQueueFamilies(this->copyPhysicalDevice, this->surface);
-	uint32_t queueFamilyIndices[] = {QueueIndices.graphicsFamily.value(), QueueIndices.presentFamily.value()};
+	uint32_t queueFamilyIndices[] = {this->copyGraphicsQueue.id, this->copyPresentQueue.id};
 
-	if (QueueIndices.graphicsFamily != QueueIndices.presentFamily)
+	if (this->copyGraphicsQueue.id != this->copyPresentQueue.id)
 	{
 		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 		createInfo.queueFamilyIndexCount = 2;

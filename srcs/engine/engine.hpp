@@ -13,6 +13,7 @@ struct Engine
 {
 	VulkanContext		context;
 	VulkanCommandPool	commandPool;
+	VulkanCommandPool	*commandPoolThreads;
 	Window				window;
 	GLFWwindow			*glfwWindow;
 	TextureManager		textureManager;

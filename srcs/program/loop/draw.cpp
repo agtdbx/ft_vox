@@ -13,5 +13,5 @@ void	draw(
 	objects.map.draw(engine, camera, shaders.chunkShader);
 
 	// End drawing
-	engine.window.endDraw(engine.context);
+	engine.window.endDraw();
 }

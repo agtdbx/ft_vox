@@ -21,6 +21,9 @@ enum ThreadStatus
 	THREAD_NEED_MESH,
 	THREAD_MESHING,
 	THREAD_MESH_END,
+	THREAD_NEED_BUFFER,
+	THREAD_BUFFURING,
+	THREAD_BUFFER_END,
 	THREAD_STOPPING,
 	THREAD_STOP,
 };
@@ -38,6 +41,7 @@ struct ThreadData
 	Engine			*engine;
 	Camera			*camera;
 	ChunkShader		*chunkShader;
+	int				threadId;
 };
 
 
@@ -172,7 +176,6 @@ private:
 	std::vector<gm::Vec2i>	clusterOffsets;
 	gm::Vec2i				minChunkIdOffset, maxChunkIdOffset, cameraChunkId;
 	MapView					currentView, targetView;
-	int						nbThread;
 	ThreadData				*threadsData;
 	std::thread				*threads;
 	StagingBuffer			stagingBuffer;

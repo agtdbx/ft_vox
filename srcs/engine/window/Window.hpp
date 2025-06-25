@@ -121,7 +121,7 @@ public:
 	 *
 	 * @exception Throw an runtime_error if a creation failed.
 	 */
-	void	init(VulkanCommandPool &commandPool);
+	void	init(VulkanContext &context, VulkanCommandPool &commandPool);
 	/**
 	 * @brief Recreate the swap chain. Work only if you already have call init.
 	 */
@@ -174,11 +174,8 @@ public:
 	}
 	/**
 	 * @brief Finish and apply draw onto window.
-	 *
-	 * @param graphicsQueue Vulkan contexte graphics queue.
-	 * @param presentQueue Vulkan contexte present queue.
 	 */
-	void	endDraw(VulkanContext &context);
+	void	endDraw(void);
 
 //**** STATIC METHODS **********************************************************
 
@@ -208,6 +205,7 @@ private:
 //---- Copy --------------------------------------------------------------------
 	VkDevice						copyDevice;
 	VkPhysicalDevice				copyPhysicalDevice;
+	VulkanQueue						copyGraphicsQueue, copyPresentQueue;
 	VulkanCommandPool				*copyCommandPool;
 	VkCommandBuffer					*copyCommandBuffers;
 
