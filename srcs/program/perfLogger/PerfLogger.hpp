@@ -41,6 +41,13 @@ struct PerfLogger
 
 
 	PerfField	createBuffer;
+	PerfField	createUpdateStaging;
+	PerfField	mapVertexBuffer;
+	PerfField	createVertexBuffer;
+	PerfField	copyVertexBuffer;
+	PerfField	mapIndexBuffer;
+	PerfField	createIndexBuffer;
+	PerfField	copyIndexBuffer;
 };
 
 #endif

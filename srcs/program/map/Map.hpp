@@ -174,6 +174,7 @@ private:
 	int						nbThread;
 	ThreadData				*threadsData;
 	std::thread				*threads;
+	StagingBuffer			stagingBuffer;
 
 //**** PRIVATE METHODS *********************************************************
 };

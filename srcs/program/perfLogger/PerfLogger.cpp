@@ -37,13 +37,13 @@ void	perflogPrint(PerfField &perfField, const char *msg)
 {
 	if (perfField.nbCall == 0)
 	{
-		printf("total 0 us\n");
+		printf("%s : total 0 us\n", msg);
 		return ;
 	}
 
 	if (perfField.nbCall == 1)
 	{
-		printf("total %11.2f us\n", perfField.total);
+		printf("%s : total %11.2f us\n", msg, perfField.total);
 		return ;
 	}
 

@@ -176,9 +176,15 @@ public:
 	 */
 	void	createMeshes(Map &map, PerfLogger &perfLogger);
 	/**
-	 * @brief Create chunk meshes.
+	 * @brief Create chunk meshes buffers.
+	 *
+	 * @param commandPool Command class for vulkan.
+	 * @param stagingBuffer Common tempory buffer for avoid buffer recreation.
 	 */
-	void	createBuffers(VulkanCommandPool &commandPool, PerfLogger &perfLogger);
+	void	createBuffers(
+				VulkanCommandPool &commandPool,
+				StagingBuffer &stagingBuffer,
+				PerfLogger &perfLogger);
 	/**
 	 * @brief Draw chunk meshes.
 	 *

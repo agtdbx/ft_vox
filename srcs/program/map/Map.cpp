@@ -166,7 +166,6 @@ void	Map::update(Engine &engine, Camera &camera)
 	static PerfLogger	perfLogger; // TODO : remove
 	static int			nbGeneration = 0;
 	static int			nbMesh = 0;
-	static int			nbBuffer = 0;
 
 	// TODO : Update targetView if cameraChunkId change
 
@@ -289,13 +288,16 @@ void	Map::update(Engine &engine, Camera &camera)
 					for (int y = minId.y; y < maxId.y; y++)
 					{
 						gm::Vec2i	chunkPos = gm::Vec2i(x, y);
-						Chunk		*chunk = &this->chunks[gm::hash(chunkPos)];
-						chunk->createBuffers(engine.commandPool, perfLogger);
-						nbBuffer++;
+						ChunkMap::iterator	it = this->chunks.find(gm::hash(chunkPos));
+
+						if (it == this->chunks.end())
+							continue;
+
+						it->second.createBuffers(engine.commandPool, this->stagingBuffer, perfLogger);
 
 						for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
 						{
-							this->clusters[i].giveChunk(chunkPos, chunk);
+							this->clusters[i].giveChunk(chunkPos, &it->second);
 						}
 					}
 				}
@@ -349,10 +351,18 @@ void	Map::update(Engine &engine, Camera &camera)
 
 			status = MAP_NONE;
 
-			perflogPrint(perfLogger.createBuffer, "Create buffer time");
 			printf("Nb generation %i\n", nbGeneration);
 			printf("Nb mesh %i\n", nbMesh);
-			printf("Nb buffer %i\n", nbBuffer);
+			perflogPrint(perfLogger.createBuffer, "Create buffer time");
+			perflogPrint(perfLogger.createUpdateStaging, "Update staging buffer time");
+			printf("Vertex buffer :\n");
+			perflogPrint(perfLogger.mapVertexBuffer, "  - map buffer");
+			perflogPrint(perfLogger.createVertexBuffer, "  - create buffer");
+			perflogPrint(perfLogger.copyVertexBuffer, "  - copy buffer");
+			printf("Index buffer :\n");
+			perflogPrint(perfLogger.mapIndexBuffer, "  - map buffer");
+			perflogPrint(perfLogger.createIndexBuffer, "  - create buffer");
+			perflogPrint(perfLogger.copyIndexBuffer, "  - copy buffer");
 		}
 	}
 }
@@ -428,6 +438,8 @@ void	Map::destroy(Engine &engine)
 		it->second.destroy(engine);
 		it++;
 	}
+
+	this->stagingBuffer.destroy(engine.context.getDevice());
 }
 
 //**** STATIC METHODS **********************************************************
@@ -470,9 +482,13 @@ static void	threadRoutine(ThreadData *threadData)
 				{
 					curId = gm::Vec2i(x, y);
 					hash = gm::hash(curId);
+					ChunkMap::iterator	it = chunks.find(hash);
 
-					chunks[hash].init(engine, camera, chunkShader);
-					chunks[hash].generate(curId, perfLogger);
+					if (it == chunks.end())
+						continue;
+
+					it->second.init(engine, camera, chunkShader);
+					it->second.generate(curId, perfLogger);
 				}
 			}
 
@@ -493,14 +509,13 @@ static void	threadRoutine(ThreadData *threadData)
 			{
 				for (int y = minId.y; y < maxId.y; y++)
 				{
-					curId = gm::Vec2i(x, y);
-					hash = gm::hash(curId);
+					hash = gm::hash(gm::Vec2i(x, y));
+					ChunkMap::iterator	it = chunks.find(hash);
 
-					// TODO : Put a mutex for put check and put in chunks map
-					if (chunks.find(hash) == chunks.end())
+					if (it == chunks.end())
 						continue;
 
-					chunks[hash].createMeshes(map, perfLogger);
+					it->second.createMeshes(map, perfLogger);
 				}
 			}
 
