@@ -36,12 +36,14 @@ struct ThreadData
 	gm::Vec2i		minChunkId; // Min id of chunk to generate or mesh
 	gm::Vec2i		maxChunkId; // Max id of chunk to generate or mesh
 	gm::Vec2i		cameraChunkId; // Chunk id for the camera
+	PerfLogger		perfLogger;
+	int				threadId;
 	ChunkMap		*chunks; // Chunks container
 	Map				*map;
 	Engine			*engine;
 	Camera			*camera;
 	ChunkShader		*chunkShader;
-	int				threadId;
+
 };
 
 

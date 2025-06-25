@@ -161,8 +161,6 @@ void	Chunk::createMeshes(Map &map, PerfLogger &perfLogger)
 	this->createWaterMesh(perfLogger);
 	perflogEnd(perfLogger.chunkMeshing);
 
-	perfLogger.nbTriangle += this->mesh.getNbIndex() / 3;
-
 	this->mesh.setPosition(this->chunkPosition);
 	this->uboPos.model = this->mesh.getModel();
 	this->uboPos.pos = gm::Vec4f(this->mesh.getPosition());

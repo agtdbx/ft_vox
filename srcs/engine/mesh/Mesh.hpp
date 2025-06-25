@@ -341,9 +341,7 @@ public:
 		VkDeviceSize	bufferSizeIndex = sizeof(this->indices[0]) * this->nbIndex;
 		VkDeviceSize	bufferSize = gm::max(bufferSizeVertex, bufferSizeIndex);
 
-		perflogStart(perfLogger.createUpdateStaging);
-		stagingBuffer.update(commandPool, bufferSize);
-		perflogEnd(perfLogger.createUpdateStaging);
+		stagingBuffer.update(commandPool, bufferSize, perfLogger);
 
 		this->createVertexBuffer(stagingBuffer.buffer, stagingBuffer.memory, perfLogger);
 		this->createIndexBuffer(stagingBuffer.buffer, stagingBuffer.memory, perfLogger);

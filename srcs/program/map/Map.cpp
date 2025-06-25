@@ -461,6 +461,8 @@ void	Map::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 
 void	Map::destroy(Engine &engine)
 {
+	PerfLogger	perfLogger;
+
 	if (this->threads)
 	{
 		for (int i = 0; i < MAP_NB_THREAD; i++)
@@ -479,6 +481,7 @@ void	Map::destroy(Engine &engine)
 				if (this->threadsData[i].status == THREAD_STOP)
 				{
 					this->threadsData[i].mutex.unlock();
+					perfLogger += this->threadsData[i].perfLogger;
 					break;
 				}
 				this->threadsData[i].mutex.unlock();
@@ -502,6 +505,27 @@ void	Map::destroy(Engine &engine)
 	}
 
 	this->stagingBuffer.destroy(engine.context.getDevice());
+
+	printf("\nTerrain generation stats !\n\n");
+	printf("Generation :\n");
+	perflogPrint(perfLogger.generateChunk,       " - per chunk     ");
+	printf("Meshing :\n");
+	perflogPrint(perfLogger.chunkMeshing,        " - per chunk     ");
+	perflogPrint(perfLogger.meshChunk,           " - border mesh   ");
+	perflogPrint(perfLogger.meshBlock,           " - block mesh    ");
+	perflogPrint(perfLogger.meshBlockXaxis,      " - block x axis  ");
+	perflogPrint(perfLogger.meshBlockYaxis,      " - block y axis  ");
+	perflogPrint(perfLogger.meshBlockZaxis,      " - block z axis  ");
+	perflogPrint(perfLogger.meshWater,           " - water mesh    ");
+	printf("Buffering :\n");
+	perflogPrint(perfLogger.createBuffer,        " - per chunk     ");
+	perflogPrint(perfLogger.createUpdateStaging, " - staging buffer");
+	perflogPrint(perfLogger.mapVertexBuffer,     " - vertex map    ");
+	perflogPrint(perfLogger.createVertexBuffer,  " - vertex create ");
+	perflogPrint(perfLogger.copyVertexBuffer,    " - vertex copy   ");
+	perflogPrint(perfLogger.mapIndexBuffer,      " - index map     ");
+	perflogPrint(perfLogger.createIndexBuffer,   " - index create  ");
+	perflogPrint(perfLogger.copyIndexBuffer,     " - index copy    ");
 }
 
 //**** STATIC METHODS **********************************************************
@@ -516,14 +540,13 @@ static void	threadRoutine(ThreadData *threadData)
 	gm::Vec2i		minId, maxId, curId;
 	StagingBuffer	stagingBuffer;
 
+	int			threadId = threadData->threadId;
 	ChunkMap	&chunks = *threadData->chunks;
 	Map			&map = *threadData->map;
 	Engine		&engine = *threadData->engine;
 	Camera		&camera = *threadData->camera;
 	ChunkShader	&chunkShader = *threadData->chunkShader;
-	int			threadId = threadData->threadId;
-
-	PerfLogger	perfLogger; // TODO : Remove;
+	PerfLogger	&perfLogger = threadData->perfLogger;
 
 	while (status != THREAD_STOPPING)
 	{
@@ -625,7 +648,15 @@ static void	threadRoutine(ThreadData *threadData)
 		}
 	}
 
-	// TODO: Print perf from perfLogger
+	perfLogger.meshBlockXaxis.nbCall = perfLogger.meshBlockYaxis.nbCall;
+	perfLogger.meshBlockZaxis.nbCall = perfLogger.meshBlockYaxis.nbCall;
+
+	perfLogger.mapVertexBuffer.nbCall = perfLogger.createBuffer.nbCall;
+	perfLogger.createVertexBuffer.nbCall = perfLogger.createBuffer.nbCall;
+	perfLogger.copyVertexBuffer.nbCall = perfLogger.createBuffer.nbCall;
+	perfLogger.mapIndexBuffer.nbCall = perfLogger.createBuffer.nbCall;
+	perfLogger.createIndexBuffer.nbCall = perfLogger.createBuffer.nbCall;
+	perfLogger.copyIndexBuffer.nbCall = perfLogger.createBuffer.nbCall;
 
 	stagingBuffer.destroy(engine.context.getDevice());
 
