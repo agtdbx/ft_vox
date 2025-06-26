@@ -35,7 +35,6 @@ struct Shaders
 {
 	ChunkShader	chunkShader;
 	Shader		skyboxShader;
-	Shader		frustumShader;
 
 	/**
 	 * @brief Destroy all shader in struct.
@@ -46,7 +45,6 @@ struct Shaders
 	{
 		chunkShader.destroy(engine);
 		skyboxShader.destroy(engine);
-		frustumShader.destroy(engine);
 	}
 };
 

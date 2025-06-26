@@ -30,12 +30,6 @@ void	computation(
 	if (inputManager.c.isPressed())
 		chunkShader.shaderBorderEnable = !chunkShader.shaderBorderEnable;
 
-	if (inputManager.f.isPressed())
-	{
-		printf("Compute frustum\n");
-		camera.computeFrustum(engine, shaders.frustumShader);
-	}
-
 	objects.map.update(engine, camera);
 }
 

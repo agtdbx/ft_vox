@@ -120,7 +120,7 @@ void	Camera::setPosition(const gm::Vec3f &position)
 {
 	this->position = position;
 	this->computeView();
-	// this->computeFrustum(); // TODO: Uncomment
+	this->computeFrustum();
 }
 
 
@@ -137,7 +137,7 @@ void	Camera::setRotation(const float pitch, const float yaw, const float roll)
 
 	this->computeRotation();
 	this->computeView();
-	// this->computeFrustum(); // TODO: Uncomment
+	this->computeFrustum();
 }
 
 //---- Operators ---------------------------------------------------------------
@@ -173,7 +173,7 @@ void	Camera::move(const gm::Vec3f &direction, const float speed)
 						+ this->up * direction.y * speed
 						+ this->front * direction.z * speed;
 	this->computeView();
-	// this->computeFrustum(); // TODO: Uncomment
+	this->computeFrustum();
 }
 
 
@@ -181,7 +181,7 @@ void	Camera::moveFront(const float speed)
 {
 	this->position += this->front * speed;
 	this->computeView();
-	// this->computeFrustum(); // TODO: Uncomment
+	this->computeFrustum();
 }
 
 
@@ -189,7 +189,7 @@ void	Camera::moveUp(const float speed)
 {
 	this->position += this->up * speed;
 	this->computeView();
-	// this->computeFrustum(); // TODO: Uncomment
+	this->computeFrustum();
 }
 
 
@@ -197,7 +197,7 @@ void	Camera::moveRight(const float speed)
 {
 	this->position += this->right * speed;
 	this->computeView();
-	// this->computeFrustum(); // TODO: Uncomment
+	this->computeFrustum();
 }
 
 //---- rotate ------------------------------------------------------------------
@@ -213,7 +213,7 @@ void	Camera::rotateX(const float degrees)
 
 	this->computeRotation();
 	this->computeView();
-	// this->computeFrustum(); // TODO: Uncomment
+	this->computeFrustum();
 }
 
 
@@ -222,7 +222,7 @@ void	Camera::rotateY(const float degrees)
 	this->yaw += degrees;
 	this->computeRotation();
 	this->computeView();
-	// this->computeFrustum(); // TODO: Uncomment
+	this->computeFrustum();
 }
 
 
@@ -231,7 +231,7 @@ void	Camera::rotateZ(const float degrees)
 	this->roll += degrees;
 	this->computeRotation();
 	this->computeView();
-	// this->computeFrustum(); // TODO: Uncomment
+	this->computeFrustum();
 }
 
 //---- update ------------------------------------------------------------------
@@ -266,10 +266,6 @@ void	Camera::updateFOV(const float fov)
 
 bool	Camera::isCubeInFrutum(const BoundingCube &cube)
 {
-	if (!this->frustum.compute)
-		return (true);
-
-	// return (true);
 	return (isAABBForwardPlane(this->frustum.nearFace, cube)
 			&& isAABBForwardPlane(this->frustum.farFace, cube)
 			&& isAABBForwardPlane(this->frustum.leftFace, cube)
@@ -291,67 +287,35 @@ void	Camera::printStatus(void)
 				<< "\n  up    : " << this->up << std::endl;
 }
 
+//**** STATIC METHODS **********************************************************
+//**** PRIVATE METHODS *********************************************************
 
-void	Camera::computeFrustum(Engine &engine, Shader &shader)
+void	Camera::computeRotation(void)
 {
-	static bool	initShaderParam = false;
+	this->front.x = cos(gm::radians(this->pitch)) * cos(gm::radians(this->yaw));
+	this->front.y = sin(gm::radians(this->pitch));
+	this->front.z = cos(gm::radians(this->pitch)) * sin(gm::radians(this->yaw));
+	this->front = gm::normalize(this->front);
 
-	std::vector<VertexPos> vertices;
-	std::vector<uint32_t> indices;
+	this->right = gm::normalize(gm::cross(this->front,gm::Vec3f(0.0f, 1.0f, 0.0f)));
+	this->up = gm::normalize(gm::cross(this->right, this->front));
+}
 
+
+void	Camera::computeView(void)
+{
+	this->view = gm::Mat4f::lookAt(this->position,
+									this->position + this->front,
+									this->up);
+}
+
+
+void	Camera::computeFrustum(void)
+{
 	float		heightNear, widthNear,
 				dstNearFar, heightFar, widthFar;
 	gm::Vec3f	frontNear, rightNear, upNear,
 				frontFar, rightFar, upFar;
-
-	// Near
-	frontNear = this->front * NEAR;
-	heightNear = this->planeHeight / 2.0f;
-	widthNear = heightNear * this->winRatio;
-	rightNear = this->right * widthNear;
-	upNear = this->up * heightNear;
-
-	// Far mesh
-	dstNearFar = 10.0f;
-	frontFar = frontNear + this->front * dstNearFar;
-	heightFar = gm::abs(tanf(FOV / 2.0f) * dstNearFar);
-	widthFar = heightFar * this->winRatio;
-	rightFar = this->right * widthFar;
-	upFar = this->up * heightFar;
-
-	vertices = {
-		{this->position - rightNear + upNear + frontNear}, // 0
-		{this->position - rightNear - upNear + frontNear}, // 1
-		{this->position + rightNear - upNear + frontNear}, // 2
-		{this->position + rightNear + upNear + frontNear}, // 3
-		{this->position - rightFar  + upFar  + frontFar }, // 4
-		{this->position - rightFar  - upFar  + frontFar }, // 5
-		{this->position + rightFar  - upFar  + frontFar }, // 6
-		{this->position + rightFar  + upFar  + frontFar }, // 7
-	};
-
-	indices = {
-		0,1,2, 0,2,3, // Front
-		4,5,6, 4,6,7, // Back
-		3,2,6, 3,2,7, // Right
-		4,5,1, 4,5,0, // Left
-		4,0,3, 0,3,7, // Up
-		1,5,2, 1,6,2, // Down
-	};
-
-	this->frustumMesh = Mesh<VertexPos>(vertices, indices);
-	this->frustumMesh.createBuffers(engine.commandPool);
-	if (!initShaderParam)
-	{
-		initShaderParam = true;
-		shader.initShaderParam(engine, this->shaderParam);
-		printf("Create shader param\n");
-	}
-
-	this->uboPos.proj = this->getProjection();
-	this->uboPos.proj.at(1, 1) *= -1;
-	this->uboPos.model = this->frustumMesh.getModel();
-	this->uboPos.pos = gm::Vec4f(this->frustumMesh.getPosition());
 
 	// Near
 	frontNear = this->front * NEAR;
@@ -423,42 +387,6 @@ void	Camera::computeFrustum(Engine &engine, Shader &shader)
 	tmp1 = pRUN - pLUF;
 	tmp2 = pLUN - pLUF;
 	this->frustum.topFace.normal = gm::normalize(gm::cross(tmp1, tmp2));
-
-	this->frustum.compute = true;
-}
-
-
-void	Camera::draw(Window &window, Shader &shader)
-{
-	if (this->frustumMesh.getNbIndex() == 0)
-		return ;
-
-	this->uboPos.view = this->getView();
-
-	this->shaderParam.updateBuffer(window, &this->uboPos, 0);
-	window.drawMesh(this->frustumMesh, shader, this->shaderParam);
-}
-
-//**** STATIC METHODS **********************************************************
-//**** PRIVATE METHODS *********************************************************
-
-void	Camera::computeRotation(void)
-{
-	this->front.x = cos(gm::radians(this->pitch)) * cos(gm::radians(this->yaw));
-	this->front.y = sin(gm::radians(this->pitch));
-	this->front.z = cos(gm::radians(this->pitch)) * sin(gm::radians(this->yaw));
-	this->front = gm::normalize(this->front);
-
-	this->right = gm::normalize(gm::cross(this->front,gm::Vec3f(0.0f, 1.0f, 0.0f)));
-	this->up = gm::normalize(gm::cross(this->right, this->front));
-}
-
-
-void	Camera::computeView(void)
-{
-	this->view = gm::Mat4f::lookAt(this->position,
-									this->position + this->front,
-									this->up);
 }
 
 //**** FUNCTIONS ***************************************************************
