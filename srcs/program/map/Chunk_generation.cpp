@@ -9,6 +9,8 @@ PerlinNoise PerlinTerrain(854, 2);
 PerlinNoise PerlinBiome(654, 4096);
 //PerlinNoise PerlinCave(8576, 128);
 
+const gm::Vec3f	CHUNK_MIDDLE_OFFSET(CHUNK_SIZE / 2, CHUNK_HEIGHT / 2, CHUNK_SIZE / 2);
+
 //**** STATIC FUNCTIONS DEFINE *************************************************
 //**** PUBLIC METHODS **********************************************************
 void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
@@ -20,7 +22,8 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 	this->chunkPosition.y = 0.0f;
 	this->chunkPosition.z = this->chunkId.y * CHUNK_SIZE;
 
-	this->boundingCube.center = this->chunkPosition;
+	this->boundingCube.center = this->chunkPosition + CHUNK_MIDDLE_OFFSET;
+	this->boundingCube.computePoints();
 
 	float maxSize = 0;
 	float perlinX = 0;

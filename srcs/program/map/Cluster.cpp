@@ -63,6 +63,9 @@ void	Cluster::setPosition(const gm::Vec2i &middle)
 {
 	this->minChunk = middle - gm::Vec2i(CLUSTER_SIZE / 2, CLUSTER_SIZE / 2);
 	this->maxChunk = middle + gm::Vec2i(CLUSTER_SIZE / 2, CLUSTER_SIZE / 2);
+
+	this->boundingCube.center = gm::Vec3f(middle.x, 0, middle.y) * (float)CHUNK_SIZE;
+	this->boundingCube.computePoints();
 }
 
 
@@ -90,12 +93,11 @@ void	Cluster::draw(
 	{
 		if (this->chunks[i] != NULL)
 		{
-			this->chunks[i]->draw(engine, camera, chunkShader);
-			// if (camera.isCubeInFrutum(this->chunks[i]->getBoundingCube()))
-			// {
-			// 	this->chunks[i]->draw(engine, camera, chunkShader);
-			// 	nbDrawCall++;
-			// }
+			if (camera.isCubeInFrutum(this->chunks[i]->getBoundingCube()))
+			{
+				this->chunks[i]->draw(engine, camera, chunkShader);
+				nbDrawCall++;
+			}
 		}
 	}
 }
@@ -110,9 +112,8 @@ void	Cluster::drawWater(
 	{
 		if (this->chunks[i] != NULL)
 		{
-			this->chunks[i]->drawWater(engine, camera, chunkShader);
-			// if (camera.isCubeInFrutum(this->chunks[i]->getBoundingCube()))
-			// 	this->chunks[i]->drawWater(engine, camera, chunkShader);
+			if (camera.isCubeInFrutum(this->chunks[i]->getBoundingCube()))
+				this->chunks[i]->drawWater(engine, camera, chunkShader);
 		}
 	}
 }

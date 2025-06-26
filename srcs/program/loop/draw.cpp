@@ -12,6 +12,8 @@ void	draw(
 	objects.skybox.draw(engine, camera, shaders.skyboxShader);
 	objects.map.draw(engine, camera, shaders.chunkShader);
 
+	camera.draw(engine.window, shaders.frustumShader);
+
 	// End drawing
 	engine.window.endDraw();
 }

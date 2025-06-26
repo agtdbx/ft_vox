@@ -3,9 +3,16 @@
 
 # include <define.hpp>
 # include <engine/camera/BoundingCube.hpp>
+# include <engine/mesh/VertexPos.hpp> // TODO : Remove
+# include <engine/mesh/Mesh.hpp> // TODO : Remove
+# include <program/shaderStruct.hpp> // TODO : Remove
+# include <engine/shader/ShaderParam.hpp> // TODO : Remove
 
 # include <gmath.hpp>
 
+// TODO: Remove
+class Window;
+class Shader;
 
 struct FrustumPlane
 {
@@ -15,6 +22,7 @@ struct FrustumPlane
 
 struct Frustum
 {
+	bool	compute = false;
 	FrustumPlane	topFace;
 	FrustumPlane	botFace;
 
@@ -210,6 +218,8 @@ public:
 	 * @brief Print camera position and rotation on standard output.
 	 */
 	void	printStatus(void);
+	void	computeFrustum(Engine &engine, Shader &shader);
+	void	draw(Window &window, Shader &shader);
 
 //**** STATIC METHODS **********************************************************
 
@@ -218,12 +228,15 @@ private:
 	gm::Mat4f	view, projection;
 	gm::Vec3f	position, front, up, right;
 	float		pitch, yaw, roll, planeWidth, planeHeight, winRatio, fov;
-	Frustum		furstum;
+	Frustum		frustum;
+	Mesh<VertexPos>	frustumMesh;
+	ShaderParam		shaderParam;
+	UBO3DChunkPos	uboPos;
 
 //**** PRIVATE METHODS *********************************************************
 	void	computeRotation(void);
 	void	computeView(void);
-	void	computeFrustum(void);
+	// void	computeFrustum(void);
 };
 
 //**** FUNCTIONS ***************************************************************

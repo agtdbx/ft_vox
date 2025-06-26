@@ -1,15 +1,14 @@
 #include <engine/camera/Camera.hpp>
 
+// TODO : Remove
+#include <engine/shader/Shader.hpp>
+#include <engine/window/Window.hpp>
+
 //**** STATIC FUNCTIONS DEFINE *************************************************
 
-static bool	isOnOrForwardPlane(
+static bool	isAABBForwardPlane(
 				const FrustumPlane &plane,
-				const BoundingCube &cube,
-				const gm::Vec3f &frontOffset);
-static float	getSignedDistanceToPlane(
-					const FrustumPlane &plane,
-					const gm::Vec3f &point,
-					const gm::Vec3f &frontOffset);
+				const BoundingCube &cube);
 
 //**** INITIALISION ************************************************************
 //---- Constructors ------------------------------------------------------------
@@ -31,7 +30,7 @@ Camera::Camera(void)
 
 	this->computeRotation();
 	this->computeView();
-	this->computeFrustum();
+	// this->computeFrustum();
 }
 
 
@@ -49,7 +48,7 @@ Camera::Camera(const Camera &obj)
 	this->planeWidth = obj.planeWidth;
 	this->planeHeight = obj.planeHeight;
 	this->winRatio = obj.winRatio;
-	this->furstum = obj.furstum;
+	this->frustum = obj.frustum;
 }
 
 //---- Destructor --------------------------------------------------------------
@@ -121,7 +120,7 @@ void	Camera::setPosition(const gm::Vec3f &position)
 {
 	this->position = position;
 	this->computeView();
-	this->computeFrustum();
+	// this->computeFrustum(); // TODO: Uncomment
 }
 
 
@@ -138,7 +137,7 @@ void	Camera::setRotation(const float pitch, const float yaw, const float roll)
 
 	this->computeRotation();
 	this->computeView();
-	this->computeFrustum();
+	// this->computeFrustum(); // TODO: Uncomment
 }
 
 //---- Operators ---------------------------------------------------------------
@@ -160,7 +159,7 @@ Camera	&Camera::operator=(const Camera &obj)
 	this->planeWidth = obj.planeWidth;
 	this->planeHeight = obj.planeHeight;
 	this->winRatio = obj.winRatio;
-	this->furstum = obj.furstum;
+	this->frustum = obj.frustum;
 
 	return (*this);
 }
@@ -174,7 +173,7 @@ void	Camera::move(const gm::Vec3f &direction, const float speed)
 						+ this->up * direction.y * speed
 						+ this->front * direction.z * speed;
 	this->computeView();
-	this->computeFrustum();
+	// this->computeFrustum(); // TODO: Uncomment
 }
 
 
@@ -182,7 +181,7 @@ void	Camera::moveFront(const float speed)
 {
 	this->position += this->front * speed;
 	this->computeView();
-	this->computeFrustum();
+	// this->computeFrustum(); // TODO: Uncomment
 }
 
 
@@ -190,7 +189,7 @@ void	Camera::moveUp(const float speed)
 {
 	this->position += this->up * speed;
 	this->computeView();
-	this->computeFrustum();
+	// this->computeFrustum(); // TODO: Uncomment
 }
 
 
@@ -198,7 +197,7 @@ void	Camera::moveRight(const float speed)
 {
 	this->position += this->right * speed;
 	this->computeView();
-	this->computeFrustum();
+	// this->computeFrustum(); // TODO: Uncomment
 }
 
 //---- rotate ------------------------------------------------------------------
@@ -214,7 +213,7 @@ void	Camera::rotateX(const float degrees)
 
 	this->computeRotation();
 	this->computeView();
-	this->computeFrustum();
+	// this->computeFrustum(); // TODO: Uncomment
 }
 
 
@@ -223,7 +222,7 @@ void	Camera::rotateY(const float degrees)
 	this->yaw += degrees;
 	this->computeRotation();
 	this->computeView();
-	this->computeFrustum();
+	// this->computeFrustum(); // TODO: Uncomment
 }
 
 
@@ -232,7 +231,7 @@ void	Camera::rotateZ(const float degrees)
 	this->roll += degrees;
 	this->computeRotation();
 	this->computeView();
-	this->computeFrustum();
+	// this->computeFrustum(); // TODO: Uncomment
 }
 
 //---- update ------------------------------------------------------------------
@@ -267,13 +266,16 @@ void	Camera::updateFOV(const float fov)
 
 bool	Camera::isCubeInFrutum(const BoundingCube &cube)
 {
-	gm::Vec3f	frontOffset = this->front * 16.0f;
-	return (isOnOrForwardPlane(this->furstum.leftFace, cube, frontOffset)
-			&& isOnOrForwardPlane(this->furstum.rightFace, cube, frontOffset)
-			&& isOnOrForwardPlane(this->furstum.topFace, cube, frontOffset)
-			&& isOnOrForwardPlane(this->furstum.botFace, cube, frontOffset)
-			&& isOnOrForwardPlane(this->furstum.nearFace, cube, frontOffset)
-			&& isOnOrForwardPlane(this->furstum.farFace, cube, frontOffset));
+	if (!this->frustum.compute)
+		return (true);
+
+	// return (true);
+	return (isAABBForwardPlane(this->frustum.nearFace, cube)
+			&& isAABBForwardPlane(this->frustum.farFace, cube)
+			&& isAABBForwardPlane(this->frustum.leftFace, cube)
+			&& isAABBForwardPlane(this->frustum.rightFace, cube)
+			&& isAABBForwardPlane(this->frustum.botFace, cube)
+			&& isAABBForwardPlane(this->frustum.topFace, cube));
 }
 
 //---- status ------------------------------------------------------------------
@@ -289,6 +291,154 @@ void	Camera::printStatus(void)
 				<< "\n  up    : " << this->up << std::endl;
 }
 
+
+void	Camera::computeFrustum(Engine &engine, Shader &shader)
+{
+	static bool	initShaderParam = false;
+
+	std::vector<VertexPos> vertices;
+	std::vector<uint32_t> indices;
+
+	float		heightNear, widthNear,
+				dstNearFar, heightFar, widthFar;
+	gm::Vec3f	frontNear, rightNear, upNear,
+				frontFar, rightFar, upFar;
+
+	// Near
+	frontNear = this->front * NEAR;
+	heightNear = this->planeHeight / 2.0f;
+	widthNear = heightNear * this->winRatio;
+	rightNear = this->right * widthNear;
+	upNear = this->up * heightNear;
+
+	// Far mesh
+	dstNearFar = 10.0f;
+	frontFar = frontNear + this->front * dstNearFar;
+	heightFar = gm::abs(tanf(FOV / 2.0f) * dstNearFar);
+	widthFar = heightFar * this->winRatio;
+	rightFar = this->right * widthFar;
+	upFar = this->up * heightFar;
+
+	vertices = {
+		{this->position - rightNear + upNear + frontNear}, // 0
+		{this->position - rightNear - upNear + frontNear}, // 1
+		{this->position + rightNear - upNear + frontNear}, // 2
+		{this->position + rightNear + upNear + frontNear}, // 3
+		{this->position - rightFar  + upFar  + frontFar }, // 4
+		{this->position - rightFar  - upFar  + frontFar }, // 5
+		{this->position + rightFar  - upFar  + frontFar }, // 6
+		{this->position + rightFar  + upFar  + frontFar }, // 7
+	};
+
+	indices = {
+		0,1,2, 0,2,3, // Front
+		4,5,6, 4,6,7, // Back
+		3,2,6, 3,2,7, // Right
+		4,5,1, 4,5,0, // Left
+		4,0,3, 0,3,7, // Up
+		1,5,2, 1,6,2, // Down
+	};
+
+	this->frustumMesh = Mesh<VertexPos>(vertices, indices);
+	this->frustumMesh.createBuffers(engine.commandPool);
+	if (!initShaderParam)
+	{
+		initShaderParam = true;
+		shader.initShaderParam(engine, this->shaderParam);
+		printf("Create shader param\n");
+	}
+
+	this->uboPos.proj = this->getProjection();
+	this->uboPos.proj.at(1, 1) *= -1;
+	this->uboPos.model = this->frustumMesh.getModel();
+	this->uboPos.pos = gm::Vec4f(this->frustumMesh.getPosition());
+
+	// Near
+	frontNear = this->front * NEAR;
+	heightNear = this->planeHeight / 2.0f;
+	widthNear = heightNear * this->winRatio;
+	rightNear = this->right * widthNear;
+	upNear = this->up * heightNear;
+
+	// Far
+	dstNearFar = FAR - NEAR;
+	frontFar = frontNear + this->front * dstNearFar;
+	heightFar = gm::abs(tanf(FOV / 2.0f) * dstNearFar);
+	widthFar = heightFar * this->winRatio;
+	rightFar = this->right * widthFar;
+	upFar = this->up * heightFar;
+
+	// Points
+	const gm::Vec3f pLUN = this->position - rightNear + upNear + frontNear;
+	const gm::Vec3f pLDN = this->position - rightNear - upNear + frontNear;
+	const gm::Vec3f pRDN = this->position + rightNear - upNear + frontNear;
+	const gm::Vec3f pRUN = this->position + rightNear + upNear + frontNear;
+	const gm::Vec3f pLUF = this->position - rightFar  + upFar  + frontFar;
+	const gm::Vec3f pLDF = this->position - rightFar  - upFar  + frontFar;
+	const gm::Vec3f pRDF = this->position + rightFar  - upFar  + frontFar;
+	const gm::Vec3f pRUF = this->position + rightFar  + upFar  + frontFar;
+
+	gm::Vec3f	tmp1, tmp2;
+
+	// Compute frustum plane near
+	this->frustum.nearFace.position = this->position + frontNear;
+	this->frustum.nearFace.normal = this->front;
+
+	// Compute frustum plane far
+	this->frustum.farFace.position = this->position + frontFar;
+	this->frustum.farFace.normal = -this->front;
+
+	// Compute frustum plane left
+	tmp1 = gm::lerp(pLUN, pLUF, 0.5f);
+	tmp2 = gm::lerp(pLDN, pLDF, 0.5f);
+	this->frustum.leftFace.position = gm::lerp(tmp1, tmp2, 0.5f);
+	// pLUF pLDF pLUN
+	tmp1 = pLUN - pLUF;
+	tmp2 = pLDF - pLUF;
+	this->frustum.leftFace.normal = gm::normalize(gm::cross(tmp1, tmp2));
+
+	// Compute frustum plane right
+	tmp1 = gm::lerp(pRUN, pRUF, 0.5f);
+	tmp2 = gm::lerp(pRDN, pRDF, 0.5f);
+	this->frustum.rightFace.position = gm::lerp(tmp1, tmp2, 0.5f);
+	// pRUN pRDN pLUF
+	tmp1 = pLUF - pRUN;
+	tmp2 = pRDN - pRUN;
+	this->frustum.rightFace.normal = gm::normalize(gm::cross(tmp1, tmp2));
+
+	// Compute frustum plane bottom
+	tmp1 = gm::lerp(pLDN, pLDF, 0.5f);
+	tmp2 = gm::lerp(pRDN, pRDF, 0.5f);
+	this->frustum.botFace.position = gm::lerp(tmp1, tmp2, 0.5f);
+	// pLDN pLDF pRDF
+	tmp1 = pRDF - pLDN;
+	tmp2 = pLDF - pLDN;
+	this->frustum.botFace.normal = gm::normalize(gm::cross(tmp1, tmp2));
+
+	// Compute frustum plane top
+	tmp1 = gm::lerp(pLUN, pLUF, 0.5f);
+	tmp2 = gm::lerp(pRUN, pRUF, 0.5f);
+	this->frustum.topFace.position = gm::lerp(tmp1, tmp2, 0.5f);
+	// pLUF pLUN pRUN
+	tmp1 = pRUN - pLUF;
+	tmp2 = pLUN - pLUF;
+	this->frustum.topFace.normal = gm::normalize(gm::cross(tmp1, tmp2));
+
+	this->frustum.compute = true;
+}
+
+
+void	Camera::draw(Window &window, Shader &shader)
+{
+	if (this->frustumMesh.getNbIndex() == 0)
+		return ;
+
+	this->uboPos.view = this->getView();
+
+	this->shaderParam.updateBuffer(window, &this->uboPos, 0);
+	window.drawMesh(this->frustumMesh, shader, this->shaderParam);
+}
+
 //**** STATIC METHODS **********************************************************
 //**** PRIVATE METHODS *********************************************************
 
@@ -299,8 +449,8 @@ void	Camera::computeRotation(void)
 	this->front.z = cos(gm::radians(this->pitch)) * sin(gm::radians(this->yaw));
 	this->front = gm::normalize(this->front);
 
-	this->right = gm::normalize(gm::cross(gm::Vec3f(0.0f, 1.0f, 0.0f), this->front));
-	this->up = gm::normalize(gm::cross(this->front, this->right));
+	this->right = gm::normalize(gm::cross(this->front,gm::Vec3f(0.0f, 1.0f, 0.0f)));
+	this->up = gm::normalize(gm::cross(this->right, this->front));
 }
 
 
@@ -311,61 +461,20 @@ void	Camera::computeView(void)
 									this->up);
 }
 
-
-void	Camera::computeFrustum(void)
-{
-	static const float	halfVSide = FAR * tanf(this->fov * 0.5f);
-	static const float	halfHSide = halfVSide * this->winRatio;
-	const gm::Vec3f	frontMultFar = this->front * FAR;
-
-	this->furstum.nearFace = {
-		this->position + this->front * NEAR,
-		this->front
-	};
-	this->furstum.farFace = {
-		this->position + frontMultFar,
-		-this->front
-	};
-
-	this->furstum.rightFace = {
-		this->position,
-		gm::cross(frontMultFar - this->right * halfHSide, this->up)
-	};
-	this->furstum.leftFace = {
-		this->position,
-		gm::cross(this->up, frontMultFar + this->right * halfHSide)
-	};
-
-	this->furstum.topFace = {
-		this->position,
-		gm::cross(this->right, frontMultFar - this->up * halfVSide)
-	};
-	this->furstum.botFace = {
-		this->position,
-		gm::cross(frontMultFar + this->up * halfVSide, this->right)
-	};
-}
-
 //**** FUNCTIONS ***************************************************************
 //**** STATIC FUNCTIONS ********************************************************
 
-static bool	isOnOrForwardPlane(
+static bool	isAABBForwardPlane(
 				const FrustumPlane &plane,
-				const BoundingCube &cube,
-				const gm::Vec3f &frontOffset)
+				const BoundingCube &cube)
 {
-	const float	r = cube.extents.x * gm::abs(plane.normal.x)
-					+ cube.extents.y * gm::abs(plane.normal.y)
-					+ cube.extents.z * gm::abs(plane.normal.z);
+	for (int i = 0; i < 8; i++)
+	{
+		gm::Vec3f	dir = cube.points[i] - plane.position;
 
-	return (-r <=  getSignedDistanceToPlane(plane, cube.center, frontOffset));
-}
+		if (gm::dot(dir, plane.normal) > 0.0f)
+			return (true);
+	}
 
-
-static float	getSignedDistanceToPlane(
-					const FrustumPlane &plane,
-					const gm::Vec3f &point,
-					const gm::Vec3f &frontOffset)
-{
-	return (gm::dot(plane.normal, point - plane.position + frontOffset));
+	return (false);
 }

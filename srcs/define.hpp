@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/26 12:55:56 by gugus            ###   ########.fr       */
+/*   Updated: 2025/06/26 17:25:46 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,7 @@ const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
 # define MIN_CHUNK_PER_THREAD CLUSTER_SIZE
 
 const int	MAP_NB_THREAD = std::thread::hardware_concurrency() - 1;
-const int	MAP_CLUSTER_ARROUND = 2; // Map have x cluster arround center one
+const int	MAP_CLUSTER_ARROUND = 1; // Map have x cluster arround center one
 const int	MAP_CLUSTER_WIDTH = MAP_CLUSTER_ARROUND + 1 + MAP_CLUSTER_ARROUND;
 const int	MAP_CLUSTER_SIZE = MAP_CLUSTER_WIDTH * MAP_CLUSTER_WIDTH;
 

@@ -105,14 +105,11 @@ void	Map::init(
 		}
 	}
 
-	this->cameraChunkId = gm::Vec2i(0, 0); // TODO : Reput camera pos
-	// this->cameraChunkId = gm::Vec2i(camera.getPosition().x / CHUNK_SIZE,
-	// 								camera.getPosition().z / CHUNK_SIZE);
-
+	this->cameraChunkId = gm::Vec2i(camera.getPosition().x / CHUNK_SIZE,
+									camera.getPosition().z / CHUNK_SIZE);
 
 	for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
 		this->clusters[i].setPosition(this->cameraChunkId + this->clusterOffsets[i]);
-
 
 	// Init current view
 	this->currentView.minGenChunk = this->cameraChunkId;
@@ -162,16 +159,14 @@ void	Map::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 
 	for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
 	{
-		this->clusters[i].draw(engine, camera, chunkShader, drawCall);
-		// if (camera.isCubeInFrutum(this->clusters[i].getBoundingCube()))
-		// 	this->clusters[i].draw(engine, camera, chunkShader, drawCall);
+		if (camera.isCubeInFrutum(this->clusters[i].getBoundingCube()))
+			this->clusters[i].draw(engine, camera, chunkShader, drawCall);
 	}
 
 	for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
 	{
-		this->clusters[i].drawWater(engine, camera, chunkShader);
-		// if (camera.isCubeInFrutum(this->clusters[i].getBoundingCube()))
-		// 	this->clusters[i].drawWater(engine, camera, chunkShader);
+		if (camera.isCubeInFrutum(this->clusters[i].getBoundingCube()))
+			this->clusters[i].drawWater(engine, camera, chunkShader);
 	}
 
 	// TODO: Remove draw call count

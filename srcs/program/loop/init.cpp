@@ -16,8 +16,8 @@ bool init(
 	camera.setPosition(gm::Vec3f(0.0f, 100.0f, 0.0f));
 	camera.setRotation(-30.0f, -90.0f, 0.0f);
 
-	camera.setPosition(gm::Vec3f(-25.0f, 421.0f, 506.0f));
-	camera.setRotation(-34.0f, -92.0f, 0.0f);
+	// camera.setPosition(gm::Vec3f(-25.0f, 421.0f, 506.0f));
+	// camera.setRotation(-34.0f, -92.0f, 0.0f);
 
 	try
 	{
@@ -99,4 +99,9 @@ static void loadShaders(
 						DEPTH_DISABLE, FCUL_COUNTER, DRAW_POLYGON, ALPHA_OFF,
 						"shadersbin/skybox_vert.spv", "shadersbin/skybox_frag.spv",
 						bufferInfosChunk, imageInfosSkybox);
+
+	shaders.frustumShader.init<VertexPos>(engine,
+						DEPTH_READ_WRITE, FCUL_NONE, DRAW_LINE, ALPHA_OFF,
+						"shadersbin/chunkBorder_vert.spv", "shadersbin/chunkBorder_frag.spv",
+						bufferInfosChunk);
 }
