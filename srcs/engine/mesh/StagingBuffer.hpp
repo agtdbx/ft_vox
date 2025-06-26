@@ -10,7 +10,8 @@
  */
 struct StagingBuffer
 {
-	VkDeviceSize	bufferSize = 0;
+	VkDeviceSize	offset = 0;
+	VkDeviceSize	size = 0;
 	VkBuffer		buffer = NULL;
 	VkDeviceMemory	memory = NULL;
 
@@ -23,14 +24,11 @@ struct StagingBuffer
 	void	create(
 				VulkanCommandPool &commandPool, VkDeviceSize bufferSize)
 	{
-		VkDevice			copyDevice = commandPool.getCopyDevice();
-		VkPhysicalDevice	copyPhysicalDevice = commandPool.getCopyPhysicalDevice();
-
-		this->bufferSize = bufferSize;
+		this->size = bufferSize;
 
 		// Create buffers
-		createVulkanBuffer(copyDevice, copyPhysicalDevice,
-							this->bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		createVulkanBuffer(commandPool.getCopyDevice(), commandPool.getCopyPhysicalDevice(),
+							this->size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 							VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 							this->buffer, this->memory);
 	}
@@ -45,20 +43,18 @@ struct StagingBuffer
 				VkDeviceSize bufferSize,
 				PerfLogger &perfLogger)
 	{
-		if (bufferSize <= this->bufferSize)
+		if (bufferSize <= this->size)
 			return ;
 
 		perflogStart(perfLogger.createUpdateStaging);
-		VkDevice			copyDevice = commandPool.getCopyDevice();
-		VkPhysicalDevice	copyPhysicalDevice = commandPool.getCopyPhysicalDevice();
 
-		this->destroy(copyDevice);
+		this->destroy(commandPool.getCopyDevice());
 
-		this->bufferSize = bufferSize;
+		this->size = bufferSize;
 
 		// Create buffers
-		createVulkanBuffer(copyDevice, copyPhysicalDevice,
-							this->bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		createVulkanBuffer(commandPool.getCopyDevice(), commandPool.getCopyPhysicalDevice(),
+							this->size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 							VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 							this->buffer, this->memory);
 		perflogEnd(perfLogger.createUpdateStaging);

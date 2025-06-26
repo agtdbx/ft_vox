@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/25 16:57:21 by gugus            ###   ########.fr       */
+/*   Updated: 2025/06/26 12:25:02 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ const int MAX_FRAMES_IN_FLIGHT = 2;
 // Camera defines
 # define FOV 80.0f
 # define NEAR 0.1f
-# define FAR 1000.0f
+# define FAR 1500.0f
 # define SPEED 5.0f // TODO Put it to 1
 # define SPRINT 20.0f
 # define ROTATE 45.0f
@@ -76,7 +76,7 @@ const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
 // Map defines
 # define MAP_SIZE 4096
 const int	MAP_NB_THREAD = std::thread::hardware_concurrency() - 1;
-const int	MAP_CLUSTER_ARROUND = 1; // Map have x cluster arround center one
+const int	MAP_CLUSTER_ARROUND = 0; // Map have x cluster arround center one
 const int	MAP_CLUSTER_WIDTH = MAP_CLUSTER_ARROUND + 1 + MAP_CLUSTER_ARROUND;
 const int	MAP_CLUSTER_SIZE = MAP_CLUSTER_WIDTH * MAP_CLUSTER_WIDTH;
 

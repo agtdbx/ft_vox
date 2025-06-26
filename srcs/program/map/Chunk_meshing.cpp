@@ -104,6 +104,7 @@ void	Chunk::createMesh(Map &map, PerfLogger &perfLogger)
 	uint64_t	chunkLeftBlock, chunkCurrLine, chunkRightBlock;
 	gm::Vec3f	pointLU, pointLD, pointRD, pointRU;
 
+	perflogStart(perfLogger.meshBlockCopyBitmap);
 	CubeBitmap	cBitmapL = this->cubeBitmap;
 	CubeBitmap	cBitmapR = this->cubeBitmap;
 
@@ -117,6 +118,7 @@ void	Chunk::createMesh(Map &map, PerfLogger &perfLogger)
 	{
 		cBitmapR.axisY[i] = reverse256Bytes(cBitmapR.axisY[i]);
 	}
+	perflogEnd(perfLogger.meshBlockCopyBitmap);
 
 	// y axis
 	perflogStart(perfLogger.meshBlockYaxis);

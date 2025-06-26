@@ -25,6 +25,7 @@ float	perflogAvg(PerfField &perfField);
 void	perflogReset(PerfField &perfField);
 void	perflogPrint(PerfField &perfField, const char *msg);
 void	perflogPrint(PerfField &perfField);
+void	perflogPrintCsv(PerfField &perfField, const char *msg);
 
 struct PerfLogger
 {
@@ -39,6 +40,7 @@ struct PerfLogger
 	PerfField	meshChunk;
 	// Mesh block
 	PerfField	meshBlock;
+	PerfField	meshBlockCopyBitmap;
 	PerfField	meshBlockXaxis;
 	PerfField	meshBlockYaxis;
 	PerfField	meshBlockZaxis;
@@ -46,6 +48,7 @@ struct PerfLogger
 	PerfField	meshWater;
 
 	// Buffer
+	unsigned long int	chunkBufferSize = 0;
 	PerfField	createBuffer;
 	PerfField	createUpdateStaging;
 	// Buffer vertex
@@ -70,6 +73,7 @@ struct PerfLogger
 		this->meshChunk += obj.meshChunk;
 		// Mesh block
 		this->meshBlock += obj.meshBlock;
+		this->meshBlockCopyBitmap += obj.meshBlockCopyBitmap;
 		this->meshBlockXaxis += obj.meshBlockXaxis;
 		this->meshBlockYaxis += obj.meshBlockYaxis;
 		this->meshBlockZaxis += obj.meshBlockZaxis;

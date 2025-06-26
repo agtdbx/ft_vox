@@ -56,9 +56,6 @@ public:
 		this->nbIndex = obj.nbIndex;
 
 		this->commandPool = obj.commandPool;
-
-		this->createVertexBuffer();
-		this->createIndexBuffer();
 	}
 	/**
 	 * @brief Constructor of Mesh class.
@@ -299,36 +296,36 @@ public:
 
 		this->commandPool = &commandPool;
 
-		VkDevice			copyDevice = this->commandPool->getCopyDevice();
-		VkPhysicalDevice	copyPhysicalDevice = this->commandPool->getCopyPhysicalDevice();
-
 		VkDeviceSize	bufferSizeVertex = sizeof(this->vertices[0]) * this->nbVertex;
 		VkDeviceSize	bufferSizeIndex = sizeof(this->indices[0]) * this->nbIndex;
 		VkDeviceSize	bufferSize = gm::max(bufferSizeVertex, bufferSizeIndex);
 
 		// Create temp buffers
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		createVulkanBuffer(copyDevice, copyPhysicalDevice,
-							bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-							VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-							stagingBuffer, stagingBufferMemory);
+		StagingBuffer	stagingBuffer;
+		stagingBuffer.create(commandPool, bufferSize);
 
 		PerfLogger perfLogger;
-		this->createVertexBuffer(stagingBuffer, stagingBufferMemory, perfLogger);
-		this->createIndexBuffer(stagingBuffer, stagingBufferMemory, perfLogger);
+
+		VkCommandBuffer	commandBuffer = commandPool.beginSingleTimeCommands();
+		this->createVertexBuffer(stagingBuffer, commandBuffer, perfLogger);
+		this->createIndexBuffer(stagingBuffer, commandBuffer, perfLogger);
+		commandPool.endSingleTimeCommands(commandBuffer);
 
 		// Release temp buffer
-		vkDestroyBuffer(copyDevice, stagingBuffer, nullptr);
-		vkFreeMemory(copyDevice, stagingBufferMemory, nullptr);
+		stagingBuffer.destroy(this->commandPool->getCopyDevice());
 	}
 	/**
 	 * @brief Create buffers.
 	 *
  	 * @param commandPool The command pool for creating buffers. It will be save for next calls.
  	 * @param stagingBuffer The tempory buffer use to avoid create new tempory buffer for each mesh.
+ 	 * @param commandBuffer The command buffer used for group copy commands.
 	 */
-	void	createBuffers(VulkanCommandPool &commandPool, StagingBuffer &stagingBuffer, PerfLogger &perfLogger)
+	void	createBuffers(
+				VulkanCommandPool &commandPool,
+				StagingBuffer &stagingBuffer,
+				VkCommandBuffer &commandBuffer,
+				PerfLogger &perfLogger)
 	{
 		if (this->nbVertex == 0)
 			return ;
@@ -339,12 +336,17 @@ public:
 
 		VkDeviceSize	bufferSizeVertex = sizeof(this->vertices[0]) * this->nbVertex;
 		VkDeviceSize	bufferSizeIndex = sizeof(this->indices[0]) * this->nbIndex;
-		VkDeviceSize	bufferSize = gm::max(bufferSizeVertex, bufferSizeIndex);
+		VkDeviceSize	bufferSize = bufferSizeVertex + bufferSizeIndex;
 
-		stagingBuffer.update(commandPool, bufferSize, perfLogger);
+		if (stagingBuffer.size - stagingBuffer.offset < bufferSize)
+		{
+			commandPool.endSingleTimeCommands(commandBuffer);
+			commandBuffer = commandPool.beginSingleTimeCommands();
+			stagingBuffer.offset = 0;
+		}
 
-		this->createVertexBuffer(stagingBuffer.buffer, stagingBuffer.memory, perfLogger);
-		this->createIndexBuffer(stagingBuffer.buffer, stagingBuffer.memory, perfLogger);
+		this->createVertexBuffer(stagingBuffer, commandBuffer, perfLogger);
+		this->createIndexBuffer(stagingBuffer, commandBuffer, perfLogger);
 	}
 	/**
 	 * @brief Clear allocated memory.
@@ -453,8 +455,8 @@ private:
 	 * @brief Create vertex buffer and vertex buffer memory.
 	 */
 	void	createVertexBuffer(
-				VkBuffer stagingBuffer,
-				VkDeviceMemory stagingBufferMemory,
+				StagingBuffer &stagingBuffer,
+				VkCommandBuffer commandBuffer,
 				PerfLogger &perfLogger)
 	{
 		if (this->commandPool == NULL || this->nbVertex == 0)
@@ -463,14 +465,15 @@ private:
 		VkDevice			copyDevice = this->commandPool->getCopyDevice();
 		VkPhysicalDevice	copyPhysicalDevice = this->commandPool->getCopyPhysicalDevice();
 
+		VkDeviceSize	offset = stagingBuffer.offset;
 		VkDeviceSize	bufferSize = sizeof(this->vertices[0]) * this->nbVertex;
 
 		// Map data to vertex buffer
 		perflogStart(perfLogger.mapVertexBuffer);
 		void	*data;
-		vkMapMemory(copyDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+		vkMapMemory(copyDevice, stagingBuffer.memory, offset, bufferSize, 0, &data);
 		memcpy(data, this->vertices.data(), (size_t) bufferSize);
-		vkUnmapMemory(copyDevice, stagingBufferMemory);
+		vkUnmapMemory(copyDevice, stagingBuffer.memory);
 		perflogEnd(perfLogger.mapVertexBuffer);
 
 		// Create final buffer
@@ -483,15 +486,16 @@ private:
 
 		// Copy data form temp to final buffer
 		perflogStart(perfLogger.copyVertexBuffer);
-		copyBuffer(*commandPool, stagingBuffer, this->vertexBuffer, bufferSize);
+		copyBufferAsync(commandBuffer, stagingBuffer.buffer, this->vertexBuffer, offset, bufferSize);
+		stagingBuffer.offset += bufferSize;
 		perflogEnd(perfLogger.copyVertexBuffer);
 	}
 	/**
 	 * @brief Create index buffer and index buffer memory.
 	 */
 	void	createIndexBuffer(
-				VkBuffer stagingBuffer,
-				VkDeviceMemory stagingBufferMemory,
+				StagingBuffer &stagingBuffer,
+				VkCommandBuffer commandBuffer,
 				PerfLogger &perfLogger)
 	{
 		if (this->commandPool == NULL || this->nbIndex == 0)
@@ -500,14 +504,15 @@ private:
 		VkDevice			copyDevice = this->commandPool->getCopyDevice();
 		VkPhysicalDevice	copyPhysicalDevice = this->commandPool->getCopyPhysicalDevice();
 
-		VkDeviceSize bufferSize = sizeof(this->indices[0]) * this->nbIndex;
+		VkDeviceSize	offset = stagingBuffer.offset;
+		VkDeviceSize	bufferSize = sizeof(this->indices[0]) * this->nbIndex;
 
 		// Map data to vertex buffer
 		perflogStart(perfLogger.mapIndexBuffer);
 		void* data;
-		vkMapMemory(copyDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+		vkMapMemory(copyDevice, stagingBuffer.memory, offset, bufferSize, 0, &data);
 		memcpy(data, this->indices.data(), (size_t) bufferSize);
-		vkUnmapMemory(copyDevice, stagingBufferMemory);
+		vkUnmapMemory(copyDevice, stagingBuffer.memory);
 		perflogEnd(perfLogger.mapIndexBuffer);
 
 		// Create final buffer
@@ -519,7 +524,8 @@ private:
 
 		// Copy data form temp to final buffer
 		perflogStart(perfLogger.copyIndexBuffer);
-		copyBuffer(*commandPool, stagingBuffer, this->indexBuffer, bufferSize);
+		copyBufferAsync(commandBuffer, stagingBuffer.buffer, this->indexBuffer, offset, bufferSize);
+		stagingBuffer.offset += bufferSize;
 		perflogEnd(perfLogger.copyIndexBuffer);
 	}
 	/**

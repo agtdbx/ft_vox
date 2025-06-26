@@ -316,11 +316,12 @@ void	copyBuffer(
 
 void	copyBufferAsync(
 			VkCommandBuffer commandBuffer,
-			VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+			VkBuffer srcBuffer, VkBuffer dstBuffer,
+			VkDeviceSize offsetSrc, VkDeviceSize size)
 {
 	// Define copy region
 	VkBufferCopy copyRegion{};
-	copyRegion.srcOffset = 0; // Optional
+	copyRegion.srcOffset = offsetSrc; // Optional
 	copyRegion.dstOffset = 0; // Optional
 	copyRegion.size = size;
 	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);

@@ -180,10 +180,12 @@ public:
 	 *
 	 * @param commandPool Command class for vulkan.
 	 * @param stagingBuffer Common tempory buffer for avoid buffer recreation.
+ 	 * @param commandBuffer The command buffer used for group copy commands.
 	 */
 	void	createBuffers(
 				VulkanCommandPool &commandPool,
 				StagingBuffer &stagingBuffer,
+				VkCommandBuffer &commandBuffer,
 				PerfLogger &perfLogger);
 	/**
 	 * @brief Draw chunk meshes.

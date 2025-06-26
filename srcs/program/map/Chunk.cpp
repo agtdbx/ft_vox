@@ -170,6 +170,7 @@ void	Chunk::createMeshes(Map &map, PerfLogger &perfLogger)
 void	Chunk::createBuffers(
 				VulkanCommandPool &commandPool,
 				StagingBuffer &stagingBuffer,
+				VkCommandBuffer &commandBuffer,
 				PerfLogger &perfLogger)
 {
 	if (this->bufferCreate)
@@ -177,9 +178,9 @@ void	Chunk::createBuffers(
 
 	perflogStart(perfLogger.createBuffer);
 
-	this->mesh.createBuffers(commandPool, stagingBuffer, perfLogger);
-	this->borderMesh.createBuffers(commandPool, stagingBuffer, perfLogger);
-	this->waterMesh.createBuffers(commandPool, stagingBuffer, perfLogger);
+	this->mesh.createBuffers(commandPool, stagingBuffer, commandBuffer, perfLogger);
+	this->borderMesh.createBuffers(commandPool, stagingBuffer, commandBuffer, perfLogger);
+	this->waterMesh.createBuffers(commandPool, stagingBuffer, commandBuffer, perfLogger);
 
 	this->bufferCreate = true;
 

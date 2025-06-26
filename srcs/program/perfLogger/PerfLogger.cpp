@@ -71,3 +71,17 @@ void	perflogPrint(PerfField &perfField)
 	printf("total %10.0f us, nb call %6i, avg %9.2f us\n",
 			perfField.total, perfField.nbCall, avg);
 }
+
+
+void	perflogPrintCsv(PerfField &perfField, const char *msg)
+{
+	if (perfField.nbCall == 0)
+	{
+		printf("%s;0;0;0;\n", msg);
+		return ;
+	}
+
+	float	avg = perfField.total / (float)perfField.nbCall;
+	printf("%s;%.0f;%i;%.2f;\n",
+			msg, perfField.total, perfField.nbCall, avg);
+}
