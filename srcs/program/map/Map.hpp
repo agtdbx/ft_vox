@@ -50,8 +50,10 @@ struct ThreadData
 enum	MapStatus
 {
 	MAP_NONE,
-	MAP_GENERATING,
-	MAP_MESHING,
+	MAP_GENERATING_X,
+	MAP_MESHING_X,
+	MAP_GENERATING_Y,
+	MAP_MESHING_Y,
 };
 
 
