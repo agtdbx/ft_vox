@@ -4,10 +4,13 @@
 
 #include <unordered_map>
 
-PerlinNoise PerlinGeration(42, 64);
-PerlinNoise PerlinTerrain(854, 2);
-PerlinNoise PerlinBiome(654, 4096);
-//PerlinNoise PerlinCave(8576, 128);
+PerlinNoise PerlinGeration1(42, 8);           //j'aime bien 8 16 32 64
+PerlinNoise PerlinGeration2(56452, 16);
+PerlinNoise PerlinGeration3(19, 32);
+PerlinNoise PerlinGeration4(786, 64);			//faut forcément que perlin size soit entre 8 est 1024(pas sur pour 1024 ms c un bon max)
+PerlinNoise PerlinTerrain(854, 16);
+PerlinNoise PerlinBiome(654, 1024);
+PerlinNoise PerlinCave(8576, 512);
 
 //**** STATIC FUNCTIONS DEFINE *************************************************
 
@@ -135,7 +138,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 	int tmpZ = 0;
 	float Biome = 0;
 	float Moutain = 0;
-	//float Cave = 0;
+	float Cave = 0;
 	for (int x = 0; x < CHUNK_SIZE; x++)
 	{
 		for (int z = 0; z < CHUNK_SIZE; z++)
@@ -152,17 +155,15 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 			perlinZ = (float)tmpZ / (float)MAP_SIZE;
 
 			//TODO Moutain will need a lot tweaking (Biome need more chunk to see if he is garbage) 
-			maxSize = (PerlinGeration.getNoise(perlinX, perlinZ) * 32.0f + 48.0f);
+			maxSize = ((PerlinGeration1.getNoise(perlinX, perlinZ)
+						+ PerlinGeration2.getNoise(perlinX, perlinZ)
+						+ PerlinGeration3.getNoise(perlinX, perlinZ)
+						+ PerlinGeration4.getNoise(perlinX, perlinZ)));
 			Biome = (PerlinBiome.getNoise(perlinX, perlinZ));
-			Moutain = (PerlinTerrain.getNoise(perlinX, perlinZ));
-			// faire des truc aprés sa
-			//Cave = (PerlinCave.getNoise(perlinX, perlinZ));
-			if (Moutain < 0.2)
-				maxSize = maxSize - (Moutain * 32.0f + 48.0f);
-			else if (Moutain > 0.8)
-				maxSize = maxSize + (Moutain * 32.0f + 48.0f);
-			if (maxSize < 0)
-				maxSize = 1;
+			Moutain = (PerlinTerrain.getNoise(perlinX, perlinZ) + 1);
+			Cave = (PerlinCave.getNoise(perlinX, perlinZ) * 32.0f + 1.0f);
+			
+			maxSize = Moutain * maxSize * 32.0f + 24.0f;
 			for (int y = 0; y < CHUNK_HEIGHT; y++)
 			{
 				//with this setup stone cannot be seen on the surface
@@ -189,8 +190,10 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 						else
 							this->cubes[id] = CUBE_GRASS;
 					}
-					else if (y > 58 && y > (int)maxSize - 3 && y < (int)maxSize)
+					else if (y >= 58 && y > (int)maxSize - 16 && y < (int)maxSize)
 						this->cubes[id] = CUBE_DIRT;
+					else if ((y < (32 + rand() % 10 + 1 + (Cave / 2)) && y > (32 + rand() % 10 + 1 - (Cave / 2))) && y != 0)
+						this->cubes[id] = CUBE_AIR;
 					else if (y != 0)
 						this->cubes[id] = CUBE_STONE;
 					else

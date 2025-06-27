@@ -70,7 +70,7 @@ static void loadShaders(
 											{sizeof(UBO3DChunkCubes), BUFFER_SSBO, STAGE_FRAGMENT}};
 	std::vector<BufferInfo>	uboTypesChunkFdf = {{sizeof(UBO3DChunkPos), BUFFER_UBO, STAGE_VERTEX}};
 
-	chunkShader.shaderFdfEnable = false;
+	chunkShader.shaderFdfEnable = true;
 	chunkShader.shaderBorderEnable = false;
 
 	chunkShader.shader.init<VertexPosNrm>(

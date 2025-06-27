@@ -16,6 +16,7 @@ using ChunkBorderMesh = Mesh<VertexPos>;
 
 class Map;
 #define SEED 42
+#define CAVESIZE 30
 
 struct ChunkShader
 {
