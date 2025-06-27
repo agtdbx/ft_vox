@@ -231,7 +231,7 @@ private:
 	ShaderParam		shaderParam, shaderParamWater, shaderParamFdf,
 					shaderParamFdfWater, shaderParamBorder;
 	BoundingCube	boundingCube;
-	bool			generationDone, meshCreate, bufferCreate;
+	bool			initDone, generationDone, meshCreate, bufferCreate;
 
 //**** PRIVATE METHODS *********************************************************
 	/**

@@ -19,6 +19,7 @@ Chunk::Chunk(void)
 		this->cubeBitmap.axisX[i] = 0;
 		this->cubeBitmap.axisZ[i] = 0;
 	}
+	this->initDone = false;
 	this->generationDone = false;
 	this->meshCreate = false;
 	this->bufferCreate = false;
@@ -152,6 +153,10 @@ void	Chunk::init(
 				Camera &camera,
 				ChunkShader &chunkShader)
 {
+	if (this->initDone)
+		return ;
+	this->initDone = true;
+
 	chunkShader.shader.initShaderParam(engine, this->shaderParam, {"cubes"});
 	chunkShader.shaderWater.initShaderParam(engine, this->shaderParamWater, {"cubes"});
 	chunkShader.shaderFdf.initShaderParam(engine, this->shaderParamFdf);

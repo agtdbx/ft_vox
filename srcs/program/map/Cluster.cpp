@@ -80,17 +80,19 @@ void	Cluster::move(Map &map, const gm::Vec2i &movement)
 	this->boundingCube.center += gm::Vec3f(movement.x, 0, movement.y) * (float)CHUNK_SIZE;
 	this->boundingCube.computePoints();
 
-	int	i = 0;
+	// int	i = 0;
 	for (int y = this->minChunk.y; y < this->maxChunk.y; y++)
 	{
 		for (int x = this->minChunk.x; x < this->maxChunk.x; x++)
 		{
+			int	id = (x - this->minChunk.x) + (y - this->minChunk.y) * CLUSTER_SIZE;
+
 			Chunk	*chunk = map.getChunk(x, y);
 			if (chunk == NULL || !chunk->isMeshCreated())
-				this->chunks[i] = NULL;
+				this->chunks[id] = NULL;
 			else
-				this->chunks[i] = chunk;
-			i++;
+				this->chunks[id] = chunk;
+			// i++;
 		}
 	}
 }

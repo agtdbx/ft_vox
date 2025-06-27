@@ -105,7 +105,7 @@ public:
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
 	gm::Vec2i	minChunk, maxChunk;
-	Chunk	*chunks[CLUSTER_SIZE2];
+	Chunk		*chunks[CLUSTER_SIZE2];
 	BoundingCube	boundingCube;
 
 //**** PRIVATE METHODS *********************************************************

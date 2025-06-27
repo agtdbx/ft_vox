@@ -60,7 +60,7 @@ void	Map::update(Engine &engine, Camera &camera)
 		// Left movement
 		else if (movement.x < 0)
 		{
-			this->targetView.maxGenChunk = gm::Vec2i(this->currentView.minMeshChunk.x, this->currentView.maxGenChunk.y);
+			this->targetView.maxGenChunk = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.maxGenChunk.y);
 			this->targetView.maxMeshChunk = gm::Vec2i(this->currentView.minMeshChunk.x, this->currentView.maxMeshChunk.y);
 			status = MAP_GENERATING_Y;
 			std::cout << "Generate for left : " << this->targetView.minGenChunk << " -> " << this->targetView.maxGenChunk << std::endl;
@@ -70,7 +70,7 @@ void	Map::update(Engine &engine, Camera &camera)
 		// Right movement
 		else if (movement.x > 0)
 		{
-			this->targetView.minGenChunk = gm::Vec2i(this->currentView.maxMeshChunk.x, this->targetView.minGenChunk.y);
+			this->targetView.minGenChunk = gm::Vec2i(this->currentView.maxGenChunk.x, this->targetView.minGenChunk.y);
 			this->targetView.minMeshChunk = gm::Vec2i(this->currentView.maxMeshChunk.x, this->targetView.minMeshChunk.y);
 			status = MAP_GENERATING_Y;
 			std::cout << "Generate for right : " << this->targetView.minGenChunk << " -> " << this->targetView.maxGenChunk << std::endl;
@@ -80,7 +80,7 @@ void	Map::update(Engine &engine, Camera &camera)
 		// Front movement
 		else if (movement.y < 0)
 		{
-			this->targetView.maxGenChunk = gm::Vec2i(this->targetView.maxGenChunk.x, this->currentView.minMeshChunk.y);
+			this->targetView.maxGenChunk = gm::Vec2i(this->targetView.maxGenChunk.x, this->currentView.minGenChunk.y);
 			this->targetView.maxMeshChunk = gm::Vec2i(this->targetView.maxMeshChunk.x, this->currentView.minMeshChunk.y);
 			status = MAP_GENERATING_X;
 			std::cout << "Generate for front : " << this->targetView.minGenChunk << " -> " << this->targetView.maxGenChunk << std::endl;
@@ -143,11 +143,17 @@ void	Map::update(Engine &engine, Camera &camera)
 					this->currentView.tmpId += gm::Vec2i(gm::min(chunkLeftBeforeEndLine, widthGeneratePerThread), 0);
 					gm::Vec2i	maxId = this->currentView.tmpId + gm::Vec2i(0, 1);
 
+					std::size_t	hash;
 					for (int x = minId.x; x < maxId.x; x++)
 					{
 						for (int y = minId.y; y < maxId.y; y++)
 						{
-							this->chunks[gm::hash(gm::Vec2i(x, y))] = Chunk();
+							hash = gm::hash(gm::Vec2i(x, y));
+
+							if (this->chunks.find(hash) != this->chunks.end())
+								continue;
+
+							this->chunks[hash] = Chunk();
 						}
 					}
 

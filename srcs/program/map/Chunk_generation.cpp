@@ -15,8 +15,8 @@ const gm::Vec3f	CHUNK_MIDDLE_OFFSET(CHUNK_SIZE / 2, CHUNK_HEIGHT / 2, CHUNK_SIZE
 //**** PUBLIC METHODS **********************************************************
 void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 {
-	// if (this->generationDone)
-	// 	return ;
+	if (this->generationDone)
+		return ;
 	this->generationDone = true;
 
 	perflogStart(perfLogger.generateChunk);
