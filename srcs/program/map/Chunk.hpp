@@ -128,6 +128,12 @@ public:
 	 * @return Const cube reference at the coordonate.
 	 */
 	const Cube	&at(const gm::Vec3i &pos) const;
+	/**
+	 * @brief Method to know if the mesh is create or not.
+	 *
+	 * @return true if the mesh is create, false else.
+	 */
+	bool	isMeshCreated(void) const;
 
 //---- Setters -----------------------------------------------------------------
 	/**
@@ -225,7 +231,7 @@ private:
 	ShaderParam		shaderParam, shaderParamWater, shaderParamFdf,
 					shaderParamFdfWater, shaderParamBorder;
 	BoundingCube	boundingCube;
-	bool			bufferCreate;
+	bool			generationDone, meshCreate, bufferCreate;
 
 //**** PRIVATE METHODS *********************************************************
 	/**

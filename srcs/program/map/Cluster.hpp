@@ -62,6 +62,13 @@ public:
 	 */
 	void	setPosition(const gm::Vec2i &middle);
 	/**
+	 * @brief Move chunks inside.
+	 *
+	 * @param map Map that contains chunks.
+	 * @param movement Vector for movement.
+	 */
+	void	move(Map &map, const gm::Vec2i &movement);
+	/**
 	 * @brief Give a chunk completed to the cluster.
 	 *
 	 * @param chunkPos The position of the chunk.

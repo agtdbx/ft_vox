@@ -69,6 +69,33 @@ void	Cluster::setPosition(const gm::Vec2i &middle)
 }
 
 
+void	Cluster::move(Map &map, const gm::Vec2i &movement)
+{
+	if (movement == gm::Vec2i(0, 0))
+		return ;
+
+	this->minChunk += movement;
+	this->maxChunk += movement;
+
+	this->boundingCube.center += gm::Vec3f(movement.x, 0, movement.y) * (float)CHUNK_SIZE;
+	this->boundingCube.computePoints();
+
+	int	i = 0;
+	for (int y = this->minChunk.y; y < this->maxChunk.y; y++)
+	{
+		for (int x = this->minChunk.x; x < this->maxChunk.x; x++)
+		{
+			Chunk	*chunk = map.getChunk(x, y);
+			if (chunk == NULL || !chunk->isMeshCreated())
+				this->chunks[i] = NULL;
+			else
+				this->chunks[i] = chunk;
+			i++;
+		}
+	}
+}
+
+
 void	Cluster::giveChunk(const gm::Vec2i &chunkPos, Chunk *chunk)
 {
 	if (chunkPos.x < this->minChunk.x || chunkPos.y < this->minChunk.y

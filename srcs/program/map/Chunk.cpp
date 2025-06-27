@@ -19,6 +19,8 @@ Chunk::Chunk(void)
 		this->cubeBitmap.axisX[i] = 0;
 		this->cubeBitmap.axisZ[i] = 0;
 	}
+	this->generationDone = false;
+	this->meshCreate = false;
 	this->bufferCreate = false;
 
 	int	halfChunkSize = CHUNK_SIZE / 2;
@@ -35,6 +37,8 @@ Chunk::Chunk(const Chunk &obj)
 	for (int i = 0; i < CHUNK_TOTAL_SIZE; i++)
 		this->cubes[i] = obj.cubes[i];
 	this->cubeBitmap = obj.cubeBitmap;
+	this->generationDone = false;
+	this->meshCreate = false;
 	this->bufferCreate = false;
 	this->mesh = obj.mesh;
 	this->boundingCube = obj.boundingCube;
@@ -91,6 +95,12 @@ const Cube	&Chunk::at(int x, int y, int z) const
 const Cube	&Chunk::at(const gm::Vec3i &pos) const
 {
 	return (this->cubes[pos.x + pos.z * CHUNK_SIZE + pos.y * CHUNK_SIZE2]);
+}
+
+
+bool	Chunk::isMeshCreated(void) const
+{
+	return (this->meshCreate);
 }
 
 //---- Setters -----------------------------------------------------------------
@@ -155,6 +165,10 @@ void	Chunk::init(
 
 void	Chunk::createMeshes(Map &map, PerfLogger &perfLogger)
 {
+	if (this->meshCreate)
+		return ;
+	this->meshCreate = true;
+
 	perflogStart(perfLogger.chunkMeshing);
 	this->createBorderMesh(perfLogger);
 	this->createMesh(map, perfLogger);
@@ -175,14 +189,13 @@ void	Chunk::createBuffers(
 {
 	if (this->bufferCreate)
 		return ;
+	this->bufferCreate = true;
 
 	perflogStart(perfLogger.createBuffer);
 
 	this->mesh.createBuffers(commandPool, stagingBuffer, commandBuffer, perfLogger);
 	this->borderMesh.createBuffers(commandPool, stagingBuffer, commandBuffer, perfLogger);
 	this->waterMesh.createBuffers(commandPool, stagingBuffer, commandBuffer, perfLogger);
-
-	this->bufferCreate = true;
 
 	perflogEnd(perfLogger.createBuffer);
 }
