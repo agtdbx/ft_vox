@@ -62,6 +62,8 @@ void	Map::update(Engine &engine, Camera &camera)
 		{
 			this->targetView.maxGenChunk = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.maxGenChunk.y);
 			this->targetView.maxMeshChunk = gm::Vec2i(this->currentView.minMeshChunk.x, this->currentView.maxMeshChunk.y);
+			minDelete = gm::Vec2i(this->currentView.maxMeshChunk.x, this->currentView.minGenChunk.y);
+			maxDelete = gm::Vec2i(this->currentView.maxGenChunk.x, this->currentView.maxGenChunk.y);
 			status = MAP_GENERATING_Y;
 			std::cout << "Generate for left : " << this->targetView.minGenChunk << " -> " << this->targetView.maxGenChunk << std::endl;
 			std::cout << "Mesh for left     : " << this->targetView.minMeshChunk << " -> " << this->targetView.maxMeshChunk << std::endl;
@@ -72,6 +74,8 @@ void	Map::update(Engine &engine, Camera &camera)
 		{
 			this->targetView.minGenChunk = gm::Vec2i(this->currentView.maxGenChunk.x, this->targetView.minGenChunk.y);
 			this->targetView.minMeshChunk = gm::Vec2i(this->currentView.maxMeshChunk.x, this->targetView.minMeshChunk.y);
+			minDelete = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.minGenChunk.y);
+			maxDelete = gm::Vec2i(this->currentView.minMeshChunk.x, this->currentView.maxGenChunk.y);
 			status = MAP_GENERATING_Y;
 			std::cout << "Generate for right : " << this->targetView.minGenChunk << " -> " << this->targetView.maxGenChunk << std::endl;
 			std::cout << "Mesh for right     : " << this->targetView.minMeshChunk << " -> " << this->targetView.maxMeshChunk << std::endl;
@@ -82,6 +86,8 @@ void	Map::update(Engine &engine, Camera &camera)
 		{
 			this->targetView.maxGenChunk = gm::Vec2i(this->targetView.maxGenChunk.x, this->currentView.minGenChunk.y);
 			this->targetView.maxMeshChunk = gm::Vec2i(this->targetView.maxMeshChunk.x, this->currentView.minMeshChunk.y);
+			minDelete = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.maxMeshChunk.y);
+			maxDelete = gm::Vec2i(this->currentView.maxGenChunk.x, this->currentView.maxGenChunk.y);
 			status = MAP_GENERATING_X;
 			std::cout << "Generate for front : " << this->targetView.minGenChunk << " -> " << this->targetView.maxGenChunk << std::endl;
 			std::cout << "Mesh for front     : " << this->targetView.minMeshChunk << " -> " << this->targetView.maxMeshChunk << std::endl;
@@ -92,6 +98,8 @@ void	Map::update(Engine &engine, Camera &camera)
 		{
 			this->targetView.minGenChunk = gm::Vec2i(this->targetView.minGenChunk.x, this->currentView.maxMeshChunk.y);
 			this->targetView.minMeshChunk = gm::Vec2i(this->targetView.minMeshChunk.x, this->currentView.maxMeshChunk.y);
+			minDelete = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.minGenChunk.y);
+			maxDelete = gm::Vec2i(this->currentView.maxGenChunk.x, this->currentView.minMeshChunk.y);
 			status = MAP_GENERATING_X;
 			std::cout << "Generate for back : " << this->targetView.minGenChunk << " -> " << this->targetView.maxGenChunk << std::endl;
 			std::cout << "Mesh for back     : " << this->targetView.minMeshChunk << " -> " << this->targetView.maxMeshChunk << std::endl;
@@ -106,7 +114,23 @@ void	Map::update(Engine &engine, Camera &camera)
 		nbGeneration = 0;
 		nbMesh = 0;
 
-		// TODO : Delete useless chunk, update currentView
+		// Delete useless chunk
+		std::size_t	hash;
+		for (int x = minDelete.x; x < maxDelete.x; x++)
+		{
+			for (int y = minDelete.y; y < maxDelete.y; y++)
+			{
+				hash = gm::hash(gm::Vec2i(x, y));
+				ChunkMap::iterator	it = this->chunks.find(hash);
+
+				if (this->chunks.find(hash) != this->chunks.end())
+				{
+					it->second.destroy(engine);
+					this->chunks.erase(hash);
+				}
+			}
+		}
+
 		std::cout << "\nBegin generation :" << std::endl;
 	}
 
