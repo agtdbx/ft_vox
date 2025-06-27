@@ -8,8 +8,6 @@
 void	Map::update(Engine &engine, Camera &camera)
 {
 	static MapStatus	status = MAP_NONE;
-	static int			nbGeneration = 0;
-	static int			nbMesh = 0;
 	ThreadStatus		threadStatus;
 
 	if (status == MAP_NONE)
@@ -28,19 +26,14 @@ void	Map::update(Engine &engine, Camera &camera)
 			this->currentView.minMeshChunk = this->cameraChunkId + this->minChunkIdOffset;
 			this->currentView.maxMeshChunk = this->cameraChunkId + this->maxChunkIdOffset;
 			this->currentView.tmpId = this->currentView.minGenChunk;
-			std::cout << "\n\nMovement " << movement << " : need generation !" << std::endl;
-			std::cout << "Old target : gen " << this->currentView.minGenChunk << " -> " << this->currentView.maxGenChunk
-						<< ", mesh " << this->currentView.minMeshChunk << " -> " << this->currentView.maxMeshChunk <<  std::endl;
 
 			this->cameraChunkId += movement;
+
 			this->targetView.minGenChunk = this->cameraChunkId + this->minChunkIdOffset - gm::Vec2i(1, 1);
 			this->targetView.maxGenChunk = this->cameraChunkId + this->maxChunkIdOffset + gm::Vec2i(1, 1);
 			this->targetView.minMeshChunk = this->cameraChunkId + this->minChunkIdOffset;
 			this->targetView.maxMeshChunk = this->cameraChunkId + this->maxChunkIdOffset;
 			this->targetView.tmpId = this->targetView.minGenChunk;
-
-			std::cout << "New target : gen " << this->targetView.minGenChunk << " -> " << this->targetView.maxGenChunk
-						<< ", mesh " << this->targetView.minMeshChunk << " -> " << this->targetView.maxMeshChunk <<  std::endl;
 
 			for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
 				this->clusters[i].move(*this, movement);
@@ -65,9 +58,6 @@ void	Map::update(Engine &engine, Camera &camera)
 			minDelete = gm::Vec2i(this->currentView.maxMeshChunk.x, this->currentView.minGenChunk.y);
 			maxDelete = gm::Vec2i(this->currentView.maxGenChunk.x, this->currentView.maxGenChunk.y);
 			status = MAP_GENERATING_Y;
-			std::cout << "Generate for left : " << this->targetView.minGenChunk << " -> " << this->targetView.maxGenChunk << std::endl;
-			std::cout << "Mesh for left     : " << this->targetView.minMeshChunk << " -> " << this->targetView.maxMeshChunk << std::endl;
-			std::cout << "Delete for left   : " << minDelete << " -> " << maxDelete << std::endl;
 		}
 		// Right movement
 		else if (movement.x > 0)
@@ -77,9 +67,6 @@ void	Map::update(Engine &engine, Camera &camera)
 			minDelete = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.minGenChunk.y);
 			maxDelete = gm::Vec2i(this->currentView.minMeshChunk.x, this->currentView.maxGenChunk.y);
 			status = MAP_GENERATING_Y;
-			std::cout << "Generate for right : " << this->targetView.minGenChunk << " -> " << this->targetView.maxGenChunk << std::endl;
-			std::cout << "Mesh for right     : " << this->targetView.minMeshChunk << " -> " << this->targetView.maxMeshChunk << std::endl;
-			std::cout << "Delete for right   : " << minDelete << " -> " << maxDelete << std::endl;
 		}
 		// Front movement
 		else if (movement.y < 0)
@@ -89,9 +76,6 @@ void	Map::update(Engine &engine, Camera &camera)
 			minDelete = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.maxMeshChunk.y);
 			maxDelete = gm::Vec2i(this->currentView.maxGenChunk.x, this->currentView.maxGenChunk.y);
 			status = MAP_GENERATING_X;
-			std::cout << "Generate for front : " << this->targetView.minGenChunk << " -> " << this->targetView.maxGenChunk << std::endl;
-			std::cout << "Mesh for front     : " << this->targetView.minMeshChunk << " -> " << this->targetView.maxMeshChunk << std::endl;
-			std::cout << "Delete for front   : " << minDelete << " -> " << maxDelete << std::endl;
 		}
 		// Back movement
 		else
@@ -101,9 +85,6 @@ void	Map::update(Engine &engine, Camera &camera)
 			minDelete = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.minGenChunk.y);
 			maxDelete = gm::Vec2i(this->currentView.maxGenChunk.x, this->currentView.minMeshChunk.y);
 			status = MAP_GENERATING_X;
-			std::cout << "Generate for back : " << this->targetView.minGenChunk << " -> " << this->targetView.maxGenChunk << std::endl;
-			std::cout << "Mesh for back     : " << this->targetView.minMeshChunk << " -> " << this->targetView.maxMeshChunk << std::endl;
-			std::cout << "Delete for back   : " << minDelete << " -> " << maxDelete << std::endl;
 		}
 
 		this->currentView.minGenChunk = this->targetView.minGenChunk;
@@ -111,8 +92,6 @@ void	Map::update(Engine &engine, Camera &camera)
 		this->currentView.minMeshChunk = this->targetView.minMeshChunk;
 		this->currentView.maxMeshChunk = this->targetView.minMeshChunk;
 		this->currentView.tmpId = this->targetView.minGenChunk;
-		nbGeneration = 0;
-		nbMesh = 0;
 
 		// Delete useless chunk
 		std::size_t	hash;
@@ -130,16 +109,12 @@ void	Map::update(Engine &engine, Camera &camera)
 				}
 			}
 		}
-
-		std::cout << "\nBegin generation :" << std::endl;
 	}
 
 	if (status == MAP_GENERATING_X)
 	{
 		bool	allGenerationDone = true;
 		int		totalWidthGenerate = this->targetView.maxGenChunk.x - this->targetView.minGenChunk.x;
-		int		totalHeightGenerate = this->targetView.maxGenChunk.y - this->targetView.minGenChunk.y;
-		int		totalGenerate = totalWidthGenerate * totalHeightGenerate;
 		int		widthGeneratePerThread = gm::max(MIN_CHUNK_PER_THREAD, totalWidthGenerate / MAP_NB_THREAD);
 
 		for (int i = 0; i < MAP_NB_THREAD; i++)
@@ -150,12 +125,7 @@ void	Map::update(Engine &engine, Camera &camera)
 
 			// Update when thread end generating asked chunks
 			if (threadStatus == THREAD_GENERATE_END)
-			{
-				nbGeneration += this->threadsData[i].maxChunkId.x - this->threadsData[i].minChunkId.x;
-				std::cout << "\r  - generate " << nbGeneration << " / " << totalGenerate << std::flush;
-
 				threadStatus = THREAD_RUNNING;
-			}
 
 			if (threadStatus == THREAD_RUNNING)
 			{
@@ -209,8 +179,6 @@ void	Map::update(Engine &engine, Camera &camera)
 
 		if (allGenerationDone)
 		{
-			std::cout << "\n\nBegin meshing :" << std::endl;
-
 			this->currentView.maxGenChunk = this->targetView.maxGenChunk;
 			this->currentView.tmpId = this->targetView.minMeshChunk;
 			status = MAP_MESHING_X;
@@ -220,9 +188,7 @@ void	Map::update(Engine &engine, Camera &camera)
 	else if (status == MAP_GENERATING_Y)
 	{
 		bool	allGenerationDone = true;
-		int		totalWidthGenerate = this->targetView.maxGenChunk.x - this->targetView.minGenChunk.x;
 		int		totalHeightGenerate = this->targetView.maxGenChunk.y - this->targetView.minGenChunk.y;
-		int		totalGenerate = totalWidthGenerate * totalHeightGenerate;
 		int		heightGeneratePerThread = gm::max(MIN_CHUNK_PER_THREAD, totalHeightGenerate / MAP_NB_THREAD);
 
 		for (int i = 0; i < MAP_NB_THREAD; i++)
@@ -233,12 +199,7 @@ void	Map::update(Engine &engine, Camera &camera)
 
 			// Update when thread end generating asked chunks
 			if (threadStatus == THREAD_GENERATE_END)
-			{
-				nbGeneration += this->threadsData[i].maxChunkId.y - this->threadsData[i].minChunkId.y;
-				std::cout << "\r  - generate " << nbGeneration << " / " << totalGenerate << std::flush;
-
 				threadStatus = THREAD_RUNNING;
-			}
 
 			if (threadStatus == THREAD_RUNNING)
 			{
@@ -286,8 +247,6 @@ void	Map::update(Engine &engine, Camera &camera)
 
 		if (allGenerationDone)
 		{
-			std::cout << "\n\nBegin meshing :" << std::endl;
-
 			this->currentView.maxGenChunk = this->targetView.maxGenChunk;
 			this->currentView.tmpId = this->targetView.minMeshChunk;
 
@@ -299,8 +258,6 @@ void	Map::update(Engine &engine, Camera &camera)
 	{
 		bool	allMeshDone = true;
 		int		totalWidthMesh = this->targetView.maxMeshChunk.x - this->targetView.minMeshChunk.x;
-		int		totalHeightMesh = this->targetView.maxMeshChunk.y - this->targetView.minMeshChunk.y;
-		int		totalMesh = totalWidthMesh * totalHeightMesh;
 		int		widthMeshPerThread = gm::max(MIN_CHUNK_PER_THREAD, totalWidthMesh / MAP_NB_THREAD);
 
 		for (int i = 0; i < MAP_NB_THREAD; i++)
@@ -314,9 +271,6 @@ void	Map::update(Engine &engine, Camera &camera)
 			{
 				gm::Vec2i	minId = this->threadsData[i].minChunkId;
 				gm::Vec2i	maxId = this->threadsData[i].maxChunkId;
-
-				nbMesh += maxId.x - minId.x;
-				std::cout << "\r  - mesh " << nbMesh << " / " << totalMesh << std::flush;
 
 				for (int x = minId.x; x < maxId.x; x++)
 				{
@@ -376,24 +330,17 @@ void	Map::update(Engine &engine, Camera &camera)
 
 		if (allMeshDone)
 		{
-			std::cout << "\nEnd generate chunks" << std::endl;
-
 			this->currentView.maxMeshChunk = this->targetView.maxMeshChunk;
 			this->currentView.tmpId = this->targetView.tmpId;
 
 			status = MAP_NONE;
-
-			printf("Nb generation %i\n", nbGeneration);
-			printf("Nb mesh %i\n", nbMesh);
 		}
 	}
 
 	else if (status == MAP_MESHING_Y)
 	{
 		bool	allMeshDone = true;
-		int		totalWidthMesh = this->targetView.maxMeshChunk.x - this->targetView.minMeshChunk.x;
 		int		totalHeightMesh = this->targetView.maxMeshChunk.y - this->targetView.minMeshChunk.y;
-		int		totalMesh = totalWidthMesh * totalHeightMesh;
 		int		heightMeshPerThread = gm::max(MIN_CHUNK_PER_THREAD, totalHeightMesh / MAP_NB_THREAD);
 
 		for (int i = 0; i < MAP_NB_THREAD; i++)
@@ -407,9 +354,6 @@ void	Map::update(Engine &engine, Camera &camera)
 			{
 				gm::Vec2i	minId = this->threadsData[i].minChunkId;
 				gm::Vec2i	maxId = this->threadsData[i].maxChunkId;
-
-				nbMesh += maxId.y - minId.y;
-				std::cout << "\r  - mesh " << nbMesh << " / " << totalMesh << std::flush;
 
 				for (int x = minId.x; x < maxId.x; x++)
 				{
@@ -469,15 +413,10 @@ void	Map::update(Engine &engine, Camera &camera)
 
 		if (allMeshDone)
 		{
-			std::cout << "\nEnd generate chunks" << std::endl;
-
 			this->currentView.maxMeshChunk = this->targetView.maxMeshChunk;
 			this->currentView.tmpId = this->targetView.tmpId;
 
 			status = MAP_NONE;
-
-			printf("Nb generation %i\n", nbGeneration);
-			printf("Nb mesh %i\n", nbMesh);
 		}
 	}
 }
