@@ -298,7 +298,7 @@ public:
 
 		VkDeviceSize	bufferSizeVertex = sizeof(this->vertices[0]) * this->nbVertex;
 		VkDeviceSize	bufferSizeIndex = sizeof(this->indices[0]) * this->nbIndex;
-		VkDeviceSize	bufferSize = gm::max(bufferSizeVertex, bufferSizeIndex);
+		VkDeviceSize	bufferSize = bufferSizeVertex + bufferSizeIndex;
 
 		// Create temp buffers
 		StagingBuffer	stagingBuffer;
@@ -338,7 +338,7 @@ public:
 		VkDeviceSize	bufferSizeIndex = sizeof(this->indices[0]) * this->nbIndex;
 		VkDeviceSize	bufferSize = bufferSizeVertex + bufferSizeIndex;
 
-		if (stagingBuffer.size - stagingBuffer.offset < bufferSize)
+		if (stagingBuffer.offset + bufferSize >= stagingBuffer.size)
 		{
 			commandPool.endSingleTimeCommands(commandBuffer);
 			commandBuffer = commandPool.beginSingleTimeCommands();

@@ -37,7 +37,6 @@ VulkanContext::VulkanContext(void)
 {
 	this->instance = NULL;
 	this->device = NULL;
-	this->transferQueue = NULL;
 }
 
 //---- Destructor --------------------------------------------------------------
@@ -79,9 +78,9 @@ const VulkanQueue	&VulkanContext::getPresentQueue(void) const
 }
 
 
-const VulkanQueue	&VulkanContext::getTransferQueue(int id) const
+const VulkanQueue	&VulkanContext::getTransferQueue(void) const
 {
-	return (this->transferQueue[id]);
+	return (this->transferQueue);
 }
 
 //---- Setters -----------------------------------------------------------------
@@ -107,9 +106,6 @@ void	VulkanContext::init(VulkanCommandPool &commandPool, Window &window)
 
 void	VulkanContext::destroy(void)
 {
-	if (this->transferQueue != NULL)
-		delete [] this->transferQueue;
-
 	if (this->device != NULL)
 	{
 		vkDestroyDevice(this->device, nullptr);
@@ -234,7 +230,8 @@ void	VulkanContext::createLogicalDevice(Window &window)
 
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 	std::set<uint32_t> uniqueQueueFamilies = {queueIndices.graphicsFamily.value(),
-												queueIndices.presentFamily.value()};
+												queueIndices.presentFamily.value(),
+												queueIndices.transferFamily.value()};
 
 	float queuePriority = 1.0f;
 	for (uint32_t queueFamily : uniqueQueueFamilies) {
@@ -275,13 +272,8 @@ void	VulkanContext::createLogicalDevice(Window &window)
 	this->presentQueue.id = queueIndices.presentFamily.value();
 	vkGetDeviceQueue(this->device, queueIndices.presentFamily.value(), 0, &this->presentQueue.value);
 
-	this->transferQueue = new VulkanQueue[MAP_NB_THREAD];
-
-	for (int i = 0; i < MAP_NB_THREAD; i++)
-	{
-		this->transferQueue[i].id = queueIndices.transferFamily.value();
-		vkGetDeviceQueue(this->device, queueIndices.transferFamily.value(), 0, &this->transferQueue[i].value);
-	}
+	this->transferQueue.id = queueIndices.transferFamily.value();
+	vkGetDeviceQueue(this->device, queueIndices.transferFamily.value(), 0, &this->transferQueue.value);
 }
 
 //---- Utils -------------------------------------------------------------------

@@ -361,7 +361,9 @@ static void	threadRoutine(ThreadData *threadData)
 				}
 			}
 
+			engine.queueMutex.lock();
 			commandPool.endSingleTimeCommands(commandBuffer);
+			engine.queueMutex.unlock();
 
 			threadData->mutex.lock();
 			if (threadData->status != THREAD_STOPPING)

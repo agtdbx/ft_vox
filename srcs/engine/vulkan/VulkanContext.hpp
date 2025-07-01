@@ -85,7 +85,7 @@ public:
 	 *
 	 * @return The vulkan transfer queue.
 	 */
-	const VulkanQueue	&getTransferQueue(int id) const;
+	const VulkanQueue	&getTransferQueue(void) const;
 
 //---- Setters -----------------------------------------------------------------
 //---- Operators ---------------------------------------------------------------
@@ -113,7 +113,7 @@ private:
 	VkDebugUtilsMessengerEXT	debugMessenger;
 	VkPhysicalDevice			physicalDevice;
 	VkDevice					device;
-	VulkanQueue					graphicsQueue, presentQueue, *transferQueue;
+	VulkanQueue					graphicsQueue, presentQueue, transferQueue;
 
 //**** PRIVATE METHODS *********************************************************
 //---- Init sub part -----------------------------------------------------------

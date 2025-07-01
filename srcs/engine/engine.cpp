@@ -13,7 +13,7 @@ void	initEngine(Engine &engine)
 		engine.commandPoolThreads[i].create(engine.context.getDevice(),
 										engine.context.getPhysicalDevice(),
 										engine.window.getSurface(),
-										engine.context.getTransferQueue(i));
+										engine.context.getTransferQueue());
 }
 
 

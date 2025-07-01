@@ -28,7 +28,7 @@ uint32_t	findMemoryType(
 	throw std::runtime_error("Finding suitable memory type failed");
 }
 
-# include <iostream>
+
 QueueFamilyIndices	findQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
 {
 	QueueFamilyIndices	queueFamilyIndices;
@@ -45,7 +45,10 @@ QueueFamilyIndices	findQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceK
 			queueFamilyIndices.graphicsFamily = i;
 
 		if (queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT)
-			queueFamilyIndices.transferFamily = i;
+		{
+			if (queueFamilyIndices.graphicsFamily != i)
+				queueFamilyIndices.transferFamily = i;
+		}
 
 		if (queueFamilyIndices.isComplete())
 			break;

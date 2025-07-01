@@ -9,6 +9,8 @@
 # include <engine/textures/TextureManager.hpp>
 # include <engine/vulkan/VulkanCommandPool.hpp>
 
+# include <mutex>
+
 struct Engine
 {
 	VulkanContext		context;
@@ -18,6 +20,7 @@ struct Engine
 	GLFWwindow			*glfwWindow;
 	TextureManager		textureManager;
 	InputManager		inputManager;
+	std::mutex			queueMutex;
 };
 
 /**
