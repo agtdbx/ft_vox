@@ -7,7 +7,8 @@ static void perfLog(
 static void cameraMovements(
 				InputManager &inputManager,
 				Camera &camera,
-				double delta);
+				double delta,
+				GLFWwindow *glfwWindow);
 
 
 void	computation(
@@ -22,7 +23,7 @@ void	computation(
 
 	perfLog(delta, engine.window);
 
-	cameraMovements(inputManager, camera, delta);
+	cameraMovements(inputManager, camera, delta, engine.glfwWindow);
 
 	if (inputManager.tab.isPressed())
 		chunkShader.shaderFdfEnable = !chunkShader.shaderFdfEnable;
@@ -77,7 +78,8 @@ static void perfLog(
 static void cameraMovements(
 				InputManager &inputManager,
 				Camera &camera,
-				double delta)
+				double delta,
+				GLFWwindow *glfwWindow)
 {
 	// Speed
 	float speed = SPEED * delta;
@@ -102,6 +104,23 @@ static void cameraMovements(
 		camera.moveUp(-speed);
 
 	// Rotate
+
+	gm::Vec2d mousePose;
+
+    mousePose = inputManager.mouse.getPos();
+    inputManager.mouse.goTo(glfwWindow, (WIN_W / 2), (WIN_H / 2));
+
+
+    if (mousePose.x > ((WIN_W / 2) + 200))
+        camera.rotateY(rot);
+    if (mousePose.x < ((WIN_W / 2) - 200))
+        camera.rotateY(-rot);
+
+    if (mousePose.y > ((WIN_H / 2) + 100))
+        camera.rotateX(-rot);
+    if (mousePose.y < ((WIN_H / 2) - 100))
+        camera.rotateX(rot);
+
 	if (inputManager.down.isDown())
 		camera.rotateX(-rot);
 	if (inputManager.up.isDown())
