@@ -61,6 +61,9 @@ QueueFamilyIndices	findQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceK
 		i++;
 	}
 
+	if (!queueFamilyIndices.transferFamily.has_value())
+		queueFamilyIndices.transferFamily = queueFamilyIndices.graphicsFamily;
+
 	return (queueFamilyIndices);
 }
 
