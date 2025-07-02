@@ -206,6 +206,16 @@ void	Chunk::createBuffers(
 }
 
 
+void	Chunk::updateMesh(Engine &engine, Map &map)
+{
+	PerfLogger    perfLogger;
+
+	this->mesh.destroy();
+	this->createMesh(map, perfLogger);
+	this->mesh.createBuffers(engine.commandPool);
+}
+
+
 void	Chunk::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 {
 	this->uboPos.view = camera.getView();

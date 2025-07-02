@@ -194,6 +194,13 @@ public:
 				VkCommandBuffer &commandBuffer,
 				PerfLogger &perfLogger);
 	/**
+	 * @brief Update mesh according to chunk blocks.
+	 *
+	 * @param engine Engine struct.
+	 * @param map Map containing other chunks.
+	 */
+	void	updateMesh(Engine &engine, Map &map);
+	/**
 	 * @brief Draw chunk meshes.
 	 *
 	 * @param engine Engine struct.

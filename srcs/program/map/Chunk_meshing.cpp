@@ -802,10 +802,10 @@ void	Chunk::createWaterMesh(PerfLogger &perfLogger)
 			}
 
 			// Face up
-			pointLU = gm::Vec3f(x    , y + 1, z    );
-			pointLD = gm::Vec3f(x    , y + 1, z + 1);
-			pointRD = gm::Vec3f(x + w, y + 1, z + 1);
-			pointRU = gm::Vec3f(x + w, y + 1, z    );
+			pointLU = gm::Vec3f(x    , y + 1 - 0.2f, z    );
+			pointLD = gm::Vec3f(x    , y + 1 - 0.2f, z + 1);
+			pointRD = gm::Vec3f(x + w, y + 1 - 0.2f, z + 1);
+			pointRU = gm::Vec3f(x + w, y + 1 - 0.2f, z    );
 			createTriangleFace(vertexIndex, vertices, indices, nbVertex,
 								pointLU, pointLD, pointRD, pointRU, normalUp, CUBE_WATER);
 

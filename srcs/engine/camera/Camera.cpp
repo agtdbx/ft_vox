@@ -30,7 +30,7 @@ Camera::Camera(void)
 
 	this->computeRotation();
 	this->computeView();
-	// this->computeFrustum();
+	this->computeFrustum();
 }
 
 
