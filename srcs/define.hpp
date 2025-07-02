@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/27 15:31:12 by gugus            ###   ########.fr       */
+/*   Updated: 2025/07/02 12:47:08 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ const int MAX_FRAMES_IN_FLIGHT = 2;
 # define SPEED 5.0f // TODO Put it to 1
 # define SPRINT 20.0f
 # define ROTATE 45.0f
+# define SENSITIVITY 5.0f // 0.0 = no movement, 1.0f is normal, higher is faster (negatif is reverse)
 
 // Skybox defines
 const float SKYBOX_DIST = 10.0f;

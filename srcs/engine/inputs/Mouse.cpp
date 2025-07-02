@@ -83,6 +83,12 @@ void	Mouse::setVisible(GLFWwindow *window, bool visible)
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 }
 
+
+void	Mouse::setMouseMode(GLFWwindow *window, int mode)
+{
+	glfwSetInputMode(window, GLFW_CURSOR, mode);
+}
+
 //---- Operators ---------------------------------------------------------------
 
 Mouse	&Mouse::operator=(const Mouse &obj)

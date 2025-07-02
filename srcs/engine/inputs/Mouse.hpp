@@ -75,6 +75,13 @@ public:
 	 * @param visible New mouse visibility.
 	 */
 	void		setVisible(GLFWwindow *window, bool visible);
+	/**
+	 * @brief Set mode of the mouse.
+	 *
+	 * @param window Pointer on glfw window.
+	 * @param mode Mode for the mouse. Can be GLFW_CURSOR_NORMAL, GLFW_CURSOR_HIDDEN or GLFW_CURSOR_DISABLED.
+	 */
+	void		setMouseMode(GLFWwindow *window, int mode);
 
 //---- Operators ---------------------------------------------------------------
 	/**

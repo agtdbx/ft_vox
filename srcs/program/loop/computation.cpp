@@ -5,10 +5,9 @@ static void perfLog(
 				double delta,
 				Window &window);
 static void cameraMovements(
-				InputManager &inputManager,
+				Engine &engine,
 				Camera &camera,
-				double delta,
-				GLFWwindow *glfwWindow);
+				double delta);
 
 
 void	computation(
@@ -18,18 +17,15 @@ void	computation(
 			Shaders &shaders,
 			double delta)
 {
-	InputManager &inputManager = engine.inputManager;
-	ChunkShader	&chunkShader = shaders.chunkShader;
-
 	perfLog(delta, engine.window);
 
-	cameraMovements(inputManager, camera, delta, engine.glfwWindow);
+	cameraMovements(engine , camera, delta);
 
-	if (inputManager.tab.isPressed())
-		chunkShader.shaderFdfEnable = !chunkShader.shaderFdfEnable;
+	if (engine.inputManager.tab.isPressed())
+		shaders.chunkShader.shaderFdfEnable = !shaders.chunkShader.shaderFdfEnable;
 
-	if (inputManager.c.isPressed())
-		chunkShader.shaderBorderEnable = !chunkShader.shaderBorderEnable;
+	if (engine.inputManager.c.isPressed())
+		shaders.chunkShader.shaderBorderEnable = !shaders.chunkShader.shaderBorderEnable;
 
 	objects.map.update(engine, camera);
 }
@@ -76,62 +72,60 @@ static void perfLog(
 
 
 static void cameraMovements(
-				InputManager &inputManager,
+				Engine &engine,
 				Camera &camera,
-				double delta,
-				GLFWwindow *glfwWindow)
+				double delta)
 {
 	// Speed
 	float speed = SPEED * delta;
-	if (inputManager.lcontrol.isDown())
+	if (engine.inputManager.lcontrol.isDown())
 		speed *= SPRINT;
 	float rot = ROTATE * delta;
 
 	// Move
-	if (inputManager.w.isDown())
+	if (engine.inputManager.w.isDown())
 		camera.moveFront(speed);
-	else if (inputManager.s.isDown())
+	else if (engine.inputManager.s.isDown())
 		camera.moveFront(-speed);
 
-	if (inputManager.a.isDown())
+	if (engine.inputManager.a.isDown())
 		camera.moveRight(-speed);
-	else if (inputManager.d.isDown())
+	else if (engine.inputManager.d.isDown())
 		camera.moveRight(speed);
 
-	if (inputManager.space.isDown())
+	if (engine.inputManager.space.isDown())
 		camera.moveUp(speed);
-	else if (inputManager.lshift.isDown())
+	else if (engine.inputManager.lshift.isDown())
 		camera.moveUp(-speed);
 
-	// Rotate
+	// Rotate with mouse
+	gm::Vec2i	windowCenter = engine.window.getSize() / 2;
+	gm::Vec2d	mousePos;
+	int			mx, my;
 
-	gm::Vec2d mousePose;
+	mousePos = engine.inputManager.mouse.getPos();
+	engine.inputManager.mouse.goTo(engine.glfwWindow, windowCenter.x, windowCenter.y);
 
-    mousePose = inputManager.mouse.getPos();
-    inputManager.mouse.goTo(glfwWindow, (WIN_W / 2), (WIN_H / 2));
+	mx = (int)mousePos.x;
+	if (mx != windowCenter.x)
+		camera.rotateY((mx - windowCenter.x) * SENSITIVITY * delta);
 
+	my = (int)mousePos.y;
+	if (my != windowCenter.y)
+		camera.rotateX((windowCenter.y - my) * SENSITIVITY * delta);
 
-    if (mousePose.x > ((WIN_W / 2) + 200))
-        camera.rotateY(rot);
-    if (mousePose.x < ((WIN_W / 2) - 200))
-        camera.rotateY(-rot);
-
-    if (mousePose.y > ((WIN_H / 2) + 100))
-        camera.rotateX(-rot);
-    if (mousePose.y < ((WIN_H / 2) - 100))
-        camera.rotateX(rot);
-
-	if (inputManager.down.isDown())
+	// Rotate with keys
+	if (engine.inputManager.down.isDown())
 		camera.rotateX(-rot);
-	if (inputManager.up.isDown())
+	if (engine.inputManager.up.isDown())
 		camera.rotateX(rot);
 
-	if (inputManager.left.isDown())
+	if (engine.inputManager.left.isDown())
 		camera.rotateY(-rot);
-	if (inputManager.right.isDown())
+	if (engine.inputManager.right.isDown())
 		camera.rotateY(rot);
 
 	// Status
-	if (inputManager.p.isPressed())
+	if (engine.inputManager.p.isPressed())
 		camera.printStatus();
 }
