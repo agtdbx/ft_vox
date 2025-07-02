@@ -47,7 +47,7 @@ executable('ft_vox',
           build_rpath: '.',
           dependencies : [
             dependency('glfw3'),
-            dependency('libgmath'),
+            dependency('libgmath', static: true),
             dependency('vulkan'),
           ],
           include_directories: [

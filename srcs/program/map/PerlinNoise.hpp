@@ -1,11 +1,28 @@
-#ifndef PERLINNOISE_HPP
-# define PERLINNOISE_HPP
+#ifndef PERLIN_NOISE_HPP
+# define PERLIN_NOISE_HPP
 
 # include <gmath.hpp>
+
 # include <vector>
 
-#define SEED 42
-#define PERLIN_NOISE_SIZE 64 //must be a power of 2
+# define DEFAULT_PERLIN_SHAPE gm::Vec2i(16, 16)
+
+struct	Noise
+{
+	gm::Vec2i				shape;
+	std::vector<gm::Vec2f>	noise;
+
+	Noise	&operator=(const Noise &obj)
+	{
+		if (this == &obj)
+			return (*this);
+
+		this->shape = obj.shape;
+		this->noise = obj.noise;
+
+		return (*this);
+	}
+};
 
 /**
  * @brief PerlinNoise class.
@@ -22,17 +39,39 @@ public:
 	 * @return The default PerlinNoise.
 	 */
 	PerlinNoise(void);
-
-    /**
-	 * @brief contructor of PerlinNoise class.
+	/**
+	 * @brief Copy constructor of PerlinNoise class.
 	 *
-	 * @param seed The seed of the perlin.
+	 * @param obj The PerlinNoise to copy.
 	 *
-	 * @param perlin_noise_size The size of the perlin noise.
-	 *
-	 * @return The default PerlinNoise.
+	 * @return The PerlinNoise copied from parameter.
 	 */
-	PerlinNoise(int seed, int perlin_noise_size);
+	PerlinNoise(const PerlinNoise &obj);
+	/**
+	 * @brief Constructor of PerlinNoise class.
+	 *
+	 * @param seed The seed of perlin noise.
+	 * @param shape The shape of perlin noise.
+	 *
+	 * @return The PerlinNoise created from parameter.
+	 */
+	PerlinNoise(unsigned int seed, const gm::Vec2i &shape);
+	/**
+	 * @brief Constructor of PerlinNoise class.
+	 *
+	 * @param seed The seed of perlin noise.
+	 * @param shape The shape of perlin noise.
+	 * @param octaves The number of sub perlin noise (for more details). Must be higher than 0.
+	 * @param persistence The influence of sub perlin noise on previous noise. Must be between 0 and 1.
+	 *
+	 * @exception Throw an runtime_error if octaves is 0 or if persistence isn't in range [0, 1].
+	 * @return The PerlinNoise created from parameter.
+	 */
+	PerlinNoise(
+		unsigned int seed,
+		const gm::Vec2i &shape,
+		unsigned int octaves,
+		float persistence);
 
 //---- Destructor --------------------------------------------------------------
 	/**
@@ -40,40 +79,54 @@ public:
 	 */
 	~PerlinNoise();
 
+//**** ACCESSORS ***************************************************************
+//---- Getters -----------------------------------------------------------------
+//---- Setters -----------------------------------------------------------------
+//---- Operators ---------------------------------------------------------------
+	/**
+	 * @brief Copy operator of PerlinNoise class.
+	 *
+	 * @param obj The PerlinNoise to copy.
+	 *
+	 * @return The PerlinNoise copied from parameter.
+	 */
+	PerlinNoise	&operator=(const PerlinNoise &obj);
 
 //**** PUBLIC METHODS **********************************************************
 	/**
-	 * @brief Get the noise between 0 and 1 at a given coordinate
+	 * @brief Method to get noise at give coordonates.
 	 *
-	 * @param x The x coordinate.
+	 * @param x The x coordonates.
+	 * @param y The y coordonates.
 	 *
-	 * @param y The y coordinate.
-	 *
-	 * @return Return the noise between 0 and 1 at a given coordinate.
+	 * @return The noise a coordonates (x, y). Result is between -1 and 1.
 	 */
-    float getNoise(float x, float y);
+	float	getNoise(float x, float y) const;
+	/**
+	 * @brief Method to get noise normalize at give coordonates.
+	 *
+	 * @param x The x coordonates.
+	 * @param y The y coordonates.
+	 *
+	 * @return The normalize noise a coordonates (x, y). Result is between 0 and 1.
+	 */
+	float	getNoiseNormalize(float x, float y) const;
 
 //**** STATIC METHODS **********************************************************
 
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
-
-    std::vector<int>	perlin_noise;
-    int         		seed;
-	int 				perlin_noise_size;
-	int 				perlin_noise_list_size;
-	int 				perlin_noise_mask;
+	unsigned int		seed, octaves;
+	float				persistence;
+	std::vector<Noise>	noises;
 
 //**** PRIVATE METHODS *********************************************************
-
 	/**
-	 * @brief Compare the direction of vector for the noise
+	 * @brief Generate noises.
 	 *
-	 * @param value Use to find the direction of the vector.
-	 *
-	 * @return Return the vector with the correct axis.
+	 * @param firstShape Shape of the first noise.
 	 */
-    gm::Vec2f	get_constant_vector(int value);
+	void	generateNoises(const gm::Vec2i &firstShape);
 };
 
 //**** FUNCTIONS ***************************************************************

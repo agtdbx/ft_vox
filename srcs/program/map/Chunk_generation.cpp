@@ -4,10 +4,10 @@
 
 #include <unordered_map>
 
-PerlinNoise PerlinGeration(42, 64);
-PerlinNoise PerlinTerrain(854, 2);
-PerlinNoise PerlinBiome(654, 4096);
-//PerlinNoise PerlinCave(8576, 128);
+PerlinNoise PerlinGeration(42, gm::Vec2i(64, 64));
+PerlinNoise PerlinTerrain(854, gm::Vec2i(2, 2));
+PerlinNoise PerlinBiome(654, gm::Vec2i(4096, 4096));
+//PerlinNoise PerlinCave(8576, gm::Vec2i(128, 128));
 
 const gm::Vec3f	CHUNK_MIDDLE_OFFSET(CHUNK_SIZE / 2, CHUNK_HEIGHT / 2, CHUNK_SIZE / 2);
 
@@ -32,8 +32,6 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 	float maxSize = 0;
 	float perlinX = 0;
 	float perlinZ = 0;
-	float tmpX = 0;
-	float tmpZ = 0;
 	float Biome = 0;
 	float Moutain = 0;
 	int		idZ, id;
@@ -43,24 +41,15 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 		idZ = z * CHUNK_SIZE;
 		for (int x = 0; x < CHUNK_SIZE; x++)
 		{
-			tmpX = ((int)this->chunkPosition.x + x) % MAP_SIZE;
-			if (tmpX < 0)
-				tmpX += MAP_SIZE;
-
-			tmpZ = ((int)this->chunkPosition.z + z) % MAP_SIZE;
-			if (tmpZ < 0)
-				tmpZ += MAP_SIZE;
-			// Begin
-
-			perlinX = (float)tmpX / (float)MAP_SIZE;
-			perlinZ = (float)tmpZ / (float)MAP_SIZE;
+			perlinX = (this->chunkPosition.x + x) / 100.0f;
+			perlinZ = (this->chunkPosition.z + z) / 100.0f;
 
 			//TODO Moutain will need a lot tweaking (Biome need more chunk to see if he is garbage)
-			maxSize = (PerlinGeration.getNoise(perlinX, perlinZ) * 32.0f + 48.0f);
-			Biome = (PerlinBiome.getNoise(perlinX, perlinZ));
-			Moutain = (PerlinTerrain.getNoise(perlinX, perlinZ));
+			maxSize = (PerlinGeration.getNoiseNormalize(perlinX, perlinZ) * 32.0f + 48.0f);
+			Biome = (PerlinBiome.getNoiseNormalize(perlinX, perlinZ));
+			Moutain = (PerlinTerrain.getNoiseNormalize(perlinX, perlinZ));
 			// faire des truc aprés sa
-			//Cave = (PerlinCave.getNoise(perlinX, perlinZ));
+			//Cave = (PerlinCave.getNoiseNormalize(perlinX, perlinZ));
 			if (Moutain < 0.2)
 				maxSize = maxSize - (Moutain * 32.0f + 48.0f);
 			else if (Moutain > 0.8)
