@@ -4,15 +4,34 @@
 
 #include <unordered_map>
 
-// TODO : Random seed ?
-PerlinNoise	perlinTerrainLevel(42, gm::Vec2i(128, 128));
-PerlinNoise	perlinTerrainModifer(69, gm::Vec2i(128, 128), 4, 0.3);
-PerlinNoise	perlinBiome(7, gm::Vec2i(128, 128));
-PerlinNoise	perlinCaveSize(23, gm::Vec2i(128, 128));
-PerlinNoise	perlinCaveHeight(90, gm::Vec2i(128, 128));
-PerlinNoise	perlinMineral(32, gm::Vec2i(128, 128));
+PerlinNoise	createNoise(const gm::Vec2i &shape, unsigned int octaves, float persistence)
+{
+	static bool	randomInit = false;
+
+	if (!randomInit)
+	{
+		randomInit = true;
+		gm::initRandom();
+	}
+
+	return PerlinNoise(gm::uRand(), shape, octaves, persistence);
+}
+
+PerlinNoise	perlinTerrainLevel = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
+PerlinNoise	perlinTerrainModifer = createNoise(gm::Vec2i(128, 128), 4, 0.3);
+PerlinNoise	perlinBiome = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
+PerlinNoise	perlinCaveSize = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
+PerlinNoise	perlinCaveHeight = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
+PerlinNoise	perlinMineral = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
 
 const gm::Vec3f	CHUNK_MIDDLE_OFFSET(CHUNK_SIZE / 2, CHUNK_HEIGHT / 2, CHUNK_SIZE / 2);
+const float	scaleTerrainLevel = 1.0f / 1024.0f;
+const float	scaleTerrainModifier = 1.0f / 128.0f;
+const float	scaleBiome = 1.0f / 1024.0f;
+const float	scaleCaveSize = 1.0f / 64.0f;
+const float	scaleCaveHeightX = 1.0f / 256.0f;
+const float	scaleCaveHeightY = 1.0f / 64.0f;
+const float	scaleMineral = 1.0f / 10.0f;
 
 //**** STATIC FUNCTIONS DEFINE *************************************************
 //**** PUBLIC METHODS **********************************************************
@@ -33,37 +52,56 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 	this->boundingCube.center = this->chunkPosition + CHUNK_MIDDLE_OFFSET;
 	this->boundingCube.computePoints();
 
+	int		idZ, idXZ, id, height, maxHeight;
+	float	perlinX, perlinZ,
+			baseHeight, modifierHeight, biome,
+			caveSize, caveHeight, mineral, diffCave;
+
 	for (int z = 0; z < CHUNK_SIZE; z++)
 	{
+		idZ = z * CHUNK_SIZE;
+		perlinZ = this->chunkPosition.z + z;
 		for (int x = 0; x < CHUNK_SIZE; x++)
 		{
-			float	perlinX = this->chunkPosition.x + x;
-			float	perlinZ = this->chunkPosition.z + z;
+			idXZ = x + idZ;
+			perlinX = this->chunkPosition.x + x;
 
-			float	baseHeight = perlinTerrainLevel.getNoise(perlinX / 1024.0f, perlinZ / 1024.0f);
+			baseHeight = perlinTerrainLevel.getNoise(perlinX * scaleTerrainLevel, perlinZ * scaleTerrainLevel);
 			baseHeight = (baseHeight + 0.4) * 100.0f + 64.0f;
 
-			float	modifierHeight = perlinTerrainModifer.getNoise(perlinX / 128.0f, perlinZ / 128.0f);
+			modifierHeight = perlinTerrainModifer.getNoise(perlinX * scaleTerrainModifier, perlinZ * scaleTerrainModifier);
 			modifierHeight = modifierHeight * 16.0f;
 
-			float	biome = perlinBiome.getNoise(perlinX / 1024.0f, perlinZ / 1024.0f);
+			biome = perlinBiome.getNoise(perlinX * scaleBiome, perlinZ * scaleBiome);
 
-			int		height = baseHeight + modifierHeight;
-			int		maxHeight = gm::max(height, CHUNK_WATER_LEVEL);
+			height = baseHeight + modifierHeight;
+			maxHeight = gm::max(height, CHUNK_WATER_LEVEL);
 
-			float	caveSize = perlinCaveSize.getNoiseNormalize(perlinX / 64.0f, perlinZ / 64.0f);
+			caveSize = perlinCaveSize.getNoiseNormalize(perlinX * scaleCaveSize, perlinZ * scaleCaveSize);
 			caveSize = gm::max(caveSize - 0.7f, 0.0f) * 42.0f;
 
-			float	caveHeight = perlinCaveHeight.getNoiseNormalize(perlinX / 256.0f, perlinZ / 64.0f);
-			caveHeight = caveHeight * 42.0f + 12.0;
+			if (caveSize <= 0.0f)
+			{
+				caveHeight = 0.0f;
+				mineral = 0.0f;
+			}
+			else
+			{
+				caveHeight = perlinCaveHeight.getNoiseNormalize(perlinX * scaleCaveHeightX, perlinZ * scaleCaveHeightY);
+				caveHeight = caveHeight * 42.0f + 12.0;
 
-			float	mineral = perlinMineral.getNoise(perlinX / 10.0f, perlinZ / 10.0f);
+				mineral = perlinMineral.getNoise(perlinX * scaleMineral, perlinZ * scaleMineral);
+			}
+
 
 			for (int y = 0; y < CHUNK_HEIGHT; y++)
 			{
+				id = idXZ + y * CHUNK_SIZE2;
+
 				if (y == 0)
 				{
-					this->setCube(x, y, z, CUBE_STONE);
+					this->cubes[id] = CUBE_STONE;
+					this->cubeBitmap.set(x, y, z, true);
 					continue;
 				}
 
@@ -72,65 +110,85 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 
 				if (y <= height)
 				{
-					float	diffCave = gm::abs(y - caveHeight);
+					diffCave = gm::abs(y - caveHeight);
 					if (diffCave < caveSize)
 						continue;
 					else if (diffCave < caveSize + 1)
 					{
 						if (mineral >= 0.5f)
-							this->setCube(x, y, z, CUBE_IRON);
+							this->cubes[id] = CUBE_IRON;
 						else if (mineral <= -0.75f)
-							this->setCube(x, y, z, CUBE_DIAMOND);
+							this->cubes[id] = CUBE_DIAMOND;
 						else
-							this->setCube(x, y, z, CUBE_STONE);
+							this->cubes[id] = CUBE_STONE;
+						this->cubeBitmap.set(x, y, z, true);
 						continue;
 					}
 					else if (y < height - 4)
 					{
-						this->setCube(x, y, z, CUBE_STONE);
+						this->cubes[id] = CUBE_STONE;
+						this->cubeBitmap.set(x, y, z, true);
 						continue;
 					}
 
 					// Cold biome
-					if (biome < -0.3)
+					if (biome < -0.4)
 					{
 						if (y <= height && y >= height - 4)
-							this->setCube(x, y, z, CUBE_SNOW);
+						{
+							this->cubes[id] = CUBE_SNOW;
+							this->cubeBitmap.set(x, y, z, true);
+						}
 					}
 					// Hot biome
-					else if (biome > 0.3)
+					else if (biome > 0.4)
 					{
 						if (y <= height && y >= height - 4)
-							this->setCube(x, y, z, CUBE_SAND);
+						{
+							this->cubes[id] = CUBE_SAND;
+							this->cubeBitmap.set(x, y, z, true);
+						}
 					}
 					// Normal biome
 					else
 					{
 						if (y == height && y >= CHUNK_WATER_LEVEL)
-							this->setCube(x, y, z, CUBE_GRASS);
+						{
+							this->cubes[id] = CUBE_GRASS;
+							this->cubeBitmap.set(x, y, z, true);
+						}
 						else if (y >= height - 4)
-							this->setCube(x, y, z, CUBE_DIRT);
+						{
+							this->cubes[id] = CUBE_DIRT;
+							this->cubeBitmap.set(x, y, z, true);
+						}
 					}
 				}
 				else
 				{
 					// Cold biome
-					if (biome < -0.3)
+					if (biome < -0.4)
 					{
 						if (y >= CHUNK_WATER_LEVEL)
-							this->setCube(x, y, z, CUBE_ICE);
+						{
+							this->cubes[id] = CUBE_ICE;
+							this->cubeBitmap.set(x, y, z, true);
+						}
 					}
 					// Hot biome
-					else if (biome > 0.3)
+					else if (biome > 0.4)
 					{
 						if (y >= CHUNK_WATER_LEVEL)
-							this->setCube(x, y, z, CUBE_LAVA);
+						{
+							this->cubes[id] = CUBE_LAVA;
+							this->cubeBitmap.set(x, y, z, true);
+						}
 					}
 					// Normal biome
 					else
 					{
 						if (y >= CHUNK_WATER_LEVEL)
-							this->setCube(x, y, z, CUBE_WATER);
+							this->cubes[id] = CUBE_WATER;
 					}
 
 				}

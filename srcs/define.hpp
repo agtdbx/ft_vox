@@ -6,7 +6,7 @@
 /*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/07/03 14:27:29 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/07/03 16:30:37 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ const int MAX_FRAMES_IN_FLIGHT = 2;
 // Camera defines
 # define FOV 80.0f
 # define NEAR 0.1f
-# define FAR 1500.0f
+# define FAR 10000.0f
 # define SPEED 5.0f // TODO Put it to 1
 # define SPRINT 20.0f
 # define ROTATE 45.0f
@@ -82,7 +82,7 @@ const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
 # define MIN_CHUNK_PER_THREAD 4
 
 const int	MAP_NB_THREAD = 7;
-const int	MAP_CLUSTER_ARROUND = 2; // Map have x cluster arround center one
+const int	MAP_CLUSTER_ARROUND = 1; // Map have x cluster arround center one
 const int	MAP_CLUSTER_WIDTH = MAP_CLUSTER_ARROUND + 1 + MAP_CLUSTER_ARROUND;
 const int	MAP_CLUSTER_SIZE = MAP_CLUSTER_WIDTH * MAP_CLUSTER_WIDTH;
 
