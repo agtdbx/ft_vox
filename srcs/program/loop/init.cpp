@@ -32,9 +32,10 @@ bool init(
 		return (false);
 	}
 
-	camera.setPosition(gm::Vec3f(0.0f, 100.0f, 0.0f));
-	camera.setRotation(-30.0f, -90.0f, 0.0f);
-	engine.inputManager.mouse.setMouseMode(engine.glfwWindow, GLFW_CURSOR_DISABLED);
+	camera.setPosition(gm::Vec3f(0.0f, 200.0f, 0.0f));
+	camera.setRotation(-65.0f, -90.0f, 0.0f);
+	// TODO : uncomment
+	// engine.inputManager.mouse.setMouseMode(engine.glfwWindow, GLFW_CURSOR_DISABLED);
 
 	return (true);
 }

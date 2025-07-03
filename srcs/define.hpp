@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   define.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
+/*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/07/02 14:48:38 by gugus            ###   ########.fr       */
+/*   Updated: 2025/07/03 14:27:29 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,9 @@ const float SKYBOX_DIST2 = SKYBOX_DIST * 2.0f;
 // Chunk defines
 # define CHUNK_SIZE 32
 # define CHUNK_HEIGHT 256
-# define CHUNK_WATER_LEVEL 58
+# define CHUNK_WATER_LEVEL 80
+// # define CHUNK_MIN_TERRAIN_LEVEL 40
+// # define CHUNK_MAX_TERRAIN_LEVEL 150
 const int	CHUNK_MAX = CHUNK_SIZE - 1;
 const int	CHUNK_MAX_H = CHUNK_HEIGHT - 1;
 const int	CHUNK_SIZE2 = CHUNK_SIZE * CHUNK_SIZE;
@@ -79,8 +81,8 @@ const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
 # define MAX_CHUNK_BUFFER_SIZE 150000
 # define MIN_CHUNK_PER_THREAD 4
 
-const int	MAP_NB_THREAD = std::thread::hardware_concurrency() - 1;
-const int	MAP_CLUSTER_ARROUND = 1; // Map have x cluster arround center one
+const int	MAP_NB_THREAD = 7;
+const int	MAP_CLUSTER_ARROUND = 2; // Map have x cluster arround center one
 const int	MAP_CLUSTER_WIDTH = MAP_CLUSTER_ARROUND + 1 + MAP_CLUSTER_ARROUND;
 const int	MAP_CLUSTER_SIZE = MAP_CLUSTER_WIDTH * MAP_CLUSTER_WIDTH;
 

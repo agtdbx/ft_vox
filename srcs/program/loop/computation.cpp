@@ -116,21 +116,21 @@ static void cameraMovements(
 	else if (engine.inputManager.lshift.isDown())
 		camera.moveUp(-speed);
 
-	// Rotate with mouse
-	gm::Vec2i	windowCenter = engine.window.getSize() / 2;
-	gm::Vec2d	mousePos;
-	int			mx, my;
+	// TODO : Uncomment Rotate with mouse
+	// gm::Vec2i	windowCenter = engine.window.getSize() / 2;
+	// gm::Vec2d	mousePos;
+	// int			mx, my;
 
-	mousePos = engine.inputManager.mouse.getPos();
-	engine.inputManager.mouse.goTo(engine.glfwWindow, windowCenter.x, windowCenter.y);
+	// mousePos = engine.inputManager.mouse.getPos();
+	// engine.inputManager.mouse.goTo(engine.glfwWindow, windowCenter.x, windowCenter.y);
 
-	mx = (int)mousePos.x;
-	if (mx != windowCenter.x)
-		camera.rotateY((mx - windowCenter.x) * SENSITIVITY * delta);
+	// mx = (int)mousePos.x;
+	// if (mx != windowCenter.x)
+	// 	camera.rotateY((mx - windowCenter.x) * SENSITIVITY * delta);
 
-	my = (int)mousePos.y;
-	if (my != windowCenter.y)
-		camera.rotateX((windowCenter.y - my) * SENSITIVITY * delta);
+	// my = (int)mousePos.y;
+	// if (my != windowCenter.y)
+	// 	camera.rotateX((windowCenter.y - my) * SENSITIVITY * delta);
 
 	// Rotate with keys
 	if (engine.inputManager.down.isDown())
