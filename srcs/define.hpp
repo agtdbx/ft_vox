@@ -6,7 +6,7 @@
 /*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/07/03 16:30:37 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/07/03 17:36:56 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ const float SKYBOX_DIST2 = SKYBOX_DIST * 2.0f;
 // Chunk defines
 # define CHUNK_SIZE 32
 # define CHUNK_HEIGHT 256
-# define CHUNK_WATER_LEVEL 80
+# define CHUNK_WATER_LEVEL 70
 // # define CHUNK_MIN_TERRAIN_LEVEL 40
 // # define CHUNK_MAX_TERRAIN_LEVEL 150
 const int	CHUNK_MAX = CHUNK_SIZE - 1;
@@ -82,7 +82,7 @@ const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
 # define MIN_CHUNK_PER_THREAD 4
 
 const int	MAP_NB_THREAD = 7;
-const int	MAP_CLUSTER_ARROUND = 1; // Map have x cluster arround center one
+const int	MAP_CLUSTER_ARROUND = 4; // Map have x cluster arround center one
 const int	MAP_CLUSTER_WIDTH = MAP_CLUSTER_ARROUND + 1 + MAP_CLUSTER_ARROUND;
 const int	MAP_CLUSTER_SIZE = MAP_CLUSTER_WIDTH * MAP_CLUSTER_WIDTH;
 

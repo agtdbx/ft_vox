@@ -25,7 +25,7 @@ PerlinNoise	perlinCaveHeight = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
 PerlinNoise	perlinMineral = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
 
 const gm::Vec3f	CHUNK_MIDDLE_OFFSET(CHUNK_SIZE / 2, CHUNK_HEIGHT / 2, CHUNK_SIZE / 2);
-const float	scaleTerrainLevel = 1.0f / 1024.0f;
+const float	scaleTerrainLevel = 1.0f / 256.0f;
 const float	scaleTerrainModifier = 1.0f / 128.0f;
 const float	scaleBiome = 1.0f / 1024.0f;
 const float	scaleCaveSize = 1.0f / 64.0f;
@@ -67,7 +67,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 			perlinX = this->chunkPosition.x + x;
 
 			baseHeight = perlinTerrainLevel.getNoise(perlinX * scaleTerrainLevel, perlinZ * scaleTerrainLevel);
-			baseHeight = (baseHeight + 0.4) * 100.0f + 64.0f;
+			baseHeight = (baseHeight * baseHeight * baseHeight) * 100.0f + baseHeight * 50 + 80.0f;
 
 			modifierHeight = perlinTerrainModifer.getNoise(perlinX * scaleTerrainModifier, perlinZ * scaleTerrainModifier);
 			modifierHeight = modifierHeight * 16.0f;
@@ -92,7 +92,6 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 
 				mineral = perlinMineral.getNoise(perlinX * scaleMineral, perlinZ * scaleMineral);
 			}
-
 
 			for (int y = 0; y < CHUNK_HEIGHT; y++)
 			{
