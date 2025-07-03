@@ -104,6 +104,14 @@ bool	Chunk::isMeshCreated(void) const
 	return (this->meshCreate);
 }
 
+
+VkDeviceSize	Chunk::getBufferSize(void) const
+{
+	return (this->mesh.getBufferSize()
+				+ this->borderMesh.getBufferSize()
+				+ this->waterMesh.getBufferSize());
+}
+
 //---- Setters -----------------------------------------------------------------
 
 void	Chunk::setCube(int x, int y, int z, Cube cube)

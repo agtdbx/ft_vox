@@ -134,6 +134,12 @@ public:
 	 * @return true if the mesh is create, false else.
 	 */
 	bool	isMeshCreated(void) const;
+	/**
+	 * @brief Getter of buffer size of all meshes.
+	 *
+	 * @return Buffer size.
+	 */
+	VkDeviceSize	getBufferSize(void) const;
 
 //---- Setters -----------------------------------------------------------------
 	/**

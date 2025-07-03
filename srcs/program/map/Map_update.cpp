@@ -10,6 +10,9 @@ void	Map::update(Engine &engine, Camera &camera)
 	static MapStatus	status = MAP_NONE;
 	ThreadStatus		threadStatus;
 
+	if (MAP_NB_THREAD == 0)
+		return ;
+
 	if (status == MAP_NONE)
 	{
 		gm::Vec3f	cameraIdf = camera.getPosition() / (float)CHUNK_SIZE;

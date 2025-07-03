@@ -181,6 +181,15 @@ public:
 	{
 		return (this->indexBuffer);
 	}
+	/**
+	 * @brief Getter of buffer size (Vertex buffer size + Index buffer size).
+	 *
+	 * @return Buffer size.
+	 */
+	VkDeviceSize	getBufferSize(void) const
+	{
+		return (sizeof(this->vertices[0]) * this->nbVertex + sizeof(this->indices[0]) * this->nbIndex);
+	}
 
 //---- Setters -----------------------------------------------------------------
 	/**
@@ -289,7 +298,7 @@ public:
 	 */
 	void	createBuffers(VulkanCommandPool &commandPool)
 	{
-		if (this->nbVertex == 0)
+		if (this->nbIndex == 0)
 			return ;
 
 		this->destroyBuffers();
@@ -327,23 +336,12 @@ public:
 				VkCommandBuffer &commandBuffer,
 				PerfLogger &perfLogger)
 	{
-		if (this->nbVertex == 0)
+		if (this->nbIndex == 0)
 			return ;
 
 		this->destroyBuffers();
 
 		this->commandPool = &commandPool;
-
-		VkDeviceSize	bufferSizeVertex = sizeof(this->vertices[0]) * this->nbVertex;
-		VkDeviceSize	bufferSizeIndex = sizeof(this->indices[0]) * this->nbIndex;
-		VkDeviceSize	bufferSize = bufferSizeVertex + bufferSizeIndex;
-
-		if (stagingBuffer.offset + bufferSize >= stagingBuffer.size)
-		{
-			commandPool.endSingleTimeCommands(commandBuffer);
-			commandBuffer = commandPool.beginSingleTimeCommands();
-			stagingBuffer.offset = 0;
-		}
 
 		this->createVertexBuffer(stagingBuffer, commandBuffer, perfLogger);
 		this->createIndexBuffer(stagingBuffer, commandBuffer, perfLogger);

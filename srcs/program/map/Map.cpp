@@ -357,6 +357,15 @@ static void	threadRoutine(ThreadData *threadData)
 						continue;
 
 					it->second.createMeshes(map, perfLogger);
+
+					if (stagingBuffer.offset + it->second.getBufferSize() >= stagingBuffer.size)
+					{
+						engine.queueMutex.lock();
+						commandPool.endSingleTimeCommands(commandBuffer);
+						engine.queueMutex.unlock();
+						commandBuffer = commandPool.beginSingleTimeCommands();
+						stagingBuffer.offset = 0;
+					}
 					it->second.createBuffers(commandPool, stagingBuffer, commandBuffer, perfLogger);
 				}
 			}

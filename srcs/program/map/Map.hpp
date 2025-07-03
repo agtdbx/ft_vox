@@ -6,10 +6,11 @@
 # include <program/map/PerlinNoise.hpp>
 
 # include <unordered_map>
+# include <map>
 # include <thread>
 # include <mutex>
 
-using ChunkMap = std::unordered_map<std::size_t, Chunk>;
+using ChunkMap = std::map<std::size_t, Chunk>;
 
 
 enum ThreadStatus
