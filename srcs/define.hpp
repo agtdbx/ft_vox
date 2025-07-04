@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   define.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/07/03 18:42:04 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/07/04 11:50:41 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,8 +55,6 @@ const float SKYBOX_DIST2 = SKYBOX_DIST * 2.0f;
 # define CHUNK_SIZE 32
 # define CHUNK_HEIGHT 256
 # define CHUNK_WATER_LEVEL 70
-// # define CHUNK_MIN_TERRAIN_LEVEL 40
-// # define CHUNK_MAX_TERRAIN_LEVEL 150
 const int	CHUNK_MAX = CHUNK_SIZE - 1;
 const int	CHUNK_MAX_H = CHUNK_HEIGHT - 1;
 const int	CHUNK_SIZE2 = CHUNK_SIZE * CHUNK_SIZE;
@@ -82,7 +80,7 @@ const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
 # define MIN_CHUNK_PER_THREAD 4
 
 const int	MAP_NB_THREAD = 7;
-const int	MAP_CLUSTER_ARROUND = 1; // Map have x cluster arround center one
+const int	MAP_CLUSTER_ARROUND = 2; // Map have x cluster arround center one
 const int	MAP_CLUSTER_WIDTH = MAP_CLUSTER_ARROUND + 1 + MAP_CLUSTER_ARROUND;
 const int	MAP_CLUSTER_SIZE = MAP_CLUSTER_WIDTH * MAP_CLUSTER_WIDTH;
 
@@ -102,6 +100,7 @@ validation layer: vkCmdBindIndexBuffer(): buffer is VK_NULL_HANDLE.
 The Vulkan spec states: If the maintenance6 feature is not enabled, buffer must not be VK_NULL_HANDLE (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/drawing.html#VUID-vkCmdBindIndexBuffer-None-09493)
 validation layer: vkCmdDrawIndexed(): the last bound pipeline has pVertexBindingDescriptions[0].binding (0) which was bound with a buffer of VK_NULL_HANDLE, but nullDescriptor is not enabled.
 
+TODO: PATCH THIS ERROR TOO
 
 validation layer: vkQueueSubmit(): pSubmits[0].pSignalSemaphores[0] (VkSemaphore 0xe000000000e) is being signaled by VkQueue 0x2321a630, but it may still be in use by VkSwapchainKHR 0x40000000004.
 Here are the most recently acquired image indices: [0], 1, 2.
@@ -153,4 +152,23 @@ The Vulkan spec states: If any element of the pCommandBuffers member of any elem
 terminate called after throwing an instance of 'std::runtime_error'
   what():  Draw command buffer submit failed
 Aborted
+
+
+ERROR  : WHEN PLACE BLOCK IN INVISIBLE CHUNK
+
+The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
+validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x305f700000305f7 that is currently in use by VkCommandBuffer 0x5fd92f314a10.
+The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
+validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x306780000030678 that is currently in use by VkCommandBuffer 0x5fd92f314a10.
+The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
+validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x306820000030682 that is currently in use by VkCommandBuffer 0x5fd92f314a10.
+The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
+validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x3073e000003073e that is currently in use by VkCommandBuffer 0x5fd92f314a10.
+The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
+validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x307470000030747 that is currently in use by VkCommandBuffer 0x5fd92f314a10.
+The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
+validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x307a800000307a8 that is currently in use by VkCommandBuffer 0x5fd92f314a10.
+The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
+validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x307aa00000307aa that is currently in use by VkCommandBuffer 0x5fd92f314a10.
+The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
 */

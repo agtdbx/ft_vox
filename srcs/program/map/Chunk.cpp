@@ -231,6 +231,11 @@ void	Chunk::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 	// Draw mesh
 	if (!chunkShader.shaderFdfEnable)
 	{
+		if (!this->mesh.isBuffersCreated())
+			std::cout << "Chunk mesh block " << this->chunkId << " isn't exist" <<  std::endl;
+		if (this->mesh.getNbIndex() == 0)
+			std::cout << "Chunk mesh block " << this->chunkId << " is empty" <<  std::endl;
+
 		this->shaderParam.updateBuffer(engine.window, &this->uboPos, 0);
 		engine.window.drawMesh(this->mesh, chunkShader.shader, this->shaderParam);
 	}
@@ -242,6 +247,11 @@ void	Chunk::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 
 	if (chunkShader.shaderBorderEnable)
 	{
+		if (!this->borderMesh.isBuffersCreated())
+			std::cout << "Chunk mesh border " << this->chunkId << " isn't exist" <<  std::endl;
+		if (this->borderMesh.getNbIndex() == 0)
+			std::cout << "Chunk mesh border " << this->chunkId << " is empty" <<  std::endl;
+
 		this->shaderParamBorder.updateBuffer(engine.window, &this->uboPos, 0);
 		engine.window.drawMesh(this->borderMesh, chunkShader.shaderBorder, this->shaderParamBorder);
 	}
@@ -256,6 +266,9 @@ void	Chunk::drawWater(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 	// Draw mesh
 	if (!chunkShader.shaderFdfEnable)
 	{
+		if (!this->waterMesh.isBuffersCreated())
+			std::cout << "Chunk mesh water " << this->chunkId << " isn't exist" <<  std::endl;
+
 		this->shaderParamWater.updateBuffer(engine.window, &this->uboPos, 0);
 		engine.window.drawMesh(this->waterMesh, chunkShader.shaderWater, this->shaderParamWater);
 	}

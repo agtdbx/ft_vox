@@ -35,8 +35,7 @@ Map::~Map()
 
 Chunk	*Map::getChunk(int x, int y)
 {
-	std::size_t	hash = gm::hash(gm::Vec2i(x, y));
-
+	std::size_t	hash = gm::hashSmall(gm::Vec2i(x, y));
 	ChunkMap::iterator	chunkFind = this->chunks.find(hash);
 
 	if (chunkFind != this->chunks.end())
@@ -48,8 +47,7 @@ Chunk	*Map::getChunk(int x, int y)
 
 CubeBitmap	*Map::getChunkBitmap(int x, int y)
 {
-	std::size_t	hash = gm::hash(gm::Vec2i(x, y));
-
+	std::size_t	hash = gm::hashSmall(gm::Vec2i(x, y));
 	ChunkMap::iterator	chunkFind = this->chunks.find(hash);
 
 	if (chunkFind != this->chunks.end())
@@ -210,7 +208,6 @@ void	Map::destroy(Engine &engine)
 			this->threads[i].join();
 		}
 
-
 		// Delete threads
 		delete [] this->threadsData;
 		delete [] this->threads;
@@ -279,7 +276,6 @@ void	Map::destroy(Engine &engine)
 static void	threadRoutine(ThreadData *threadData)
 {
 	ThreadStatus	status = THREAD_RUNNING;
-	std::size_t		hash;
 	gm::Vec2i		minId, maxId, curId;
 	StagingBuffer	stagingBuffer;
 
@@ -314,8 +310,7 @@ static void	threadRoutine(ThreadData *threadData)
 				for (int y = minId.y; y < maxId.y; y++)
 				{
 					curId = gm::Vec2i(x, y);
-					hash = gm::hash(curId);
-					ChunkMap::iterator	it = chunks.find(hash);
+					ChunkMap::iterator	it = chunks.find(gm::hashSmall(curId));
 
 					if (it == chunks.end())
 						continue;
@@ -350,8 +345,7 @@ static void	threadRoutine(ThreadData *threadData)
 			{
 				for (int y = minId.y; y < maxId.y; y++)
 				{
-					hash = gm::hash(gm::Vec2i(x, y));
-					ChunkMap::iterator	it = chunks.find(hash);
+					ChunkMap::iterator	it = chunks.find(gm::hashSmall(gm::Vec2i(x, y)));
 
 					if (it == chunks.end())
 						continue;

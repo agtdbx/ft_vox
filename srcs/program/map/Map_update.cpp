@@ -102,10 +102,10 @@ void	Map::update(Engine &engine, Camera &camera)
 		{
 			for (int y = minDelete.y; y < maxDelete.y; y++)
 			{
-				hash = gm::hash(gm::Vec2i(x, y));
+				hash = gm::hashSmall(gm::Vec2i(x, y));
 				ChunkMap::iterator	it = this->chunks.find(hash);
 
-				if (this->chunks.find(hash) != this->chunks.end())
+				if (it != this->chunks.end())
 				{
 					it->second.destroy(engine);
 					this->chunks.erase(hash);
@@ -145,7 +145,7 @@ void	Map::update(Engine &engine, Camera &camera)
 					{
 						for (int y = minId.y; y < maxId.y; y++)
 						{
-							hash = gm::hash(gm::Vec2i(x, y));
+							hash = gm::hashSmall(gm::Vec2i(x, y));
 
 							if (this->chunks.find(hash) != this->chunks.end())
 								continue;
@@ -214,11 +214,17 @@ void	Map::update(Engine &engine, Camera &camera)
 					this->currentView.tmpId += gm::Vec2i(0, gm::min(chunkLeftBeforeEndLine, heightGeneratePerThread));
 					gm::Vec2i	maxId = this->currentView.tmpId + gm::Vec2i(1, 0);
 
+					std::size_t	hash;
 					for (int x = minId.x; x < maxId.x; x++)
 					{
 						for (int y = minId.y; y < maxId.y; y++)
 						{
-							this->chunks[gm::hash(gm::Vec2i(x, y))] = Chunk();
+							hash = gm::hashSmall(gm::Vec2i(x, y));
+
+							if (this->chunks.find(hash) != this->chunks.end())
+								continue;
+
+							this->chunks[hash] = Chunk();
 						}
 					}
 
@@ -280,7 +286,7 @@ void	Map::update(Engine &engine, Camera &camera)
 					for (int y = minId.y; y < maxId.y; y++)
 					{
 						gm::Vec2i	chunkPos = gm::Vec2i(x, y);
-						ChunkMap::iterator	it = this->chunks.find(gm::hash(chunkPos));
+						ChunkMap::iterator	it = this->chunks.find(gm::hashSmall(chunkPos));
 
 						if (it == this->chunks.end())
 							continue;
@@ -363,7 +369,7 @@ void	Map::update(Engine &engine, Camera &camera)
 					for (int y = minId.y; y < maxId.y; y++)
 					{
 						gm::Vec2i	chunkPos = gm::Vec2i(x, y);
-						ChunkMap::iterator	it = this->chunks.find(gm::hash(chunkPos));
+						ChunkMap::iterator	it = this->chunks.find(gm::hashSmall(chunkPos));
 
 						if (it == this->chunks.end())
 							continue;

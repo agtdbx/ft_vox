@@ -190,6 +190,15 @@ public:
 	{
 		return (sizeof(this->vertices[0]) * this->nbVertex + sizeof(this->indices[0]) * this->nbIndex);
 	}
+	/**
+	 * @brief To know is buffers are created.
+	 *
+	 * @return If buffers are created.
+	 */
+	bool	isBuffersCreated(void) const
+	{
+		return (this->vertexBuffer != NULL && this->indexBuffer != NULL);
+	}
 
 //---- Setters -----------------------------------------------------------------
 	/**
