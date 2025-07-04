@@ -60,6 +60,10 @@ struct PerfLogger
 	PerfField	createIndexBuffer;
 	PerfField	copyIndexBuffer;
 
+	// Destroy
+	PerfField	destroyChunk;
+
+
 	PerfLogger	&operator+=(const PerfLogger &obj)
 	{
 		// Generation
@@ -91,6 +95,9 @@ struct PerfLogger
 		this->mapIndexBuffer += obj.mapIndexBuffer;
 		this->createIndexBuffer += obj.createIndexBuffer;
 		this->copyIndexBuffer += obj.copyIndexBuffer;
+
+		// Destroy
+		this->destroyChunk += obj.destroyChunk;
 
 		return (*this);
 	}

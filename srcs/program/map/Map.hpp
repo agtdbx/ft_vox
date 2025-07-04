@@ -24,6 +24,9 @@ enum ThreadStatus
 	THREAD_NEED_BUFFER,
 	THREAD_BUFFURING,
 	THREAD_BUFFER_END,
+	THREAD_NEED_DESTROY,
+	THREAD_DESTROYING,
+	THREAD_DESTROY_END,
 	THREAD_STOPPING,
 	THREAD_STOP,
 };
@@ -52,8 +55,10 @@ enum	MapStatus
 	MAP_NONE,
 	MAP_GENERATING_X,
 	MAP_MESHING_X,
+	MAP_DESTROYING_X,
 	MAP_GENERATING_Y,
 	MAP_MESHING_Y,
+	MAP_DESTROYING_Y,
 };
 
 
@@ -177,13 +182,58 @@ private:
 	ChunkMap				chunks;
 	std::vector<Cluster>	clusters;
 	std::vector<gm::Vec2i>	clusterOffsets;
-	gm::Vec2i				minChunkIdOffset, maxChunkIdOffset, cameraChunkId;
+	gm::Vec2i				minChunkIdOffset, maxChunkIdOffset,
+							minDelete, maxDelete, cameraChunkId;
 	MapView					currentView, targetView;
 	ThreadData				*threadsData;
 	std::thread				*threads;
 	StagingBuffer			stagingBuffer;
 
 //**** PRIVATE METHODS *********************************************************
+	/**
+	 * @brief Method to prepare generation.
+	 *
+	 * @param camera The camera.
+	 *
+	 * @return The new status for map generation. Can be none if no generation is needed.
+	 */
+	MapStatus	prepareGeneration(Engine &engine, Camera &camera);
+	/**
+	 * @brief Method to order generation of chunk block to threads optimize of X axis.
+	 *
+	 * @return True is the generation is finish, false else.
+	 */
+	bool		generatingX(void);
+	/**
+	 * @brief Method to order generation of chunk block to threads optimize of Y axis.
+	 *
+	 * @return True is the generation is finish, false else.
+	 */
+	bool		generatingY(void);
+	/**
+	 * @brief Method to order meshing of chunk block to threads optimize of X axis.
+	 *
+	 * @return True is the meshing is finish, false else.
+	 */
+	bool		meshingX(void);
+	/**
+	 * @brief Method to order meshing of chunk block to threads optimize of Y axis.
+	 *
+	 * @return True is the meshing is finish, false else.
+	 */
+	bool		meshingY(void);
+	/**
+	 * @brief Method to order destroying of chunk block to threads optimize of X axis.
+	 *
+	 * @return True is the destroying is finish, false else.
+	 */
+	bool		destroyingX(void);
+	/**
+	 * @brief Method to order destroying of chunk block to threads optimize of Y axis.
+	 *
+	 * @return True is the destroying is finish, false else.
+	 */
+	bool		destroyingY(void);
 };
 
 //**** FUNCTIONS ***************************************************************

@@ -182,6 +182,42 @@ void	Map::destroy(Engine &engine)
 {
 	PerfLogger	perfLogger;
 
+	this->minDelete = this->cameraChunkId + this->minChunkIdOffset - gm::Vec2i(1, 1);
+	this->maxDelete = this->cameraChunkId + this->maxChunkIdOffset + gm::Vec2i(1, 1);
+	this->currentView.tmpId = this->minDelete;
+
+	// Destroy chunk multhreaded
+	while (1)
+	{
+		if (this->destroyingX())
+			break;
+		usleep(10000);
+	}
+
+	// Free memory into map
+	for (int x = this->minDelete.x; x < this->maxDelete.x; x++)
+	{
+		for (int y = this->minDelete.y; y < this->maxDelete.y; y++)
+		{
+			std::size_t	hash = gm::hashSmall(gm::Vec2i(x, y));
+
+			if (this->chunks.find(hash) != this->chunks.end())
+				this->chunks.erase(hash);
+		}
+	}
+
+	// Save clean
+	ChunkMap::iterator	it = this->chunks.begin();
+	if (it != this->chunks.end())
+		printf("HMMMMMM %lu\n", this->chunks.size());
+
+	while (it != this->chunks.end())
+	{
+		it->second.destroy(engine);
+		it++;
+	}
+
+	// Free chunks
 	if (this->threads)
 	{
 		for (int i = 0; i < MAP_NB_THREAD; i++)
@@ -215,13 +251,6 @@ void	Map::destroy(Engine &engine)
 		this->threads = NULL;
 	}
 
-	ChunkMap::iterator	it = this->chunks.begin();
-	while (it != this->chunks.end())
-	{
-		it->second.destroy(engine);
-		it++;
-	}
-
 	this->stagingBuffer.destroy(engine.context.getDevice());
 
 	printf("\nTerrain generation stats !\n\n");
@@ -245,7 +274,8 @@ void	Map::destroy(Engine &engine)
 	perflogPrint(perfLogger.mapIndexBuffer,      " - index map     ");
 	perflogPrint(perfLogger.createIndexBuffer,   " - index create  ");
 	perflogPrint(perfLogger.copyIndexBuffer,     " - index copy    ");
-
+	printf("Destroy :\n");
+	perflogPrint(perfLogger.destroyChunk,        " - per chunk     ");
 	// TODO : REMOVE Print into csv format
 	// printf("\nCsv format !\n");
 	// printf("Name;Total time (us);Nb call;Avg time (us);\n");
@@ -266,6 +296,7 @@ void	Map::destroy(Engine &engine)
 	// perflogPrintCsv(perfLogger.mapIndexBuffer,      "Buffering index map");
 	// perflogPrintCsv(perfLogger.createIndexBuffer,   "Buffering index create");
 	// perflogPrintCsv(perfLogger.copyIndexBuffer,     "Buffering index copy");
+	// perflogPrintCsv(perfLogger.destroyChunk,     "Destroy per chunk");
 }
 
 //**** STATIC METHODS **********************************************************
@@ -374,10 +405,39 @@ static void	threadRoutine(ThreadData *threadData)
 			threadData->mutex.unlock();
 		}
 
+		else if (status == THREAD_NEED_DESTROY)
+		{
+			threadData->mutex.lock();
+			threadData->status = THREAD_DESTROYING;
+			minId = threadData->minChunkId;
+			maxId = threadData->maxChunkId;
+			threadData->mutex.unlock();
+
+			for (int x = minId.x; x < maxId.x; x++)
+			{
+				for (int y = minId.y; y < maxId.y; y++)
+				{
+					ChunkMap::iterator	it = chunks.find(gm::hashSmall(gm::Vec2i(x, y)));
+
+					if (it == chunks.end())
+						continue;
+
+					perflogStart(perfLogger.destroyChunk);
+					it->second.destroy(engine);
+					perflogEnd(perfLogger.destroyChunk);
+				}
+			}
+
+			threadData->mutex.lock();
+			if (threadData->status != THREAD_STOPPING)
+				threadData->status = THREAD_DESTROY_END;
+			threadData->mutex.unlock();
+		}
+
 		else
 		{
 			// Sleep until next loop
-			usleep(100000);
+			usleep(10000);
 		}
 	}
 

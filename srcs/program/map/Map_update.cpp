@@ -8,180 +8,24 @@
 void	Map::update(Engine &engine, Camera &camera)
 {
 	static MapStatus	status = MAP_NONE;
-	ThreadStatus		threadStatus;
 
 	if (MAP_NB_THREAD == 0)
 		return ;
 
 	if (status == MAP_NONE)
 	{
-		gm::Vec3f	cameraIdf = camera.getPosition() / (float)CHUNK_SIZE;
-		gm::Vec2i	cameraId = gm::Vec2i(cameraIdf.x, cameraIdf.z);
-		gm::Vec2i	movement = cameraId - this->cameraChunkId;
-
-		if (cameraId != this->cameraChunkId)
+		status = this->prepareGeneration(engine, camera);
+		if (status != MAP_NONE)
 		{
-			if (movement.x != 0 && movement.y != 0)
-				movement.y = 0;
-
-			this->currentView.minGenChunk = this->cameraChunkId + this->minChunkIdOffset - gm::Vec2i(1, 1);
-			this->currentView.maxGenChunk = this->cameraChunkId + this->maxChunkIdOffset + gm::Vec2i(1, 1);
-			this->currentView.minMeshChunk = this->cameraChunkId + this->minChunkIdOffset;
-			this->currentView.maxMeshChunk = this->cameraChunkId + this->maxChunkIdOffset;
-			this->currentView.tmpId = this->currentView.minGenChunk;
-
-			this->cameraChunkId += movement;
-
-			this->targetView.minGenChunk = this->cameraChunkId + this->minChunkIdOffset - gm::Vec2i(1, 1);
-			this->targetView.maxGenChunk = this->cameraChunkId + this->maxChunkIdOffset + gm::Vec2i(1, 1);
-			this->targetView.minMeshChunk = this->cameraChunkId + this->minChunkIdOffset;
-			this->targetView.maxMeshChunk = this->cameraChunkId + this->maxChunkIdOffset;
-			this->targetView.tmpId = this->targetView.minGenChunk;
-
-			for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
-				this->clusters[i].move(*this, movement);
-		}
-
-		if (this->currentView == this->targetView)
-			return ;
-
-		gm::Vec2i	minDelete = gm::Vec2i(0, 0);
-		gm::Vec2i	maxDelete = gm::Vec2i(0, 0);
-
-		// Case of first generation
-		if (this->currentView.minGenChunk == this->currentView.maxGenChunk)
-		{
-			status = MAP_GENERATING_X;
-		}
-		// Left movement
-		else if (movement.x < 0)
-		{
-			this->targetView.maxGenChunk = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.maxGenChunk.y);
-			this->targetView.maxMeshChunk = gm::Vec2i(this->currentView.minMeshChunk.x, this->currentView.maxMeshChunk.y);
-			minDelete = gm::Vec2i(this->currentView.maxMeshChunk.x, this->currentView.minGenChunk.y);
-			maxDelete = gm::Vec2i(this->currentView.maxGenChunk.x, this->currentView.maxGenChunk.y);
-			status = MAP_GENERATING_Y;
-		}
-		// Right movement
-		else if (movement.x > 0)
-		{
-			this->targetView.minGenChunk = gm::Vec2i(this->currentView.maxGenChunk.x, this->targetView.minGenChunk.y);
-			this->targetView.minMeshChunk = gm::Vec2i(this->currentView.maxMeshChunk.x, this->targetView.minMeshChunk.y);
-			minDelete = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.minGenChunk.y);
-			maxDelete = gm::Vec2i(this->currentView.minMeshChunk.x, this->currentView.maxGenChunk.y);
-			status = MAP_GENERATING_Y;
-		}
-		// Front movement
-		else if (movement.y < 0)
-		{
-			this->targetView.maxGenChunk = gm::Vec2i(this->targetView.maxGenChunk.x, this->currentView.minGenChunk.y);
-			this->targetView.maxMeshChunk = gm::Vec2i(this->targetView.maxMeshChunk.x, this->currentView.minMeshChunk.y);
-			minDelete = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.maxMeshChunk.y);
-			maxDelete = gm::Vec2i(this->currentView.maxGenChunk.x, this->currentView.maxGenChunk.y);
-			status = MAP_GENERATING_X;
-		}
-		// Back movement
-		else
-		{
-			this->targetView.minGenChunk = gm::Vec2i(this->targetView.minGenChunk.x, this->currentView.maxMeshChunk.y);
-			this->targetView.minMeshChunk = gm::Vec2i(this->targetView.minMeshChunk.x, this->currentView.maxMeshChunk.y);
-			minDelete = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.minGenChunk.y);
-			maxDelete = gm::Vec2i(this->currentView.maxGenChunk.x, this->currentView.minMeshChunk.y);
-			status = MAP_GENERATING_X;
-		}
-
-		this->currentView.minGenChunk = this->targetView.minGenChunk;
-		this->currentView.maxGenChunk = this->targetView.minGenChunk;
-		this->currentView.minMeshChunk = this->targetView.minMeshChunk;
-		this->currentView.maxMeshChunk = this->targetView.minMeshChunk;
-		this->currentView.tmpId = this->targetView.minGenChunk;
-
-		// Delete useless chunk
-		std::size_t	hash;
-		for (int x = minDelete.x; x < maxDelete.x; x++)
-		{
-			for (int y = minDelete.y; y < maxDelete.y; y++)
-			{
-				hash = gm::hashSmall(gm::Vec2i(x, y));
-				ChunkMap::iterator	it = this->chunks.find(hash);
-
-				if (it != this->chunks.end())
-				{
-					it->second.destroy(engine);
-					this->chunks.erase(hash);
-				}
-			}
+			printf("START GENERATION -------------------------------------------\n");
 		}
 	}
 
 	if (status == MAP_GENERATING_X)
 	{
-		bool	allGenerationDone = true;
-		int		totalWidthGenerate = this->targetView.maxGenChunk.x - this->targetView.minGenChunk.x;
-		int		widthGeneratePerThread = gm::max(MIN_CHUNK_PER_THREAD, totalWidthGenerate / MAP_NB_THREAD);
-
-		for (int i = 0; i < MAP_NB_THREAD; i++)
+		if (this->generatingX())
 		{
-			this->threadsData[i].mutex.lock();
-			threadStatus = this->threadsData[i].status;
-			this->threadsData[i].mutex.unlock();
-
-			// Update when thread end generating asked chunks
-			if (threadStatus == THREAD_GENERATE_END)
-				threadStatus = THREAD_RUNNING;
-
-			if (threadStatus == THREAD_RUNNING)
-			{
-				if (this->currentView.tmpId.y != this->targetView.maxGenChunk.y)
-				{
-					int	chunkLeftBeforeEndLine = this->targetView.maxGenChunk.x - this->currentView.tmpId.x;
-
-					gm::Vec2i	minId = this->currentView.tmpId;
-					this->currentView.tmpId += gm::Vec2i(gm::min(chunkLeftBeforeEndLine, widthGeneratePerThread), 0);
-					gm::Vec2i	maxId = this->currentView.tmpId + gm::Vec2i(0, 1);
-
-					std::size_t	hash;
-					for (int x = minId.x; x < maxId.x; x++)
-					{
-						for (int y = minId.y; y < maxId.y; y++)
-						{
-							hash = gm::hashSmall(gm::Vec2i(x, y));
-
-							if (this->chunks.find(hash) != this->chunks.end())
-								continue;
-
-							this->chunks[hash] = Chunk();
-						}
-					}
-
-					this->threadsData[i].mutex.lock();
-					this->threadsData[i].minChunkId = minId;
-					this->threadsData[i].maxChunkId = maxId;
-					this->threadsData[i].status = THREAD_NEED_GENERATE;
-					this->threadsData[i].mutex.unlock();
-
-					chunkLeftBeforeEndLine = this->targetView.maxGenChunk.x - this->currentView.tmpId.x;
-					if (chunkLeftBeforeEndLine == 0)
-					{
-						this->currentView.tmpId.x = this->targetView.minGenChunk.x;
-						this->currentView.tmpId.y++;
-					}
-
-					allGenerationDone = false;
-				}
-				else
-				{
-					this->threadsData[i].mutex.lock();
-					this->threadsData[i].status = THREAD_RUNNING;
-					this->threadsData[i].mutex.unlock();
-				}
-			}
-			else
-				allGenerationDone = false;
-		}
-
-		if (allGenerationDone)
-		{
+			printf("START MESHING X\n");
 			this->currentView.maxGenChunk = this->targetView.maxGenChunk;
 			this->currentView.tmpId = this->targetView.minMeshChunk;
 			status = MAP_MESHING_X;
@@ -190,72 +34,9 @@ void	Map::update(Engine &engine, Camera &camera)
 
 	else if (status == MAP_GENERATING_Y)
 	{
-		bool	allGenerationDone = true;
-		int		totalHeightGenerate = this->targetView.maxGenChunk.y - this->targetView.minGenChunk.y;
-		int		heightGeneratePerThread = gm::max(MIN_CHUNK_PER_THREAD, totalHeightGenerate / MAP_NB_THREAD);
-
-		for (int i = 0; i < MAP_NB_THREAD; i++)
+		if (this->generatingY())
 		{
-			this->threadsData[i].mutex.lock();
-			threadStatus = this->threadsData[i].status;
-			this->threadsData[i].mutex.unlock();
-
-			// Update when thread end generating asked chunks
-			if (threadStatus == THREAD_GENERATE_END)
-				threadStatus = THREAD_RUNNING;
-
-			if (threadStatus == THREAD_RUNNING)
-			{
-				if (this->currentView.tmpId.x != this->targetView.maxGenChunk.x)
-				{
-					int	chunkLeftBeforeEndLine = this->targetView.maxGenChunk.y - this->currentView.tmpId.y;
-
-					gm::Vec2i	minId = this->currentView.tmpId;
-					this->currentView.tmpId += gm::Vec2i(0, gm::min(chunkLeftBeforeEndLine, heightGeneratePerThread));
-					gm::Vec2i	maxId = this->currentView.tmpId + gm::Vec2i(1, 0);
-
-					std::size_t	hash;
-					for (int x = minId.x; x < maxId.x; x++)
-					{
-						for (int y = minId.y; y < maxId.y; y++)
-						{
-							hash = gm::hashSmall(gm::Vec2i(x, y));
-
-							if (this->chunks.find(hash) != this->chunks.end())
-								continue;
-
-							this->chunks[hash] = Chunk();
-						}
-					}
-
-					this->threadsData[i].mutex.lock();
-					this->threadsData[i].minChunkId = minId;
-					this->threadsData[i].maxChunkId = maxId;
-					this->threadsData[i].status = THREAD_NEED_GENERATE;
-					this->threadsData[i].mutex.unlock();
-
-					chunkLeftBeforeEndLine = this->targetView.maxGenChunk.y - this->currentView.tmpId.y;
-					if (chunkLeftBeforeEndLine == 0)
-					{
-						this->currentView.tmpId.y = this->targetView.minGenChunk.y;
-						this->currentView.tmpId.x++;
-					}
-
-					allGenerationDone = false;
-				}
-				else
-				{
-					this->threadsData[i].mutex.lock();
-					this->threadsData[i].status = THREAD_RUNNING;
-					this->threadsData[i].mutex.unlock();
-				}
-			}
-			else
-				allGenerationDone = false;
-		}
-
-		if (allGenerationDone)
-		{
+			printf("START MESHING Y\n");
 			this->currentView.maxGenChunk = this->targetView.maxGenChunk;
 			this->currentView.tmpId = this->targetView.minMeshChunk;
 
@@ -265,169 +46,591 @@ void	Map::update(Engine &engine, Camera &camera)
 
 	if (status == MAP_MESHING_X)
 	{
-		bool	allMeshDone = true;
-		int		totalWidthMesh = this->targetView.maxMeshChunk.x - this->targetView.minMeshChunk.x;
-		int		widthMeshPerThread = gm::max(MIN_CHUNK_PER_THREAD, totalWidthMesh / MAP_NB_THREAD);
-
-		for (int i = 0; i < MAP_NB_THREAD; i++)
+		if (this->meshingX())
 		{
-			this->threadsData[i].mutex.lock();
-			threadStatus = this->threadsData[i].status;
-			this->threadsData[i].mutex.unlock();
-
-			// Update when thread end creating mesh for asked chunks
-			if (threadStatus == THREAD_MESH_END)
-			{
-				gm::Vec2i	minId = this->threadsData[i].minChunkId;
-				gm::Vec2i	maxId = this->threadsData[i].maxChunkId;
-
-				for (int x = minId.x; x < maxId.x; x++)
-				{
-					for (int y = minId.y; y < maxId.y; y++)
-					{
-						gm::Vec2i	chunkPos = gm::Vec2i(x, y);
-						ChunkMap::iterator	it = this->chunks.find(gm::hashSmall(chunkPos));
-
-						if (it == this->chunks.end())
-							continue;
-
-						for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
-						{
-							this->clusters[i].giveChunk(chunkPos, &it->second);
-						}
-					}
-				}
-
-				threadStatus = THREAD_RUNNING;
-			}
-
-			if (threadStatus == THREAD_RUNNING)
-			{
-				if (this->currentView.tmpId.y != this->targetView.maxMeshChunk.y)
-				{
-					int	chunkLeftBeforeEndLine = this->targetView.maxMeshChunk.x - this->currentView.tmpId.x;
-
-					gm::Vec2i	minId = this->currentView.tmpId;
-					this->currentView.tmpId += gm::Vec2i(gm::min(chunkLeftBeforeEndLine, widthMeshPerThread), 0);
-					gm::Vec2i	maxId = this->currentView.tmpId + gm::Vec2i(0, 1);
-
-					this->threadsData[i].mutex.lock();
-					this->threadsData[i].minChunkId = minId;
-					this->threadsData[i].maxChunkId = maxId;
-					this->threadsData[i].status = THREAD_NEED_MESH;
-					this->threadsData[i].mutex.unlock();
-
-					chunkLeftBeforeEndLine = this->targetView.maxMeshChunk.x - this->currentView.tmpId.x;
-					if (chunkLeftBeforeEndLine == 0)
-					{
-						this->currentView.tmpId.x = this->targetView.minMeshChunk.x;
-						this->currentView.tmpId.y++;
-					}
-
-					allMeshDone = false;
-				}
-				else
-				{
-					this->threadsData[i].mutex.lock();
-					this->threadsData[i].status = THREAD_RUNNING;
-					this->threadsData[i].mutex.unlock();
-				}
-			}
-			else
-				allMeshDone = false;
-		}
-
-		if (allMeshDone)
-		{
+			printf("START DESTROYING X\n");
 			this->currentView.maxMeshChunk = this->targetView.maxMeshChunk;
-			this->currentView.tmpId = this->targetView.tmpId;
+			this->currentView.tmpId = this->minDelete;
 
-			status = MAP_NONE;
+			status = MAP_DESTROYING_X;
 		}
 	}
 
 	else if (status == MAP_MESHING_Y)
 	{
-		bool	allMeshDone = true;
-		int		totalHeightMesh = this->targetView.maxMeshChunk.y - this->targetView.minMeshChunk.y;
-		int		heightMeshPerThread = gm::max(MIN_CHUNK_PER_THREAD, totalHeightMesh / MAP_NB_THREAD);
-
-		for (int i = 0; i < MAP_NB_THREAD; i++)
+		if (this->meshingY())
 		{
-			this->threadsData[i].mutex.lock();
-			threadStatus = this->threadsData[i].status;
-			this->threadsData[i].mutex.unlock();
+			printf("START DESTROYING Y\n");
+			this->currentView.maxMeshChunk = this->targetView.maxMeshChunk;
+			this->currentView.tmpId = this->minDelete;
 
-			// Update when thread end creating mesh for asked chunks
-			if (threadStatus == THREAD_MESH_END)
+			status = MAP_DESTROYING_Y;
+		}
+	}
+
+	if (status == MAP_DESTROYING_X)
+	{
+		if (this->destroyingX())
+		{
+			this->currentView.tmpId = this->targetView.tmpId;
+
+			for (int x = this->minDelete.x; x < this->maxDelete.x; x++)
 			{
-				gm::Vec2i	minId = this->threadsData[i].minChunkId;
-				gm::Vec2i	maxId = this->threadsData[i].maxChunkId;
+				for (int y = this->minDelete.y; y < this->maxDelete.y; y++)
+				{
+					std::size_t	hash = gm::hashSmall(gm::Vec2i(x, y));
 
+					if (this->chunks.find(hash) != this->chunks.end())
+						this->chunks.erase(hash);
+				}
+			}
+
+			status = MAP_NONE;
+			printf("END GENERATION ---------------------------------------------\n");
+		}
+	}
+
+	else if (status == MAP_DESTROYING_Y)
+	{
+		if (this->destroyingY())
+		{
+			this->currentView.tmpId = this->targetView.tmpId;
+
+			for (int x = this->minDelete.x; x < this->maxDelete.x; x++)
+			{
+				for (int y = this->minDelete.y; y < this->maxDelete.y; y++)
+				{
+					std::size_t	hash = gm::hashSmall(gm::Vec2i(x, y));
+
+					if (this->chunks.find(hash) != this->chunks.end())
+						this->chunks.erase(hash);
+				}
+			}
+
+			status = MAP_NONE;
+			printf("END GENERATION ---------------------------------------------\n");
+		}
+	}
+}
+
+//**** PRIVATE METHODS *********************************************************
+
+MapStatus	Map::prepareGeneration(Engine &engine, Camera &camera)
+{
+	MapStatus	status = MAP_NONE;
+	gm::Vec3f	cameraIdf = camera.getPosition() / (float)CHUNK_SIZE;
+	gm::Vec2i	cameraId = gm::Vec2i(cameraIdf.x, cameraIdf.z);
+	gm::Vec2i	movement = cameraId - this->cameraChunkId;
+
+	if (cameraId != this->cameraChunkId)
+	{
+		if (movement.x != 0 && movement.y != 0)
+			movement.y = 0;
+
+		this->currentView.minGenChunk = this->cameraChunkId + this->minChunkIdOffset - gm::Vec2i(1, 1);
+		this->currentView.maxGenChunk = this->cameraChunkId + this->maxChunkIdOffset + gm::Vec2i(1, 1);
+		this->currentView.minMeshChunk = this->cameraChunkId + this->minChunkIdOffset;
+		this->currentView.maxMeshChunk = this->cameraChunkId + this->maxChunkIdOffset;
+		this->currentView.tmpId = this->currentView.minGenChunk;
+
+		this->cameraChunkId += movement;
+
+		this->targetView.minGenChunk = this->cameraChunkId + this->minChunkIdOffset - gm::Vec2i(1, 1);
+		this->targetView.maxGenChunk = this->cameraChunkId + this->maxChunkIdOffset + gm::Vec2i(1, 1);
+		this->targetView.minMeshChunk = this->cameraChunkId + this->minChunkIdOffset;
+		this->targetView.maxMeshChunk = this->cameraChunkId + this->maxChunkIdOffset;
+		this->targetView.tmpId = this->targetView.minGenChunk;
+
+		for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
+			this->clusters[i].move(*this, movement);
+	}
+
+	if (this->currentView == this->targetView)
+		return (status);
+
+	this->minDelete = gm::Vec2i(0, 0);
+	this->maxDelete = gm::Vec2i(0, 0);
+
+	// Case of first generation
+	if (this->currentView.minGenChunk == this->currentView.maxGenChunk)
+	{
+		status = MAP_GENERATING_X;
+	}
+	// Left movement
+	else if (movement.x < 0)
+	{
+		this->targetView.maxGenChunk = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.maxGenChunk.y);
+		this->targetView.maxMeshChunk = gm::Vec2i(this->currentView.minMeshChunk.x, this->currentView.maxMeshChunk.y);
+		this->minDelete = gm::Vec2i(this->currentView.maxMeshChunk.x, this->currentView.minGenChunk.y);
+		this->maxDelete = gm::Vec2i(this->currentView.maxGenChunk.x + 1, this->currentView.maxGenChunk.y);
+		status = MAP_GENERATING_Y;
+	}
+	// Right movement
+	else if (movement.x > 0)
+	{
+		this->targetView.minGenChunk = gm::Vec2i(this->currentView.maxGenChunk.x, this->targetView.minGenChunk.y);
+		this->targetView.minMeshChunk = gm::Vec2i(this->currentView.maxMeshChunk.x, this->targetView.minMeshChunk.y);
+		this->minDelete = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.minGenChunk.y);
+		this->maxDelete = gm::Vec2i(this->currentView.minMeshChunk.x + 1, this->currentView.maxGenChunk.y);
+		status = MAP_GENERATING_Y;
+	}
+	// Front movement
+	else if (movement.y < 0)
+	{
+		this->targetView.maxGenChunk = gm::Vec2i(this->targetView.maxGenChunk.x, this->currentView.minGenChunk.y);
+		this->targetView.maxMeshChunk = gm::Vec2i(this->targetView.maxMeshChunk.x, this->currentView.minMeshChunk.y);
+		this->minDelete = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.maxMeshChunk.y);
+		this->maxDelete = gm::Vec2i(this->currentView.maxGenChunk.x, this->currentView.maxGenChunk.y + 1);
+		status = MAP_GENERATING_X;
+	}
+	// Back movement
+	else
+	{
+		this->targetView.minGenChunk = gm::Vec2i(this->targetView.minGenChunk.x, this->currentView.maxMeshChunk.y);
+		this->targetView.minMeshChunk = gm::Vec2i(this->targetView.minMeshChunk.x, this->currentView.maxMeshChunk.y);
+		this->minDelete = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.minGenChunk.y);
+		this->maxDelete = gm::Vec2i(this->currentView.maxGenChunk.x, this->currentView.minMeshChunk.y + 1);
+		status = MAP_GENERATING_X;
+	}
+
+	this->currentView.minGenChunk = this->targetView.minGenChunk;
+	this->currentView.maxGenChunk = this->targetView.minGenChunk;
+	this->currentView.minMeshChunk = this->targetView.minMeshChunk;
+	this->currentView.maxMeshChunk = this->targetView.minMeshChunk;
+	this->currentView.tmpId = this->targetView.minGenChunk;
+
+	// // Delete useless chunk
+	// std::size_t	hash;
+	// for (int x = this->minDelete.x; x < this->maxDelete.x; x++)
+	// {
+	// 	for (int y = this->minDelete.y; y < this->maxDelete.y; y++)
+	// 	{
+	// 		hash = gm::hashSmall(gm::Vec2i(x, y));
+	// 		ChunkMap::iterator	it = this->chunks.find(hash);
+
+	// 		if (it != this->chunks.end())
+	// 		{
+	// 			it->second.destroy(engine);
+	// 			this->chunks.erase(hash);
+	// 		}
+	// 	}
+	// }
+
+	return (status);
+}
+
+
+bool	Map::generatingX(void)
+{
+	bool			allGenerationDone = true;
+	int				totalWidthGenerate = this->targetView.maxGenChunk.x - this->targetView.minGenChunk.x;
+	int				widthGeneratePerThread = gm::max(MIN_CHUNK_PER_THREAD, totalWidthGenerate / MAP_NB_THREAD);
+	ThreadStatus	threadStatus;
+
+	for (int i = 0; i < MAP_NB_THREAD; i++)
+	{
+		this->threadsData[i].mutex.lock();
+		threadStatus = this->threadsData[i].status;
+		this->threadsData[i].mutex.unlock();
+
+		// Update when thread end generating asked chunks
+		if (threadStatus == THREAD_GENERATE_END)
+			threadStatus = THREAD_RUNNING;
+
+		if (threadStatus == THREAD_RUNNING)
+		{
+			if (this->currentView.tmpId.y != this->targetView.maxGenChunk.y)
+			{
+				int	chunkLeftBeforeEndLine = this->targetView.maxGenChunk.x - this->currentView.tmpId.x;
+
+				gm::Vec2i	minId = this->currentView.tmpId;
+				this->currentView.tmpId += gm::Vec2i(gm::min(chunkLeftBeforeEndLine, widthGeneratePerThread), 0);
+				gm::Vec2i	maxId = this->currentView.tmpId + gm::Vec2i(0, 1);
+
+				std::size_t	hash;
 				for (int x = minId.x; x < maxId.x; x++)
 				{
 					for (int y = minId.y; y < maxId.y; y++)
 					{
-						gm::Vec2i	chunkPos = gm::Vec2i(x, y);
-						ChunkMap::iterator	it = this->chunks.find(gm::hashSmall(chunkPos));
+						hash = gm::hashSmall(gm::Vec2i(x, y));
 
-						if (it == this->chunks.end())
+						if (this->chunks.find(hash) != this->chunks.end())
 							continue;
 
-						for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
-						{
-							this->clusters[i].giveChunk(chunkPos, &it->second);
-						}
+						this->chunks[hash] = Chunk();
 					}
 				}
 
-				threadStatus = THREAD_RUNNING;
-			}
+				this->threadsData[i].mutex.lock();
+				this->threadsData[i].minChunkId = minId;
+				this->threadsData[i].maxChunkId = maxId;
+				this->threadsData[i].status = THREAD_NEED_GENERATE;
+				this->threadsData[i].mutex.unlock();
 
-			if (threadStatus == THREAD_RUNNING)
-			{
-				if (this->currentView.tmpId.x != this->targetView.maxMeshChunk.x)
+				chunkLeftBeforeEndLine = this->targetView.maxGenChunk.x - this->currentView.tmpId.x;
+				if (chunkLeftBeforeEndLine == 0)
 				{
-					int	chunkLeftBeforeEndLine = this->targetView.maxMeshChunk.y - this->currentView.tmpId.y;
-
-					gm::Vec2i	minId = this->currentView.tmpId;
-					this->currentView.tmpId += gm::Vec2i(0, gm::min(chunkLeftBeforeEndLine, heightMeshPerThread));
-					gm::Vec2i	maxId = this->currentView.tmpId + gm::Vec2i(1, 0);
-
-					this->threadsData[i].mutex.lock();
-					this->threadsData[i].minChunkId = minId;
-					this->threadsData[i].maxChunkId = maxId;
-					this->threadsData[i].status = THREAD_NEED_MESH;
-					this->threadsData[i].mutex.unlock();
-
-					chunkLeftBeforeEndLine = this->targetView.maxMeshChunk.y - this->currentView.tmpId.y;
-					if (chunkLeftBeforeEndLine == 0)
-					{
-						this->currentView.tmpId.y = this->targetView.minMeshChunk.y;
-						this->currentView.tmpId.x++;
-					}
-
-					allMeshDone = false;
+					this->currentView.tmpId.x = this->targetView.minGenChunk.x;
+					this->currentView.tmpId.y++;
 				}
-				else
-				{
-					this->threadsData[i].mutex.lock();
-					this->threadsData[i].status = THREAD_RUNNING;
-					this->threadsData[i].mutex.unlock();
-				}
+
+				allGenerationDone = false;
 			}
 			else
-				allMeshDone = false;
+			{
+				this->threadsData[i].mutex.lock();
+				this->threadsData[i].status = THREAD_RUNNING;
+				this->threadsData[i].mutex.unlock();
+			}
 		}
-
-		if (allMeshDone)
-		{
-			this->currentView.maxMeshChunk = this->targetView.maxMeshChunk;
-			this->currentView.tmpId = this->targetView.tmpId;
-
-			status = MAP_NONE;
-		}
+		else
+			allGenerationDone = false;
 	}
+
+	return (allGenerationDone);
+}
+
+
+bool	Map::generatingY(void)
+{
+	bool			allGenerationDone = true;
+	int				totalHeightGenerate = this->targetView.maxGenChunk.y - this->targetView.minGenChunk.y;
+	int				heightGeneratePerThread = gm::max(MIN_CHUNK_PER_THREAD, totalHeightGenerate / MAP_NB_THREAD);
+	ThreadStatus	threadStatus;
+
+	for (int i = 0; i < MAP_NB_THREAD; i++)
+	{
+		this->threadsData[i].mutex.lock();
+		threadStatus = this->threadsData[i].status;
+		this->threadsData[i].mutex.unlock();
+
+		// Update when thread end generating asked chunks
+		if (threadStatus == THREAD_GENERATE_END)
+			threadStatus = THREAD_RUNNING;
+
+		if (threadStatus == THREAD_RUNNING)
+		{
+			if (this->currentView.tmpId.x != this->targetView.maxGenChunk.x)
+			{
+				int	chunkLeftBeforeEndLine = this->targetView.maxGenChunk.y - this->currentView.tmpId.y;
+
+				gm::Vec2i	minId = this->currentView.tmpId;
+				this->currentView.tmpId += gm::Vec2i(0, gm::min(chunkLeftBeforeEndLine, heightGeneratePerThread));
+				gm::Vec2i	maxId = this->currentView.tmpId + gm::Vec2i(1, 0);
+
+				std::size_t	hash;
+				for (int x = minId.x; x < maxId.x; x++)
+				{
+					for (int y = minId.y; y < maxId.y; y++)
+					{
+						hash = gm::hashSmall(gm::Vec2i(x, y));
+
+						if (this->chunks.find(hash) != this->chunks.end())
+							continue;
+
+						this->chunks[hash] = Chunk();
+					}
+				}
+
+				this->threadsData[i].mutex.lock();
+				this->threadsData[i].minChunkId = minId;
+				this->threadsData[i].maxChunkId = maxId;
+				this->threadsData[i].status = THREAD_NEED_GENERATE;
+				this->threadsData[i].mutex.unlock();
+
+				chunkLeftBeforeEndLine = this->targetView.maxGenChunk.y - this->currentView.tmpId.y;
+				if (chunkLeftBeforeEndLine == 0)
+				{
+					this->currentView.tmpId.y = this->targetView.minGenChunk.y;
+					this->currentView.tmpId.x++;
+				}
+
+				allGenerationDone = false;
+			}
+			else
+			{
+				this->threadsData[i].mutex.lock();
+				this->threadsData[i].status = THREAD_RUNNING;
+				this->threadsData[i].mutex.unlock();
+			}
+		}
+		else
+			allGenerationDone = false;
+	}
+
+	return (allGenerationDone);
+}
+
+
+bool	Map::meshingX(void)
+{
+	bool			allMeshDone = true;
+	int				totalWidthMesh = this->targetView.maxMeshChunk.x - this->targetView.minMeshChunk.x;
+	int				widthMeshPerThread = gm::max(MIN_CHUNK_PER_THREAD, totalWidthMesh / MAP_NB_THREAD);
+	ThreadStatus	threadStatus;
+
+	for (int i = 0; i < MAP_NB_THREAD; i++)
+	{
+		this->threadsData[i].mutex.lock();
+		threadStatus = this->threadsData[i].status;
+		this->threadsData[i].mutex.unlock();
+
+		// Update when thread end creating mesh for asked chunks
+		if (threadStatus == THREAD_MESH_END)
+		{
+			gm::Vec2i	minId = this->threadsData[i].minChunkId;
+			gm::Vec2i	maxId = this->threadsData[i].maxChunkId;
+
+			for (int x = minId.x; x < maxId.x; x++)
+			{
+				for (int y = minId.y; y < maxId.y; y++)
+				{
+					gm::Vec2i	chunkPos = gm::Vec2i(x, y);
+					ChunkMap::iterator	it = this->chunks.find(gm::hashSmall(chunkPos));
+
+					if (it == this->chunks.end())
+						continue;
+
+					for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
+					{
+						this->clusters[i].giveChunk(chunkPos, &it->second);
+					}
+				}
+			}
+
+			threadStatus = THREAD_RUNNING;
+		}
+
+		if (threadStatus == THREAD_RUNNING)
+		{
+			if (this->currentView.tmpId.y != this->targetView.maxMeshChunk.y)
+			{
+				int	chunkLeftBeforeEndLine = this->targetView.maxMeshChunk.x - this->currentView.tmpId.x;
+
+				gm::Vec2i	minId = this->currentView.tmpId;
+				this->currentView.tmpId += gm::Vec2i(gm::min(chunkLeftBeforeEndLine, widthMeshPerThread), 0);
+				gm::Vec2i	maxId = this->currentView.tmpId + gm::Vec2i(0, 1);
+
+				this->threadsData[i].mutex.lock();
+				this->threadsData[i].minChunkId = minId;
+				this->threadsData[i].maxChunkId = maxId;
+				this->threadsData[i].status = THREAD_NEED_MESH;
+				this->threadsData[i].mutex.unlock();
+
+				chunkLeftBeforeEndLine = this->targetView.maxMeshChunk.x - this->currentView.tmpId.x;
+				if (chunkLeftBeforeEndLine == 0)
+				{
+					this->currentView.tmpId.x = this->targetView.minMeshChunk.x;
+					this->currentView.tmpId.y++;
+				}
+
+				allMeshDone = false;
+			}
+			else
+			{
+				this->threadsData[i].mutex.lock();
+				this->threadsData[i].status = THREAD_RUNNING;
+				this->threadsData[i].mutex.unlock();
+			}
+		}
+		else
+			allMeshDone = false;
+	}
+
+	return (allMeshDone);
+}
+
+
+bool	Map::meshingY(void)
+{
+	bool			allMeshDone = true;
+	int				totalHeightMesh = this->targetView.maxMeshChunk.y - this->targetView.minMeshChunk.y;
+	int				heightMeshPerThread = gm::max(MIN_CHUNK_PER_THREAD, totalHeightMesh / MAP_NB_THREAD);
+	ThreadStatus	threadStatus;
+
+	for (int i = 0; i < MAP_NB_THREAD; i++)
+	{
+		this->threadsData[i].mutex.lock();
+		threadStatus = this->threadsData[i].status;
+		this->threadsData[i].mutex.unlock();
+
+		// Update when thread end creating mesh for asked chunks
+		if (threadStatus == THREAD_MESH_END)
+		{
+			gm::Vec2i	minId = this->threadsData[i].minChunkId;
+			gm::Vec2i	maxId = this->threadsData[i].maxChunkId;
+
+			for (int x = minId.x; x < maxId.x; x++)
+			{
+				for (int y = minId.y; y < maxId.y; y++)
+				{
+					gm::Vec2i	chunkPos = gm::Vec2i(x, y);
+					ChunkMap::iterator	it = this->chunks.find(gm::hashSmall(chunkPos));
+
+					if (it == this->chunks.end())
+						continue;
+
+					for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
+					{
+						this->clusters[i].giveChunk(chunkPos, &it->second);
+					}
+				}
+			}
+
+			threadStatus = THREAD_RUNNING;
+		}
+
+		if (threadStatus == THREAD_RUNNING)
+		{
+			if (this->currentView.tmpId.x != this->targetView.maxMeshChunk.x)
+			{
+				int	chunkLeftBeforeEndLine = this->targetView.maxMeshChunk.y - this->currentView.tmpId.y;
+
+				gm::Vec2i	minId = this->currentView.tmpId;
+				this->currentView.tmpId += gm::Vec2i(0, gm::min(chunkLeftBeforeEndLine, heightMeshPerThread));
+				gm::Vec2i	maxId = this->currentView.tmpId + gm::Vec2i(1, 0);
+
+				this->threadsData[i].mutex.lock();
+				this->threadsData[i].minChunkId = minId;
+				this->threadsData[i].maxChunkId = maxId;
+				this->threadsData[i].status = THREAD_NEED_MESH;
+				this->threadsData[i].mutex.unlock();
+
+				chunkLeftBeforeEndLine = this->targetView.maxMeshChunk.y - this->currentView.tmpId.y;
+				if (chunkLeftBeforeEndLine == 0)
+				{
+					this->currentView.tmpId.y = this->targetView.minMeshChunk.y;
+					this->currentView.tmpId.x++;
+				}
+
+				allMeshDone = false;
+			}
+			else
+			{
+				this->threadsData[i].mutex.lock();
+				this->threadsData[i].status = THREAD_RUNNING;
+				this->threadsData[i].mutex.unlock();
+			}
+		}
+		else
+			allMeshDone = false;
+	}
+
+	return (allMeshDone);
+}
+
+
+bool	Map::destroyingX(void)
+{
+	bool			allDestroyDone = true;
+	int				totalWidthDestroy = this->maxDelete.x - this->minDelete.x;
+	int				widthDestroyPerThread = gm::max(MIN_CHUNK_PER_THREAD, totalWidthDestroy / MAP_NB_THREAD);
+	ThreadStatus	threadStatus;
+
+	for (int i = 0; i < MAP_NB_THREAD; i++)
+	{
+		this->threadsData[i].mutex.lock();
+		threadStatus = this->threadsData[i].status;
+		this->threadsData[i].mutex.unlock();
+
+		// Update when thread end destroying asked chunks
+		if (threadStatus == THREAD_DESTROY_END)
+			threadStatus = THREAD_RUNNING;
+
+		if (threadStatus == THREAD_RUNNING)
+		{
+			if (this->currentView.tmpId.y != this->maxDelete.y)
+			{
+				int	chunkLeftBeforeEndLine = this->maxDelete.x - this->currentView.tmpId.x;
+
+				gm::Vec2i	minId = this->currentView.tmpId;
+				this->currentView.tmpId += gm::Vec2i(gm::min(chunkLeftBeforeEndLine, widthDestroyPerThread), 0);
+				gm::Vec2i	maxId = this->currentView.tmpId + gm::Vec2i(0, 1);
+
+				this->threadsData[i].mutex.lock();
+				this->threadsData[i].minChunkId = minId;
+				this->threadsData[i].maxChunkId = maxId;
+				this->threadsData[i].status = THREAD_NEED_DESTROY;
+				this->threadsData[i].mutex.unlock();
+
+				chunkLeftBeforeEndLine = this->maxDelete.x - this->currentView.tmpId.x;
+				if (chunkLeftBeforeEndLine == 0)
+				{
+					this->currentView.tmpId.x = this->minDelete.x;
+					this->currentView.tmpId.y++;
+				}
+
+				allDestroyDone = false;
+			}
+			else
+			{
+				this->threadsData[i].mutex.lock();
+				this->threadsData[i].status = THREAD_RUNNING;
+				this->threadsData[i].mutex.unlock();
+			}
+		}
+		else
+			allDestroyDone = false;
+	}
+
+	return (allDestroyDone);
+}
+
+
+bool	Map::destroyingY(void)
+{
+	bool			allDestroyDone = true;
+	int				totalHeightDestroy = this->maxDelete.y - this->minDelete.y;
+	int				heightDestroyPerThread = gm::max(MIN_CHUNK_PER_THREAD, totalHeightDestroy / MAP_NB_THREAD);
+	ThreadStatus	threadStatus;
+
+	for (int i = 0; i < MAP_NB_THREAD; i++)
+	{
+		this->threadsData[i].mutex.lock();
+		threadStatus = this->threadsData[i].status;
+		this->threadsData[i].mutex.unlock();
+
+		// Update when thread end destroying asked chunks
+		if (threadStatus == THREAD_DESTROY_END)
+			threadStatus = THREAD_RUNNING;
+
+		if (threadStatus == THREAD_RUNNING)
+		{
+			if (this->currentView.tmpId.x != this->maxDelete.x)
+			{
+				int	chunkLeftBeforeEndLine = this->maxDelete.y - this->currentView.tmpId.y;
+
+				gm::Vec2i	minId = this->currentView.tmpId;
+				this->currentView.tmpId += gm::Vec2i(0, gm::min(chunkLeftBeforeEndLine, heightDestroyPerThread));
+				gm::Vec2i	maxId = this->currentView.tmpId + gm::Vec2i(1, 0);
+
+				this->threadsData[i].mutex.lock();
+				this->threadsData[i].minChunkId = minId;
+				this->threadsData[i].maxChunkId = maxId;
+				this->threadsData[i].status = THREAD_NEED_DESTROY;
+				this->threadsData[i].mutex.unlock();
+
+				chunkLeftBeforeEndLine = this->maxDelete.y - this->currentView.tmpId.y;
+				if (chunkLeftBeforeEndLine == 0)
+				{
+					this->currentView.tmpId.y = this->minDelete.y;
+					this->currentView.tmpId.x++;
+				}
+
+				allDestroyDone = false;
+			}
+			else
+			{
+				this->threadsData[i].mutex.lock();
+				this->threadsData[i].status = THREAD_RUNNING;
+				this->threadsData[i].mutex.unlock();
+			}
+		}
+		else
+			allDestroyDone = false;
+	}
+
+	return (allDestroyDone);
 }
 
 //**** STATIC FUNCTIONS ********************************************************

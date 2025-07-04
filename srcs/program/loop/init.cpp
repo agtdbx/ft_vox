@@ -33,7 +33,7 @@ bool init(
 	}
 
 	camera.setPosition(gm::Vec3f(0.0f, 200.0f, 0.0f));
-	camera.setRotation(-30.0f, 90.0f, 0.0f);
+	camera.setRotation(-30.0f, -90.0f, 0.0f);
 	// TODO : uncomment
 	// engine.inputManager.mouse.setMouseMode(engine.glfwWindow, GLFW_CURSOR_DISABLED);
 
