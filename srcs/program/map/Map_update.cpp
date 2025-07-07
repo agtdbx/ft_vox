@@ -15,17 +15,12 @@ void	Map::update(Engine &engine, Camera &camera)
 	if (status == MAP_NONE)
 	{
 		status = this->prepareGeneration(engine, camera);
-		if (status != MAP_NONE)
-		{
-			printf("START GENERATION -------------------------------------------\n");
-		}
 	}
 
 	if (status == MAP_GENERATING_X)
 	{
 		if (this->generatingX())
 		{
-			printf("START MESHING X\n");
 			this->currentView.maxGenChunk = this->targetView.maxGenChunk;
 			this->currentView.tmpId = this->targetView.minMeshChunk;
 			status = MAP_MESHING_X;
@@ -36,7 +31,6 @@ void	Map::update(Engine &engine, Camera &camera)
 	{
 		if (this->generatingY())
 		{
-			printf("START MESHING Y\n");
 			this->currentView.maxGenChunk = this->targetView.maxGenChunk;
 			this->currentView.tmpId = this->targetView.minMeshChunk;
 
@@ -48,7 +42,6 @@ void	Map::update(Engine &engine, Camera &camera)
 	{
 		if (this->meshingX())
 		{
-			printf("START DESTROYING X\n");
 			this->currentView.maxMeshChunk = this->targetView.maxMeshChunk;
 			this->currentView.tmpId = this->minDelete;
 
@@ -60,7 +53,6 @@ void	Map::update(Engine &engine, Camera &camera)
 	{
 		if (this->meshingY())
 		{
-			printf("START DESTROYING Y\n");
 			this->currentView.maxMeshChunk = this->targetView.maxMeshChunk;
 			this->currentView.tmpId = this->minDelete;
 
@@ -86,7 +78,6 @@ void	Map::update(Engine &engine, Camera &camera)
 			}
 
 			status = MAP_NONE;
-			printf("END GENERATION ---------------------------------------------\n");
 		}
 	}
 
@@ -108,7 +99,6 @@ void	Map::update(Engine &engine, Camera &camera)
 			}
 
 			status = MAP_NONE;
-			printf("END GENERATION ---------------------------------------------\n");
 		}
 	}
 }

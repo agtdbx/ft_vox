@@ -20,7 +20,8 @@ PerlinNoise	createNoise(const gm::Vec2i &shape, unsigned int octaves, float pers
 PerlinNoise	perlinTerrainLevel = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
 PerlinNoise	perlinTerrainModifer = createNoise(gm::Vec2i(128, 128), 4, 0.3);
 PerlinNoise	perlinBiome = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
-PerlinNoise	perlinCaveSize = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
+PerlinNoise	perlinCaveSize1 = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
+PerlinNoise	perlinCaveSize2 = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
 PerlinNoise	perlinCaveHeight = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
 PerlinNoise	perlinMineral = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
 
@@ -28,7 +29,8 @@ const gm::Vec3f	CHUNK_MIDDLE_OFFSET(CHUNK_SIZE / 2, CHUNK_HEIGHT / 2, CHUNK_SIZE
 const float	scaleTerrainLevel = 1.0f / 256.0f;
 const float	scaleTerrainModifier = 1.0f / 128.0f;
 const float	scaleBiome = 1.0f / 1024.0f;
-const float	scaleCaveSize = 1.0f / 64.0f;
+const float	scaleCaveSize1 = 1.0f / 64.0f;
+const float	scaleCaveSize2 = 1.0f / 128.0f;
 const float	scaleCaveHeightX = 1.0f / 256.0f;
 const float	scaleCaveHeightY = 1.0f / 64.0f;
 const float	scaleMineral = 1.0f / 10.0f;
@@ -55,7 +57,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 	int		idZ, idXZ, id, height, maxHeight;
 	float	perlinX, perlinZ,
 			baseHeight, modifierHeight, biome,
-			caveSize, caveHeight, mineral, diffCave;
+			caveSize, caveSize1, caveSize2, caveHeight, mineral, diffCave;
 
 	for (int z = 0; z < CHUNK_SIZE; z++)
 	{
@@ -77,8 +79,9 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 			height = baseHeight + modifierHeight;
 			maxHeight = gm::max(height, CHUNK_LIQUID_LEVEL);
 
-			caveSize = perlinCaveSize.getNoiseNormalize(perlinX * scaleCaveSize, perlinZ * scaleCaveSize);
-			caveSize = gm::max(caveSize - 0.7f, 0.0f) * 42.0f;
+			caveSize1 = perlinCaveSize1.getNoiseNormalize(perlinX * scaleCaveSize1, perlinZ * scaleCaveSize2);
+			caveSize2 = perlinCaveSize2.getNoiseNormalize(perlinX * scaleCaveSize2, perlinZ * scaleCaveSize1);
+			caveSize = gm::max(gm::max(caveSize1, caveSize2) - 0.7f, 0.0f) * 42.0f;
 
 			if (caveSize <= 0.0f)
 			{

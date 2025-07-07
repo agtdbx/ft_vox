@@ -811,6 +811,7 @@ void	Chunk::createLiquidMesh(PerfLogger &perfLogger)
 					break;
 				if (this->at(x + w, y, z) != cube)
 					break;
+				cubeMeshed[(x + w) + idZ] = true;
 				w++;
 			}
 
@@ -831,16 +832,9 @@ void	Chunk::createLiquidMesh(PerfLogger &perfLogger)
 				if (tmpW < w)
 					break;
 
+				for (int i = 0; i < w; i++)
+					cubeMeshed[(x + i) + idZ2] = true;
 				h++;
-			}
-
-			for (int th = 0; th < h; th++)
-			{
-				idZ  = (z + th) * CHUNK_SIZE;
-				for (int tw = 0; tw < w; tw++)
-				{
-					cubeMeshed[(x + tw) + idZ] = true;
-				}
 			}
 
 			// Face up
