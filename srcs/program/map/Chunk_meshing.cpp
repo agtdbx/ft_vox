@@ -780,13 +780,22 @@ void	Chunk::createLiquidMesh(PerfLogger &perfLogger)
 
 	gm::Vec3f	pointLU, pointLD, pointRD, pointRU;
 
-	int	x, w;
+	bool	cubeMeshed[CHUNK_SIZE2] = {0};
+
+	int	x, w, h, tmpW, idZ, idZ2;
 	int	y = CHUNK_LIQUID_LEVEL;
 	for (int z = 0; z < CHUNK_SIZE; z++)
 	{
+		idZ = z * CHUNK_SIZE;
 		x = 0;
 		while (x < CHUNK_SIZE)
 		{
+			if (cubeMeshed[x + idZ])
+			{
+				x++;
+				continue;
+			}
+
 			const Cube	&cube = this->at(x, y, z);
 
 			if (cube != CUBE_WATER && cube != CUBE_LAVA)
@@ -798,15 +807,46 @@ void	Chunk::createLiquidMesh(PerfLogger &perfLogger)
 			w = 1;
 			while (x + w < CHUNK_SIZE)
 			{
+				if (cubeMeshed[(x + w) + idZ])
+					break;
 				if (this->at(x + w, y, z) != cube)
 					break;
 				w++;
 			}
 
+			h = 1;
+			while (z + h < CHUNK_SIZE)
+			{
+				tmpW = 0;
+				idZ2 = (z + h) * CHUNK_SIZE;
+				while (tmpW < w)
+				{
+					if (cubeMeshed[(x + tmpW) + idZ2])
+						break;
+					if (this->at(x + tmpW, y, z + h) != cube)
+						break;
+					tmpW++;
+				}
+
+				if (tmpW < w)
+					break;
+
+				h++;
+			}
+
+			for (int th = 0; th < h; th++)
+			{
+				idZ  = (z + th) * CHUNK_SIZE;
+				for (int tw = 0; tw < w; tw++)
+				{
+					cubeMeshed[(x + tw) + idZ] = true;
+				}
+			}
+
 			// Face up
 			pointLU = gm::Vec3f(x    , y + 1 - 0.2f, z    );
-			pointLD = gm::Vec3f(x    , y + 1 - 0.2f, z + 1);
-			pointRD = gm::Vec3f(x + w, y + 1 - 0.2f, z + 1);
+			pointLD = gm::Vec3f(x    , y + 1 - 0.2f, z + h);
+			pointRD = gm::Vec3f(x + w, y + 1 - 0.2f, z + h);
 			pointRU = gm::Vec3f(x + w, y + 1 - 0.2f, z    );
 			createTriangleFace(vertexIndex, vertices, indices, nbVertex,
 								pointLU, pointLD, pointRD, pointRU, normalUp, cube);
