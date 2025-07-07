@@ -231,7 +231,13 @@ bool	Map::generatingX(void)
 						if (this->chunks.find(hash) != this->chunks.end())
 							continue;
 
-						this->chunks[hash] = Chunk();
+						try
+						{
+							this->chunks[hash] = Chunk();
+						}
+						catch(const std::exception& e)
+						{
+						}
 					}
 				}
 
@@ -292,7 +298,13 @@ bool	Map::generatingY(void)
 						if (this->chunks.find(hash) != this->chunks.end())
 							continue;
 
-						this->chunks[hash] = Chunk();
+						try
+						{
+							this->chunks[hash] = Chunk();
+						}
+						catch(const std::exception& e)
+						{
+						}
 					}
 				}
 

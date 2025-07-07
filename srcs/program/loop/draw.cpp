@@ -9,8 +9,14 @@ void	draw(
 	// Start drawing
 	engine.window.startDraw();
 
-	objects.skybox.draw(engine, camera, shaders.skyboxShader);
-	objects.map.draw(engine, camera, shaders.chunkShader);
+	try
+	{
+		objects.skybox.draw(engine, camera, shaders.skyboxShader);
+		objects.map.draw(engine, camera, shaders.chunkShader);
+	}
+	catch(const std::exception& e)
+	{
+	}
 
 	// End drawing
 	engine.window.endDraw();

@@ -187,7 +187,6 @@ void	Map::destroy(Engine &engine)
 	this->currentView.tmpId = this->minDelete;
 
 	// Destroy chunk multhreaded
-	printf("START DESTROY CHUNKS\n");
 	while (1)
 	{
 		if (this->destroyingChunks())
@@ -196,7 +195,6 @@ void	Map::destroy(Engine &engine)
 	}
 
 	// Free memory into map
-	printf("FREE CHUNKS IN MAP\n");
 	for (int x = this->minDelete.x; x < this->maxDelete.x; x++)
 	{
 		for (int y = this->minDelete.y; y < this->maxDelete.y; y++)
@@ -209,11 +207,7 @@ void	Map::destroy(Engine &engine)
 	}
 
 	// Save clean
-	printf("SAVE CLEAN\n");
 	ChunkMap::iterator	it = this->chunks.begin();
-	if (it != this->chunks.end())
-		printf("HMMMMMM %lu\n", this->chunks.size());
-
 	while (it != this->chunks.end())
 	{
 		it->second.destroy(engine);
@@ -221,7 +215,6 @@ void	Map::destroy(Engine &engine)
 	}
 
 	// Free threads
-	printf("FREE THREADS\n");
 	if (this->threads)
 	{
 		for (int i = 0; i < MAP_NB_THREAD; i++)
@@ -350,8 +343,14 @@ static void	threadRoutine(ThreadData *threadData)
 					if (it == chunks.end())
 						continue;
 
-					it->second.init(engine, camera, chunkShader);
-					it->second.generate(curId, perfLogger);
+					try
+					{
+						it->second.init(engine, camera, chunkShader);
+						it->second.generate(curId, perfLogger);
+					}
+					catch(const std::exception& e)
+					{
+					}
 				}
 			}
 
@@ -385,17 +384,24 @@ static void	threadRoutine(ThreadData *threadData)
 					if (it == chunks.end())
 						continue;
 
-					it->second.createMeshes(map, perfLogger);
-
-					if (stagingBuffer.offset + it->second.getBufferSize() >= stagingBuffer.size)
+					try
 					{
-						engine.queueMutex.lock();
-						commandPool.endSingleTimeCommands(commandBuffer);
-						engine.queueMutex.unlock();
-						commandBuffer = commandPool.beginSingleTimeCommands();
-						stagingBuffer.offset = 0;
+						it->second.createMeshes(map, perfLogger);
+
+						if (stagingBuffer.offset + it->second.getBufferSize() >= stagingBuffer.size)
+						{
+							engine.queueMutex.lock();
+							commandPool.endSingleTimeCommands(commandBuffer);
+							engine.queueMutex.unlock();
+							commandBuffer = commandPool.beginSingleTimeCommands();
+							stagingBuffer.offset = 0;
+						}
+						it->second.createBuffers(commandPool, stagingBuffer, commandBuffer, perfLogger);
 					}
-					it->second.createBuffers(commandPool, stagingBuffer, commandBuffer, perfLogger);
+					catch(const std::exception& e)
+					{
+					}
+
 				}
 			}
 
@@ -426,9 +432,15 @@ static void	threadRoutine(ThreadData *threadData)
 					if (it == chunks.end())
 						continue;
 
-					perflogStart(perfLogger.destroyChunk);
-					it->second.destroy(engine);
-					perflogEnd(perfLogger.destroyChunk);
+					try
+					{
+						perflogStart(perfLogger.destroyChunk);
+						it->second.destroy(engine);
+						perflogEnd(perfLogger.destroyChunk);
+					}
+					catch(const std::exception& e)
+					{
+					}
 				}
 			}
 
