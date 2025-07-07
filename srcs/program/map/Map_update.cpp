@@ -125,7 +125,12 @@ MapStatus	Map::prepareGeneration(Engine &engine, Camera &camera)
 	if (cameraId != this->cameraChunkId)
 	{
 		if (movement.x != 0 && movement.y != 0)
-			movement.y = 0;
+		{
+			if (movement.x >= movement.y)
+				movement.y = 0;
+			else
+				movement.x = 0;
+		}
 
 		this->currentView.minGenChunk = this->cameraChunkId + this->minChunkIdOffset - gm::Vec2i(1, 1);
 		this->currentView.maxGenChunk = this->cameraChunkId + this->maxChunkIdOffset + gm::Vec2i(1, 1);
@@ -159,37 +164,37 @@ MapStatus	Map::prepareGeneration(Engine &engine, Camera &camera)
 	// Left movement
 	else if (movement.x < 0)
 	{
+		this->minDelete = gm::Vec2i(this->targetView.maxGenChunk.x, this->currentView.minGenChunk.y);
+		this->maxDelete = gm::Vec2i(this->currentView.maxGenChunk.x, this->currentView.maxGenChunk.y);
 		this->targetView.maxGenChunk = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.maxGenChunk.y);
 		this->targetView.maxMeshChunk = gm::Vec2i(this->currentView.minMeshChunk.x, this->currentView.maxMeshChunk.y);
-		this->minDelete = gm::Vec2i(this->currentView.maxMeshChunk.x, this->currentView.minGenChunk.y);
-		this->maxDelete = gm::Vec2i(this->currentView.maxGenChunk.x + 1, this->currentView.maxGenChunk.y);
 		status = MAP_GENERATING_Y;
 	}
 	// Right movement
 	else if (movement.x > 0)
 	{
+		this->minDelete = gm::Vec2i(this->targetView.minGenChunk.x, this->currentView.minGenChunk.y);
+		this->maxDelete = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.maxGenChunk.y);
 		this->targetView.minGenChunk = gm::Vec2i(this->currentView.maxGenChunk.x, this->targetView.minGenChunk.y);
 		this->targetView.minMeshChunk = gm::Vec2i(this->currentView.maxMeshChunk.x, this->targetView.minMeshChunk.y);
-		this->minDelete = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.minGenChunk.y);
-		this->maxDelete = gm::Vec2i(this->currentView.minMeshChunk.x + 1, this->currentView.maxGenChunk.y);
 		status = MAP_GENERATING_Y;
 	}
 	// Front movement
 	else if (movement.y < 0)
 	{
+		this->minDelete = gm::Vec2i(this->currentView.minGenChunk.x, this->targetView.maxGenChunk.y);
+		this->maxDelete = gm::Vec2i(this->currentView.maxGenChunk.x, this->currentView.maxGenChunk.y);
 		this->targetView.maxGenChunk = gm::Vec2i(this->targetView.maxGenChunk.x, this->currentView.minGenChunk.y);
 		this->targetView.maxMeshChunk = gm::Vec2i(this->targetView.maxMeshChunk.x, this->currentView.minMeshChunk.y);
-		this->minDelete = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.maxMeshChunk.y);
-		this->maxDelete = gm::Vec2i(this->currentView.maxGenChunk.x, this->currentView.maxGenChunk.y + 1);
 		status = MAP_GENERATING_X;
 	}
 	// Back movement
 	else
 	{
+		this->minDelete = gm::Vec2i(this->currentView.minGenChunk.x, this->targetView.minGenChunk.y);
+		this->maxDelete = gm::Vec2i(this->currentView.maxGenChunk.x, this->currentView.minGenChunk.y);
 		this->targetView.minGenChunk = gm::Vec2i(this->targetView.minGenChunk.x, this->currentView.maxMeshChunk.y);
 		this->targetView.minMeshChunk = gm::Vec2i(this->targetView.minMeshChunk.x, this->currentView.maxMeshChunk.y);
-		this->minDelete = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.minGenChunk.y);
-		this->maxDelete = gm::Vec2i(this->currentView.maxGenChunk.x, this->currentView.minMeshChunk.y + 1);
 		status = MAP_GENERATING_X;
 	}
 
