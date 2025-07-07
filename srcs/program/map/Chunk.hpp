@@ -221,13 +221,13 @@ public:
 	 */
 	void	draw(Engine &engine, Camera &camera, ChunkShader &chunkShader);
 	/**
-	 * @brief Draw chunk water mesh.
+	 * @brief Draw chunk liquid mesh.
 	 *
 	 * @param engine Engine struct.
 	 * @param camera The camera.
 	 * @param chunkShader Shaders used to draw meshes.
 	 */
-	void	drawWater(Engine &engine, Camera &camera, ChunkShader &chunkShader);
+	void	drawLiquid(Engine &engine, Camera &camera, ChunkShader &chunkShader);
 	/**
 	 * @brief Destroy chunk.
 	 *
@@ -244,11 +244,11 @@ private:
 	std::vector<gm::Vec3f>	positions;
 	Cube			cubes[CHUNK_TOTAL_SIZE]; // id = x + z * SIZE + y * SIZE2
 	CubeBitmap		cubeBitmap;
-	ChunkMesh		mesh, waterMesh;
+	ChunkMesh		mesh, liquidMesh;
 	ChunkBorderMesh	borderMesh;
 	UBO3DChunkPos	uboPos;
-	ShaderParam		shaderParam, shaderParamWater, shaderParamFdf,
-					shaderParamFdfWater, shaderParamBorder;
+	ShaderParam		shaderParam, shaderParamLiquid, shaderParamFdf,
+					shaderParamFdfLiquid, shaderParamBorder;
 	BoundingCube	boundingCube;
 	bool			initDone, generationDone, meshCreate, bufferCreate, canBeDraw;
 
@@ -264,9 +264,9 @@ private:
 	 */
 	void	createMesh(Map &map, PerfLogger &perfLogger);
 	/**
-	 * @brief Create water mesh.
+	 * @brief Create liquid mesh.
 	 */
-	void	createWaterMesh(PerfLogger &perfLogger);
+	void	createLiquidMesh(PerfLogger &perfLogger);
 };
 
 //**** FUNCTIONS ***************************************************************

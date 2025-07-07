@@ -769,25 +769,27 @@ void	Chunk::createMesh(Map &map, PerfLogger &perfLogger)
 }
 
 
-void	Chunk::createWaterMesh(PerfLogger &perfLogger)
+void	Chunk::createLiquidMesh(PerfLogger &perfLogger)
 {
-	perflogStart(perfLogger.meshWater);
+	perflogStart(perfLogger.meshLiquid);
 
 	std::unordered_map<std::size_t, uint32_t>	vertexIndex;
-	std::vector<VertexVoxel>					&vertices = this->waterMesh.getVertices();
-	std::vector<uint32_t>						&indices = this->waterMesh.getIndices();
+	std::vector<VertexVoxel>					&vertices = this->liquidMesh.getVertices();
+	std::vector<uint32_t>						&indices = this->liquidMesh.getIndices();
 	int											nbVertex = 0;
 
 	gm::Vec3f	pointLU, pointLD, pointRD, pointRU;
 
 	int	x, w;
-	int	y = CHUNK_WATER_LEVEL;
+	int	y = CHUNK_LIQUID_LEVEL;
 	for (int z = 0; z < CHUNK_SIZE; z++)
 	{
 		x = 0;
 		while (x < CHUNK_SIZE)
 		{
-			if (this->at(x, y, z) != CUBE_WATER)
+			const Cube	&cube = this->at(x, y, z);
+
+			if (cube != CUBE_WATER && cube != CUBE_LAVA)
 			{
 				x++;
 				continue;
@@ -796,7 +798,7 @@ void	Chunk::createWaterMesh(PerfLogger &perfLogger)
 			w = 1;
 			while (x + w < CHUNK_SIZE)
 			{
-				if (this->at(x + w, y, z) != CUBE_WATER)
+				if (this->at(x + w, y, z) != cube)
 					break;
 				w++;
 			}
@@ -807,15 +809,15 @@ void	Chunk::createWaterMesh(PerfLogger &perfLogger)
 			pointRD = gm::Vec3f(x + w, y + 1 - 0.2f, z + 1);
 			pointRU = gm::Vec3f(x + w, y + 1 - 0.2f, z    );
 			createTriangleFace(vertexIndex, vertices, indices, nbVertex,
-								pointLU, pointLD, pointRD, pointRU, normalUp, CUBE_WATER);
+								pointLU, pointLD, pointRD, pointRU, normalUp, cube);
 
 			x += w;
 		}
 	}
 
-	perflogEnd(perfLogger.meshWater);
+	perflogEnd(perfLogger.meshLiquid);
 
-	this->waterMesh.updateMeshInfo();
+	this->liquidMesh.updateMeshInfo();
 }
 
 //**** FUNCTIONS ***************************************************************

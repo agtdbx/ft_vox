@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/07/07 12:07:13 by gugus            ###   ########.fr       */
+/*   Updated: 2025/07/07 12:09:17 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ const float SKYBOX_DIST2 = SKYBOX_DIST * 2.0f;
 // Chunk defines
 # define CHUNK_SIZE 32
 # define CHUNK_HEIGHT 256
-# define CHUNK_WATER_LEVEL 70
+# define CHUNK_LIQUID_LEVEL 70
 const int	CHUNK_MAX = CHUNK_SIZE - 1;
 const int	CHUNK_MAX_H = CHUNK_HEIGHT - 1;
 const int	CHUNK_SIZE2 = CHUNK_SIZE * CHUNK_SIZE;

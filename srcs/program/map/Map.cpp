@@ -164,7 +164,7 @@ void	Map::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 	for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
 	{
 		if (camera.isCubeInFrutum(this->clusters[i].getBoundingCube()))
-			this->clusters[i].drawWater(engine, camera, chunkShader);
+			this->clusters[i].drawLiquid(engine, camera, chunkShader);
 	}
 
 	// TODO: Remove draw call count
@@ -268,7 +268,7 @@ void	Map::destroy(Engine &engine)
 	perflogPrint(perfLogger.meshBlockXaxis,      " - block x axis  ");
 	perflogPrint(perfLogger.meshBlockYaxis,      " - block y axis  ");
 	perflogPrint(perfLogger.meshBlockZaxis,      " - block z axis  ");
-	perflogPrint(perfLogger.meshWater,           " - water mesh    ");
+	perflogPrint(perfLogger.meshLiquid,          " - liquid mesh   ");
 	printf("Buffering :\n");
 	perflogPrint(perfLogger.createBuffer,        " - per chunk     ");
 	perflogPrint(perfLogger.createUpdateStaging, " - staging buffer");
@@ -291,7 +291,7 @@ void	Map::destroy(Engine &engine)
 	// perflogPrintCsv(perfLogger.meshBlockXaxis,      "Meshing block x axis");
 	// perflogPrintCsv(perfLogger.meshBlockYaxis,      "Meshing block y axis");
 	// perflogPrintCsv(perfLogger.meshBlockZaxis,      "Meshing block z axis");
-	// perflogPrintCsv(perfLogger.meshWater,           "Meshing water mesh");
+	// perflogPrintCsv(perfLogger.meshLiquid,          "Meshing liquid mesh");
 	// perflogPrintCsv(perfLogger.createBuffer,        "Buffering per chunk");
 	// perflogPrintCsv(perfLogger.createUpdateStaging, "Buffering staging buffer");
 	// perflogPrintCsv(perfLogger.mapVertexBuffer,     "Buffering vertex map");

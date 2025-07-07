@@ -44,8 +44,8 @@ struct PerfLogger
 	PerfField	meshBlockXaxis;
 	PerfField	meshBlockYaxis;
 	PerfField	meshBlockZaxis;
-	// Mesh water
-	PerfField	meshWater;
+	// Mesh liquid
+	PerfField	meshLiquid;
 
 	// Buffer
 	unsigned long int	chunkBufferSize = 0;
@@ -82,7 +82,7 @@ struct PerfLogger
 		this->meshBlockYaxis += obj.meshBlockYaxis;
 		this->meshBlockZaxis += obj.meshBlockZaxis;
 		// Mesh water
-		this->meshWater += obj.meshWater;
+		this->meshLiquid += obj.meshLiquid;
 
 		// Buffer
 		this->createBuffer += obj.createBuffer;

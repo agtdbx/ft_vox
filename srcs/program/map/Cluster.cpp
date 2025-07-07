@@ -130,7 +130,7 @@ void	Cluster::draw(
 }
 
 
-void	Cluster::drawWater(
+void	Cluster::drawLiquid(
 				Engine &engine,
 				Camera &camera,
 				ChunkShader &chunkShader)
@@ -140,7 +140,7 @@ void	Cluster::drawWater(
 		if (this->chunks[i] != NULL)
 		{
 			if (camera.isCubeInFrutum(this->chunks[i]->getBoundingCube()))
-				this->chunks[i]->drawWater(engine, camera, chunkShader);
+				this->chunks[i]->drawLiquid(engine, camera, chunkShader);
 		}
 	}
 }

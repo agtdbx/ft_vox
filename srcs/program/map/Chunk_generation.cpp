@@ -75,7 +75,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 			biome = perlinBiome.getNoise(perlinX * scaleBiome, perlinZ * scaleBiome);
 
 			height = baseHeight + modifierHeight;
-			maxHeight = gm::max(height, CHUNK_WATER_LEVEL);
+			maxHeight = gm::max(height, CHUNK_LIQUID_LEVEL);
 
 			caveSize = perlinCaveSize.getNoiseNormalize(perlinX * scaleCaveSize, perlinZ * scaleCaveSize);
 			caveSize = gm::max(caveSize - 0.7f, 0.0f) * 42.0f;
@@ -151,7 +151,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 					// Normal biome
 					else
 					{
-						if (y == height && y >= CHUNK_WATER_LEVEL)
+						if (y == height && y >= CHUNK_LIQUID_LEVEL)
 						{
 							this->cubes[id] = CUBE_GRASS;
 							this->cubeBitmap.set(x, y, z, true);
@@ -163,33 +163,30 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 						}
 					}
 				}
-				else
+				// Stone between lava and water
+				else if (gm::abs(0.4 - biome) < 0.001)
+				{
+					this->cubes[id] = CUBE_STONE;
+					this->cubeBitmap.set(x, y, z, true);
+				}
+				else if (y >= CHUNK_LIQUID_LEVEL)
 				{
 					// Cold biome
 					if (biome < -0.4)
 					{
-						if (y >= CHUNK_WATER_LEVEL)
-						{
-							this->cubes[id] = CUBE_ICE;
-							this->cubeBitmap.set(x, y, z, true);
-						}
+						this->cubes[id] = CUBE_ICE;
+						this->cubeBitmap.set(x, y, z, true);
 					}
 					// Hot biome
 					else if (biome > 0.4)
 					{
-						if (y >= CHUNK_WATER_LEVEL)
-						{
-							this->cubes[id] = CUBE_LAVA;
-							this->cubeBitmap.set(x, y, z, true);
-						}
+						this->cubes[id] = CUBE_LAVA;
 					}
 					// Normal biome
 					else
 					{
-						if (y >= CHUNK_WATER_LEVEL)
-							this->cubes[id] = CUBE_WATER;
+						this->cubes[id] = CUBE_WATER;
 					}
-
 				}
 			}
 		}

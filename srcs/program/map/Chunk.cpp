@@ -111,7 +111,7 @@ VkDeviceSize	Chunk::getBufferSize(void) const
 {
 	return (this->mesh.getBufferSize()
 				+ this->borderMesh.getBufferSize()
-				+ this->waterMesh.getBufferSize());
+				+ this->liquidMesh.getBufferSize());
 }
 
 //---- Setters -----------------------------------------------------------------
@@ -174,9 +174,9 @@ void	Chunk::init(
 	this->initDone = true;
 
 	chunkShader.shader.initShaderParam(engine, this->shaderParam, {"cubes"});
-	chunkShader.shaderWater.initShaderParam(engine, this->shaderParamWater, {"cubes"});
+	chunkShader.shaderWater.initShaderParam(engine, this->shaderParamLiquid, {"cubes"});
 	chunkShader.shaderFdf.initShaderParam(engine, this->shaderParamFdf);
-	chunkShader.shaderFdf.initShaderParam(engine, this->shaderParamFdfWater);
+	chunkShader.shaderFdf.initShaderParam(engine, this->shaderParamFdfLiquid);
 	chunkShader.shaderBorder.initShaderParam(engine, this->shaderParamBorder);
 
 	this->uboPos.proj = camera.getProjection();
@@ -193,7 +193,7 @@ void	Chunk::createMeshes(Map &map, PerfLogger &perfLogger)
 	perflogStart(perfLogger.chunkMeshing);
 	this->createBorderMesh(perfLogger);
 	this->createMesh(map, perfLogger);
-	this->createWaterMesh(perfLogger);
+	this->createLiquidMesh(perfLogger);
 	perflogEnd(perfLogger.chunkMeshing);
 
 	this->mesh.setPosition(this->chunkPosition);
@@ -217,7 +217,7 @@ void	Chunk::createBuffers(
 
 	this->mesh.createBuffers(commandPool, stagingBuffer, commandBuffer, perfLogger);
 	this->borderMesh.createBuffers(commandPool, stagingBuffer, commandBuffer, perfLogger);
-	this->waterMesh.createBuffers(commandPool, stagingBuffer, commandBuffer, perfLogger);
+	this->liquidMesh.createBuffers(commandPool, stagingBuffer, commandBuffer, perfLogger);
 
 	perflogEnd(perfLogger.createBuffer);
 }
@@ -260,21 +260,21 @@ void	Chunk::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 }
 
 
-void	Chunk::drawWater(Engine &engine, Camera &camera, ChunkShader &chunkShader)
+void	Chunk::drawLiquid(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 {
-	if (this->waterMesh.getNbIndex() == 0)
+	if (this->liquidMesh.getNbIndex() == 0)
 		return ;
 
 	// Draw mesh
 	if (!chunkShader.shaderFdfEnable)
 	{
-		this->shaderParamWater.updateBuffer(engine.window, &this->uboPos, 0);
-		engine.window.drawMesh(this->waterMesh, chunkShader.shaderWater, this->shaderParamWater);
+		this->shaderParamLiquid.updateBuffer(engine.window, &this->uboPos, 0);
+		engine.window.drawMesh(this->liquidMesh, chunkShader.shaderWater, this->shaderParamLiquid);
 	}
 	else
 	{
-		this->shaderParamFdfWater.updateBuffer(engine.window, &this->uboPos, 0);
-		engine.window.drawMesh(this->waterMesh, chunkShader.shaderFdf, this->shaderParamFdfWater);
+		this->shaderParamFdfLiquid.updateBuffer(engine.window, &this->uboPos, 0);
+		engine.window.drawMesh(this->liquidMesh, chunkShader.shaderFdf, this->shaderParamFdfLiquid);
 	}
 }
 
@@ -282,12 +282,12 @@ void	Chunk::drawWater(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 void	Chunk::destroy(Engine &engine)
 {
 	this->shaderParam.destroy(engine);
-	this->shaderParamWater.destroy(engine);
+	this->shaderParamLiquid.destroy(engine);
 	this->shaderParamFdf.destroy(engine);
-	this->shaderParamFdfWater.destroy(engine);
+	this->shaderParamFdfLiquid.destroy(engine);
 	this->shaderParamBorder.destroy(engine);
 	this->mesh.destroy();
-	this->waterMesh.destroy();
+	this->liquidMesh.destroy();
 	this->borderMesh.destroy();
 	this->canBeDraw = false;
 	this->bufferCreate = false;

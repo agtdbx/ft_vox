@@ -95,7 +95,7 @@ public:
 	 * @param camera The camera.
 	 * @param chunkShader Shaders used to draw chunk meshes.
 	 */
-	void	drawWater(
+	void	drawLiquid(
 				Engine &engine,
 				Camera &camera,
 				ChunkShader &chunkShader);
