@@ -151,6 +151,12 @@ public:
 	 * @param cube The new cube to set.
 	 */
 	void	setCube(int x, int y, int z, Cube cube);
+	/**
+	 * @brief Setter of cube draw safeness.
+	 *
+	 * @param canBeDraw New draw status.
+	 */
+	void	setDrawable(bool canBeDraw);
 
 //---- Operators ---------------------------------------------------------------
 	/**
@@ -244,7 +250,7 @@ private:
 	ShaderParam		shaderParam, shaderParamWater, shaderParamFdf,
 					shaderParamFdfWater, shaderParamBorder;
 	BoundingCube	boundingCube;
-	bool			initDone, generationDone, meshCreate, bufferCreate;
+	bool			initDone, generationDone, meshCreate, bufferCreate, canBeDraw;
 
 //**** PRIVATE METHODS *********************************************************
 	/**

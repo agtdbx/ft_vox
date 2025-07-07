@@ -173,8 +173,8 @@ MapStatus	Map::prepareGeneration(Engine &engine, Camera &camera)
 	// Right movement
 	else if (movement.x > 0)
 	{
-		this->minDelete = gm::Vec2i(this->targetView.minGenChunk.x, this->currentView.minGenChunk.y);
-		this->maxDelete = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.maxGenChunk.y);
+		this->minDelete = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.minGenChunk.y);
+		this->maxDelete = gm::Vec2i(this->targetView.minGenChunk.x, this->currentView.maxGenChunk.y);
 		this->targetView.minGenChunk = gm::Vec2i(this->currentView.maxGenChunk.x, this->targetView.minGenChunk.y);
 		this->targetView.minMeshChunk = gm::Vec2i(this->currentView.maxMeshChunk.x, this->targetView.minMeshChunk.y);
 		status = MAP_GENERATING_Y;
@@ -191,8 +191,8 @@ MapStatus	Map::prepareGeneration(Engine &engine, Camera &camera)
 	// Back movement
 	else
 	{
-		this->minDelete = gm::Vec2i(this->currentView.minGenChunk.x, this->targetView.minGenChunk.y);
-		this->maxDelete = gm::Vec2i(this->currentView.maxGenChunk.x, this->currentView.minGenChunk.y);
+		this->minDelete = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.minGenChunk.y);
+		this->maxDelete = gm::Vec2i(this->currentView.maxGenChunk.x, this->targetView.minGenChunk.y);
 		this->targetView.minGenChunk = gm::Vec2i(this->targetView.minGenChunk.x, this->currentView.maxMeshChunk.y);
 		this->targetView.minMeshChunk = gm::Vec2i(this->targetView.minMeshChunk.x, this->currentView.maxMeshChunk.y);
 		status = MAP_GENERATING_X;
@@ -517,6 +517,19 @@ bool	Map::destroyingX(void)
 				this->threadsData[i].status = THREAD_NEED_DESTROY;
 				this->threadsData[i].mutex.unlock();
 
+				for (int x = minId.x; x < maxId.x; x++)
+				{
+					for (int y = minId.y; y < maxId.y; y++)
+					{
+						ChunkMap::iterator it = this->chunks.find(gm::hashSmall(gm::Vec2i(x, y)));
+
+						if (it == this->chunks.end())
+							continue;
+
+						it->second.setDrawable(false);
+					}
+				}
+
 				chunkLeftBeforeEndLine = this->maxDelete.x - this->currentView.tmpId.x;
 				if (chunkLeftBeforeEndLine == 0)
 				{
@@ -563,6 +576,19 @@ bool	Map::destroyingY(void)
 				this->threadsData[i].maxChunkId = maxId;
 				this->threadsData[i].status = THREAD_NEED_DESTROY;
 				this->threadsData[i].mutex.unlock();
+
+				for (int x = minId.x; x < maxId.x; x++)
+				{
+					for (int y = minId.y; y < maxId.y; y++)
+					{
+						ChunkMap::iterator it = this->chunks.find(gm::hashSmall(gm::Vec2i(x, y)));
+
+						if (it == this->chunks.end())
+							continue;
+
+						it->second.setDrawable(false);
+					}
+				}
 
 				chunkLeftBeforeEndLine = this->maxDelete.y - this->currentView.tmpId.y;
 				if (chunkLeftBeforeEndLine == 0)

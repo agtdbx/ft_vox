@@ -23,6 +23,7 @@ Chunk::Chunk(void)
 	this->generationDone = false;
 	this->meshCreate = false;
 	this->bufferCreate = false;
+	this->canBeDraw = false;
 
 	int	halfChunkSize = CHUNK_SIZE / 2;
 	int	halfChunkHeight = CHUNK_HEIGHT / 2;
@@ -41,6 +42,7 @@ Chunk::Chunk(const Chunk &obj)
 	this->generationDone = false;
 	this->meshCreate = false;
 	this->bufferCreate = false;
+	this->canBeDraw = false;
 	this->mesh = obj.mesh;
 	this->boundingCube = obj.boundingCube;
 }
@@ -128,6 +130,12 @@ void	Chunk::setCube(int x, int y, int z, Cube cube)
 		this->cubeBitmap.set(x, y, z, true);
 }
 
+
+void	Chunk::setDrawable(bool canBeDraw)
+{
+	this->canBeDraw = canBeDraw;
+}
+
 //---- Operators ---------------------------------------------------------------
 
 Chunk	&Chunk::operator=(const Chunk &obj)
@@ -203,6 +211,7 @@ void	Chunk::createBuffers(
 	if (this->bufferCreate)
 		return ;
 	this->bufferCreate = true;
+	this->canBeDraw = true;
 
 	perflogStart(perfLogger.createBuffer);
 
@@ -227,6 +236,9 @@ void	Chunk::updateMesh(Engine &engine, Map &map)
 void	Chunk::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 {
 	this->uboPos.view = camera.getView();
+
+	if (!this->canBeDraw)
+		return ;
 
 	// Draw mesh
 	if (!chunkShader.shaderFdfEnable)
@@ -277,7 +289,9 @@ void	Chunk::destroy(Engine &engine)
 	this->mesh.destroy();
 	this->waterMesh.destroy();
 	this->borderMesh.destroy();
+	this->canBeDraw = false;
 	this->bufferCreate = false;
+	this->meshCreate = false;
 }
 
 //**** STATIC METHODS **********************************************************

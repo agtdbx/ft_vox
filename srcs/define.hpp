@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/07/07 11:02:22 by gugus            ###   ########.fr       */
+/*   Updated: 2025/07/07 12:07:13 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ const int MAX_FRAMES_IN_FLIGHT = 2;
 # define FOV 80.0f
 # define NEAR 0.1f
 # define FAR 10000.0f
-# define SPEED 5.0f // TODO Put it to 1
+# define SPEED 3.0f // TODO Put it to 1
 # define SPRINT 20.0f
 # define ROTATE 45.0f
 # define SENSITIVITY 5.0f // 0.0 = no movement, 1.0f is normal, higher is faster (negatif is reverse)
@@ -88,11 +88,3 @@ const int	MAP_CLUSTER_SIZE = MAP_CLUSTER_WIDTH * MAP_CLUSTER_WIDTH;
 # define MAX_BLOCK_REACH 10
 
 #endif
-
-
-/*
-TODO: PATCH THIS ERROR
-
-validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x10ba10000010ba1 that is currently in use by VkCommandBuffer 0x591e1468de00.
-The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
-*/
