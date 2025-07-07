@@ -199,23 +199,6 @@ MapStatus	Map::prepareGeneration(Engine &engine, Camera &camera)
 	this->currentView.maxMeshChunk = this->targetView.minMeshChunk;
 	this->currentView.tmpId = this->targetView.minGenChunk;
 
-	// // Delete useless chunk
-	// std::size_t	hash;
-	// for (int x = this->minDelete.x; x < this->maxDelete.x; x++)
-	// {
-	// 	for (int y = this->minDelete.y; y < this->maxDelete.y; y++)
-	// 	{
-	// 		hash = gm::hashSmall(gm::Vec2i(x, y));
-	// 		ChunkMap::iterator	it = this->chunks.find(hash);
-
-	// 		if (it != this->chunks.end())
-	// 		{
-	// 			it->second.destroy(engine);
-	// 			this->chunks.erase(hash);
-	// 		}
-	// 	}
-	// }
-
 	return (status);
 }
 
@@ -232,10 +215,6 @@ bool	Map::generatingX(void)
 		this->threadsData[i].mutex.lock();
 		threadStatus = this->threadsData[i].status;
 		this->threadsData[i].mutex.unlock();
-
-		// Update when thread end generating asked chunks
-		if (threadStatus == THREAD_GENERATE_END)
-			threadStatus = THREAD_RUNNING;
 
 		if (threadStatus == THREAD_RUNNING)
 		{
@@ -276,12 +255,6 @@ bool	Map::generatingX(void)
 
 				allGenerationDone = false;
 			}
-			else
-			{
-				this->threadsData[i].mutex.lock();
-				this->threadsData[i].status = THREAD_RUNNING;
-				this->threadsData[i].mutex.unlock();
-			}
 		}
 		else
 			allGenerationDone = false;
@@ -303,10 +276,6 @@ bool	Map::generatingY(void)
 		this->threadsData[i].mutex.lock();
 		threadStatus = this->threadsData[i].status;
 		this->threadsData[i].mutex.unlock();
-
-		// Update when thread end generating asked chunks
-		if (threadStatus == THREAD_GENERATE_END)
-			threadStatus = THREAD_RUNNING;
 
 		if (threadStatus == THREAD_RUNNING)
 		{
@@ -346,12 +315,6 @@ bool	Map::generatingY(void)
 				}
 
 				allGenerationDone = false;
-			}
-			else
-			{
-				this->threadsData[i].mutex.lock();
-				this->threadsData[i].status = THREAD_RUNNING;
-				this->threadsData[i].mutex.unlock();
 			}
 		}
 		else
@@ -533,10 +496,6 @@ bool	Map::destroyingX(void)
 		threadStatus = this->threadsData[i].status;
 		this->threadsData[i].mutex.unlock();
 
-		// Update when thread end destroying asked chunks
-		if (threadStatus == THREAD_DESTROY_END)
-			threadStatus = THREAD_RUNNING;
-
 		if (threadStatus == THREAD_RUNNING)
 		{
 			if (this->currentView.tmpId.y != this->maxDelete.y)
@@ -562,12 +521,6 @@ bool	Map::destroyingX(void)
 
 				allDestroyDone = false;
 			}
-			else
-			{
-				this->threadsData[i].mutex.lock();
-				this->threadsData[i].status = THREAD_RUNNING;
-				this->threadsData[i].mutex.unlock();
-			}
 		}
 		else
 			allDestroyDone = false;
@@ -590,10 +543,6 @@ bool	Map::destroyingY(void)
 		threadStatus = this->threadsData[i].status;
 		this->threadsData[i].mutex.unlock();
 
-		// Update when thread end destroying asked chunks
-		if (threadStatus == THREAD_DESTROY_END)
-			threadStatus = THREAD_RUNNING;
-
 		if (threadStatus == THREAD_RUNNING)
 		{
 			if (this->currentView.tmpId.x != this->maxDelete.x)
@@ -615,6 +564,57 @@ bool	Map::destroyingY(void)
 				{
 					this->currentView.tmpId.y = this->minDelete.y;
 					this->currentView.tmpId.x++;
+				}
+
+				allDestroyDone = false;
+			}
+		}
+		else
+			allDestroyDone = false;
+	}
+
+	return (allDestroyDone);
+}
+
+
+bool	Map::destroyingChunks(void)
+{
+	bool			allDestroyDone = true;
+	int				totalWidthDestroy = this->maxDelete.x - this->minDelete.x;
+	int				widthDestroyPerThread = gm::max(MIN_CHUNK_PER_THREAD, totalWidthDestroy / MAP_NB_THREAD);
+	ThreadStatus	threadStatus;
+
+	for (int i = 0; i < MAP_NB_THREAD; i++)
+	{
+		this->threadsData[i].mutex.lock();
+		threadStatus = this->threadsData[i].status;
+		this->threadsData[i].mutex.unlock();
+
+		// Update when thread end destroying asked chunks
+		if (threadStatus == THREAD_MESH_END)
+			threadStatus = THREAD_RUNNING;
+
+		if (threadStatus == THREAD_RUNNING)
+		{
+			if (this->currentView.tmpId.y != this->maxDelete.y)
+			{
+				int	chunkLeftBeforeEndLine = this->maxDelete.x - this->currentView.tmpId.x;
+
+				gm::Vec2i	minId = this->currentView.tmpId;
+				this->currentView.tmpId += gm::Vec2i(gm::min(chunkLeftBeforeEndLine, widthDestroyPerThread), 0);
+				gm::Vec2i	maxId = this->currentView.tmpId + gm::Vec2i(0, 1);
+
+				this->threadsData[i].mutex.lock();
+				this->threadsData[i].minChunkId = minId;
+				this->threadsData[i].maxChunkId = maxId;
+				this->threadsData[i].status = THREAD_NEED_DESTROY;
+				this->threadsData[i].mutex.unlock();
+
+				chunkLeftBeforeEndLine = this->maxDelete.x - this->currentView.tmpId.x;
+				if (chunkLeftBeforeEndLine == 0)
+				{
+					this->currentView.tmpId.x = this->minDelete.x;
+					this->currentView.tmpId.y++;
 				}
 
 				allDestroyDone = false;

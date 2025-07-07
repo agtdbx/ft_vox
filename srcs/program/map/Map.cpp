@@ -187,14 +187,16 @@ void	Map::destroy(Engine &engine)
 	this->currentView.tmpId = this->minDelete;
 
 	// Destroy chunk multhreaded
+	printf("START DESTROY CHUNKS\n");
 	while (1)
 	{
-		if (this->destroyingX())
+		if (this->destroyingChunks())
 			break;
 		usleep(10000);
 	}
 
 	// Free memory into map
+	printf("FREE CHUNKS IN MAP\n");
 	for (int x = this->minDelete.x; x < this->maxDelete.x; x++)
 	{
 		for (int y = this->minDelete.y; y < this->maxDelete.y; y++)
@@ -207,6 +209,7 @@ void	Map::destroy(Engine &engine)
 	}
 
 	// Save clean
+	printf("SAVE CLEAN\n");
 	ChunkMap::iterator	it = this->chunks.begin();
 	if (it != this->chunks.end())
 		printf("HMMMMMM %lu\n", this->chunks.size());
@@ -217,7 +220,8 @@ void	Map::destroy(Engine &engine)
 		it++;
 	}
 
-	// Free chunks
+	// Free threads
+	printf("FREE THREADS\n");
 	if (this->threads)
 	{
 		for (int i = 0; i < MAP_NB_THREAD; i++)
@@ -353,7 +357,7 @@ static void	threadRoutine(ThreadData *threadData)
 
 			threadData->mutex.lock();
 			if (threadData->status != THREAD_STOPPING)
-				threadData->status = THREAD_GENERATE_END;
+				threadData->status = THREAD_RUNNING;
 			threadData->mutex.unlock();
 		}
 
@@ -430,7 +434,7 @@ static void	threadRoutine(ThreadData *threadData)
 
 			threadData->mutex.lock();
 			if (threadData->status != THREAD_STOPPING)
-				threadData->status = THREAD_DESTROY_END;
+				threadData->status = THREAD_RUNNING;
 			threadData->mutex.unlock();
 		}
 

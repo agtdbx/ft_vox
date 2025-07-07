@@ -14,21 +14,16 @@ using ChunkMap = std::unordered_map<std::size_t, Chunk>;
 
 enum ThreadStatus
 {
-	THREAD_RUNNING,
-	THREAD_NEED_GENERATE,
-	THREAD_GENERATING,
-	THREAD_GENERATE_END,
-	THREAD_NEED_MESH,
-	THREAD_MESHING,
-	THREAD_MESH_END,
-	THREAD_NEED_BUFFER,
-	THREAD_BUFFURING,
-	THREAD_BUFFER_END,
-	THREAD_NEED_DESTROY,
-	THREAD_DESTROYING,
-	THREAD_DESTROY_END,
-	THREAD_STOPPING,
-	THREAD_STOP,
+	THREAD_RUNNING,			// Waiting status
+	THREAD_NEED_GENERATE,	// Ask generation
+	THREAD_GENERATING,		// Generation in progress
+	THREAD_NEED_MESH,		// Ask meshing
+	THREAD_MESHING,			// Meshing in progress
+	THREAD_MESH_END,		// Meshing asked finish
+	THREAD_NEED_DESTROY,	// Ask destroying
+	THREAD_DESTROYING,		// Destroying in progress
+	THREAD_STOPPING,		// Ask stopping thread
+	THREAD_STOP,			// Thread stopped
 };
 
 
@@ -234,6 +229,12 @@ private:
 	 * @return True is the destroying is finish, false else.
 	 */
 	bool		destroyingY(void);
+	/**
+	 * @brief Method to order destroying of chunk block to threads.
+	 *
+	 * @return True is the destroying is finish, false else.
+	 */
+	bool		destroyingChunks(void);
 };
 
 //**** FUNCTIONS ***************************************************************

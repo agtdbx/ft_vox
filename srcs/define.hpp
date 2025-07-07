@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/07/04 15:10:57 by gugus            ###   ########.fr       */
+/*   Updated: 2025/07/04 15:21:36 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,82 +93,6 @@ const int	MAP_CLUSTER_SIZE = MAP_CLUSTER_WIDTH * MAP_CLUSTER_WIDTH;
 /*
 TODO: PATCH THIS ERROR
 
-The Vulkan spec states: If the nullDescriptor feature is not enabled, all vertex input bindings accessed via vertex input variables declared in the vertex shader entry point's interface must not be VK_NULL_HANDLE (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/drawing.html#VUID-vkCmdDrawIndexed-None-04008)
-validation layer: vkCmdBindVertexBuffers(): pBuffers[0] is VK_NULL_HANDLE.
-The Vulkan spec states: If the nullDescriptor feature is not enabled, all elements of pBuffers must not be VK_NULL_HANDLE (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/fxvertex.html#VUID-vkCmdBindVertexBuffers-pBuffers-04001)
-validation layer: vkCmdBindIndexBuffer(): buffer is VK_NULL_HANDLE.
-The Vulkan spec states: If the maintenance6 feature is not enabled, buffer must not be VK_NULL_HANDLE (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/drawing.html#VUID-vkCmdBindIndexBuffer-None-09493)
-validation layer: vkCmdDrawIndexed(): the last bound pipeline has pVertexBindingDescriptions[0].binding (0) which was bound with a buffer of VK_NULL_HANDLE, but nullDescriptor is not enabled.
-
-TODO: PATCH THIS ERROR TOO
-
-validation layer: vkQueueSubmit(): pSubmits[0].pSignalSemaphores[0] (VkSemaphore 0xe000000000e) is being signaled by VkQueue 0x2321a630, but it may still be in use by VkSwapchainKHR 0x40000000004.
-Here are the most recently acquired image indices: [0], 1, 2.
-(brackets mark the last use of VkSemaphore 0xe000000000e in a presentation operation)
-Swapchain image 0 was presented but was not re-acquired, so VkSemaphore 0xe000000000e may still be in use and cannot be safely reused with image index 2.
-Vulkan insight: One solution is to assign each image its own semaphore. Here are some common methods to ensure that a semaphore passed to vkQueuePresentKHR is not in use and can be safely reused:
-	a) Use a separate semaphore per swapchain image. Index these semaphores using the index of the acquired image.
-	b) Consider the VK_EXT_swapchain_maintenance1 extension. It allows using a VkFence with the presentation operation.
-The Vulkan spec states: Each binary semaphore element of the pSignalSemaphores member of any element of pSubmits must be unsignaled when the semaphore signal operation it defines is executed on the device (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pSignalSemaphores-00067)
-validation layer: vkQueueSubmit(): pSubmits[0].pSignalSemaphores[0] (VkSemaphore 0x110000000011) is being signaled by VkQueue 0x2321a630, but it may still be in use by VkSwapchainKHR 0x40000000004.
-Here are the most recently acquired image indices: 0, [1], 2, 3.
-(brackets mark the last use of VkSemaphore 0x110000000011 in a presentation operation)
-Swapchain image 1 was presented but was not re-acquired, so VkSemaphore 0x110000000011 may still be in use and cannot be safely reused with image index 3.
-Vulkan insight: One solution is to assign each image its own semaphore. Here are some common methods to ensure that a semaphore passed to vkQueuePresentKHR is not in use and can be safely reused:
-	a) Use a separate semaphore per swapchain image. Index these semaphores using the index of the acquired image.
-	b) Consider the VK_EXT_swapchain_maintenance1 extension. It allows using a VkFence with the presentation operation.
-The Vulkan spec states: Each binary semaphore element of the pSignalSemaphores member of any element of pSubmits must be unsignaled when the semaphore signal operation it defines is executed on the device (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pSignalSemaphores-00067)
-validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x277600000027760 that is currently in use by VkCommandBuffer 0x230524b0.
-The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
-validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x277630000027763 that is currently in use by VkCommandBuffer 0x230524b0.
-The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
-validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x277610000027761 that is currently in use by VkCommandBuffer 0x230524b0.
-The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
-validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x2776a000002776a that is currently in use by VkCommandBuffer 0x230524b0.
-The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
-validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x277700000027770 that is currently in use by VkCommandBuffer 0x233a3b30.
-The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
-validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x277720000027772 that is currently in use by VkCommandBuffer 0x233a3b30.
-The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
-validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x277780000027778 that is currently in use by VkCommandBuffer 0x233a3b30.
-The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
-validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x2777a000002777a that is currently in use by VkCommandBuffer 0x233a3b30.
-The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
-validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x277800000027780 that is currently in use by VkCommandBuffer 0x233a3b30.
-The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
-validation layer: (Warning - This VUID has now been reported 10 times, which is the duplicated_message_limit value, this will be the last time reporting it).
-vkDestroyBuffer(): can't be called on VkBuffer 0x277820000027782 that is currently in use by VkCommandBuffer 0x233a3b30.
-The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
-validation layer: vkAcquireNextImageKHR(): Semaphore must not have any pending operations.
-The Vulkan spec states: If semaphore is not VK_NULL_HANDLE, it must not have any uncompleted signal or wait operations pending (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/VK_KHR_surface/wsi.html#VUID-vkAcquireNextImageKHR-semaphore-01779)
-validation layer: vkResetFences(): pFences[0] (VkFence 0xf000000000f) is in use.
-The Vulkan spec states: Each element of pFences must not be currently associated with any queue command that has not yet completed execution on that queue (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/synchronization.html#VUID-vkResetFences-pFences-01123)
-validation layer: vkResetCommandBuffer(): (VkCommandBuffer 0x233a3b30) is in use.
-The Vulkan spec states: commandBuffer must not be in the pending state (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/cmdbuffers.html#VUID-vkResetCommandBuffer-commandBuffer-00045)
-validation layer: vkBeginCommandBuffer(): on active VkCommandBuffer 0x233a3b30 before it has completed. You must check command buffer fence before this call.
-The Vulkan spec states: commandBuffer must not be in the recording or pending state (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/cmdbuffers.html#VUID-vkBeginCommandBuffer-commandBuffer-00049)
-validation layer: vkQueueSubmit(): pSubmits[0].pCommandBuffers[0] VkCommandBuffer 0x233a3b30 is already in use and is not marked for simultaneous use.
-The Vulkan spec states: If any element of the pCommandBuffers member of any element of pSubmits was not recorded with the VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT, it must not be in the pending state (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/cmdbuffers.html#VUID-vkQueueSubmit-pCommandBuffers-00071)
-terminate called after throwing an instance of 'std::runtime_error'
-  what():  Draw command buffer submit failed
-Aborted
-
-
-ERROR  : WHEN PLACE BLOCK IN INVISIBLE CHUNK
-
-The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
-validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x305f700000305f7 that is currently in use by VkCommandBuffer 0x5fd92f314a10.
-The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
-validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x306780000030678 that is currently in use by VkCommandBuffer 0x5fd92f314a10.
-The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
-validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x306820000030682 that is currently in use by VkCommandBuffer 0x5fd92f314a10.
-The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
-validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x3073e000003073e that is currently in use by VkCommandBuffer 0x5fd92f314a10.
-The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
-validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x307470000030747 that is currently in use by VkCommandBuffer 0x5fd92f314a10.
-The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
-validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x307a800000307a8 that is currently in use by VkCommandBuffer 0x5fd92f314a10.
-The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
-validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x307aa00000307aa that is currently in use by VkCommandBuffer 0x5fd92f314a10.
+validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x10ba10000010ba1 that is currently in use by VkCommandBuffer 0x591e1468de00.
 The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.313.0/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
 */
