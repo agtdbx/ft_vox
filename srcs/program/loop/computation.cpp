@@ -3,6 +3,7 @@
 
 static void perfLog(
 				double delta,
+				Text &fpsText,
 				Window &window);
 static void cameraMovements(
 				Engine &engine,
@@ -30,9 +31,12 @@ void	computation(
 			Shaders &shaders,
 			double delta)
 {
-	perfLog(delta, engine.window);
+	perfLog(delta, objects.fpsText, engine.window);
 
 	cameraMovements(engine , camera, delta);
+
+	if (engine.inputManager.f.isPressed())
+		objects.displayFps = !objects.displayFps;
 
 	if (engine.inputManager.tab.isPressed())
 		shaders.chunkShader.shaderFdfEnable = !shaders.chunkShader.shaderFdfEnable;
@@ -51,6 +55,7 @@ void	computation(
 
 static void perfLog(
 				double delta,
+				Text &fpsText,
 				Window &window)
 {
 	static double	printFpsTime = 0.0;
@@ -74,12 +79,15 @@ static void perfLog(
 		double minFps = 1 / maxDelta;
 		double maxFps = 1 / minDelta;
 
-		char	string[50] = {0};
+		char	stringTitle[50] = {0};
+		char	stringFps[50] = {0};
 
-		sprintf(string, "fps : %7.2f | min %7.2f | max %8.2f",
+		sprintf(stringTitle, "fps : %7.2f | min %7.2f | max %8.2f",
 				avgFps, minFps, maxFps);
+		sprintf(stringFps, "fps : %.2f", avgFps);
 
-		window.setTitle(std::string(string));
+		fpsText.setText(std::string(stringFps));
+		window.setTitle(std::string(stringTitle));
 
 		printFpsTime = 0.0;
 		minDelta = 1000.0;

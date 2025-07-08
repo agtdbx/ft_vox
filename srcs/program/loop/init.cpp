@@ -25,6 +25,13 @@ bool init(
 		loadShaders(engine, shaders);
 		objects.map.init(engine, camera, shaders.chunkShader);
 		objects.skybox.init(engine, camera, shaders.skyboxShader);
+		objects.fpsText.init(engine, shaders.textShader);
+		objects.fpsText.setPos(gm::Vec2f(-0.99f, -0.99f));
+		objects.fpsText.setDrawPos(TEXT_TOP_LEFT);
+		objects.fpsText.setFontSize(1.0f);
+		objects.fpsText.setTextColor({1, 1, 1, 1});
+		objects.fpsText.setBackgroundColor({0, 0, 0, 0.3});
+		objects.displayFps = true;
 	}
 	catch(const std::exception& e)
 	{
@@ -42,6 +49,13 @@ bool init(
 
 static void	loadTextures(Engine &engine)
 {
+	// Load font texture
+	engine.textureManager.addTexture("font", "data/font/ascii.png");
+	engine.textureManager.createImage(
+							engine,
+							{false, true, false, false},
+							"font", "font");
+
 	// Load sky box
 	engine.textureManager.addTexture("skybox", "data/skybox/skybox.png");
 	engine.textureManager.createImage(
@@ -58,7 +72,6 @@ static void	loadTextures(Engine &engine)
 							engine,
 							{true, true, false, false},
 							"cubes", CUBE_TEXTURES);
-
 }
 
 
@@ -67,6 +80,10 @@ static void loadShaders(
 				Shaders &shaders)
 {
 	std::vector<BufferInfo>	bufferInfosChunk = {{sizeof(UBO3DChunkPos), BUFFER_UBO, STAGE_VERTEX}};
+	std::vector<BufferInfo>	bufferTextInfosChunk = {
+								{sizeof(UBOText), BUFFER_UBO, STAGE_VERTEX},
+								{sizeof(UBOTextColor), BUFFER_UBO, STAGE_FRAGMENT}
+	};
 	std::vector<ImageInfo>	imageInfosCubes = {
 		{CUBE_TEXTURES.size(), STAGE_COMPUTE_FRAGMENT},
 	};
@@ -98,4 +115,9 @@ static void loadShaders(
 						DEPTH_DISABLE, FCUL_COUNTER, DRAW_POLYGON, ALPHA_OFF,
 						"shadersbin/skybox_vert.spv", "shadersbin/skybox_frag.spv",
 						bufferInfosChunk, imageInfosSkybox);
+
+	shaders.textShader.init<VertexPosTex>(engine,
+						DEPTH_DISABLE, FCUL_NONE, DRAW_POLYGON, ALPHA_ON,
+						"shadersbin/text_vert.spv", "shadersbin/text_frag.spv",
+						bufferTextInfosChunk, imageInfosSkybox);
 }

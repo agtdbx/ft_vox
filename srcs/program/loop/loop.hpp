@@ -9,6 +9,7 @@
 # include <engine/inputs/InputManager.hpp>
 # include <engine/vulkan/VulkanContext.hpp>
 # include <engine/textures/TextureManager.hpp>
+# include <engine/ui/Text.hpp>
 # include <program/shaderStruct.hpp>
 # include <program/map/Map.hpp>
 # include <program/skybox/Skybox.hpp>
@@ -18,6 +19,8 @@ struct Objects
 {
 	Map		map;
 	Skybox	skybox;
+	Text	fpsText;
+	bool	displayFps;
 
 	/**
 	 * @brief Destroy all object in struct.
@@ -28,6 +31,7 @@ struct Objects
 	{
 		map.destroy(engine);
 		skybox.destroy(engine);
+		fpsText.destroy(engine);
 	}
 };
 
@@ -35,6 +39,7 @@ struct Shaders
 {
 	ChunkShader	chunkShader;
 	Shader		skyboxShader;
+	Shader		textShader;
 
 	/**
 	 * @brief Destroy all shader in struct.
@@ -45,6 +50,7 @@ struct Shaders
 	{
 		chunkShader.destroy(engine);
 		skyboxShader.destroy(engine);
+		textShader.destroy(engine);
 	}
 };
 
