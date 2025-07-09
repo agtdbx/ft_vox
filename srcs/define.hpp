@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/07/09 15:42:19 by gugus            ###   ########.fr       */
+/*   Updated: 2025/07/09 17:30:27 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ const int MAX_FRAMES_IN_FLIGHT = 1;
 # define FOV 80.0f
 # define NEAR 0.1f
 # define FAR 10000.0f
-# define SPEED 1.0f
+# define SPEED 3.0f
 # define SPRINT 20.0f
 # define ROTATE 45.0f
 # define SENSITIVITY 5.0f // 0.0 = no movement, 1.0f is normal, higher is faster (negatif is reverse)
@@ -54,7 +54,7 @@ const float SKYBOX_DIST2 = SKYBOX_DIST * 2.0f;
 // Chunk defines
 # define CHUNK_SIZE 32
 # define CHUNK_HEIGHT 256
-# define CHUNK_LIQUID_LEVEL 70
+# define CHUNK_LIQUID_LEVEL 64
 const int	CHUNK_MAX = CHUNK_SIZE - 1;
 const int	CHUNK_MAX_H = CHUNK_HEIGHT - 1;
 const int	CHUNK_SIZE2 = CHUNK_SIZE * CHUNK_SIZE;
@@ -79,7 +79,7 @@ const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
 # define MAX_CHUNK_BUFFER_SIZE 150000
 # define MIN_CHUNK_PER_THREAD 4
 
-const int	MAP_NB_THREAD = 15;
+const int	MAP_NB_THREAD = 7;
 const int	MAP_CLUSTER_ARROUND = 3; // Map have x cluster arround center one
 const int	MAP_CLUSTER_WIDTH = MAP_CLUSTER_ARROUND + 1 + MAP_CLUSTER_ARROUND;
 const int	MAP_CLUSTER_SIZE = MAP_CLUSTER_WIDTH * MAP_CLUSTER_WIDTH;
