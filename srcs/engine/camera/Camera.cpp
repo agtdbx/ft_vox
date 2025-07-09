@@ -1,9 +1,5 @@
 #include <engine/camera/Camera.hpp>
 
-// TODO : Remove
-#include <engine/shader/Shader.hpp>
-#include <engine/window/Window.hpp>
-
 //**** STATIC FUNCTIONS DEFINE *************************************************
 
 static bool	isAABBForwardPlane(

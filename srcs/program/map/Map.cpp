@@ -158,27 +158,16 @@ void	Map::init(
 
 void	Map::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 {
-	int	drawCall = 0;
-
 	for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
 	{
 		if (camera.isCubeInFrutum(this->clusters[i].getBoundingCube()))
-			this->clusters[i].draw(engine, camera, chunkShader, drawCall);
+			this->clusters[i].draw(engine, camera, chunkShader);
 	}
 
 	for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
 	{
 		if (camera.isCubeInFrutum(this->clusters[i].getBoundingCube()))
 			this->clusters[i].drawLiquid(engine, camera, chunkShader);
-	}
-
-	// TODO: Remove draw call count
-	if (engine.inputManager.l.isPressed())
-	{
-		int	nbChunkArround = CLUSTER_SIZE / 2 + MAP_CLUSTER_ARROUND * CLUSTER_SIZE;
-		int	totalChunks = (nbChunkArround * 2) * (nbChunkArround * 2);
-
-		printf("Draw call : %i / %i\n", drawCall, totalChunks);
 	}
 }
 
@@ -278,27 +267,6 @@ void	Map::destroy(Engine &engine)
 	perflogPrint(perfLogger.copyIndexBuffer,     " - index copy    ");
 	printf("Destroy :\n");
 	perflogPrint(perfLogger.destroyChunk,        " - per chunk     ");
-	// TODO : REMOVE Print into csv format
-	// printf("\nCsv format !\n");
-	// printf("Name;Total time (us);Nb call;Avg time (us);\n");
-	// perflogPrintCsv(perfLogger.generateChunk,       "Generation per chunk");
-	// perflogPrintCsv(perfLogger.chunkMeshing,        "Meshing per chunk");
-	// perflogPrintCsv(perfLogger.meshChunk,           "Meshing border mesh");
-	// perflogPrintCsv(perfLogger.meshBlock,           "Meshing block mesh");
-	// perflogPrintCsv(perfLogger.meshBlockCopyBitmap, "Meshing copy bitmap");
-	// perflogPrintCsv(perfLogger.meshBlockXaxis,      "Meshing block x axis");
-	// perflogPrintCsv(perfLogger.meshBlockYaxis,      "Meshing block y axis");
-	// perflogPrintCsv(perfLogger.meshBlockZaxis,      "Meshing block z axis");
-	// perflogPrintCsv(perfLogger.meshLiquid,          "Meshing liquid mesh");
-	// perflogPrintCsv(perfLogger.createBuffer,        "Buffering per chunk");
-	// perflogPrintCsv(perfLogger.createUpdateStaging, "Buffering staging buffer");
-	// perflogPrintCsv(perfLogger.mapVertexBuffer,     "Buffering vertex map");
-	// perflogPrintCsv(perfLogger.createVertexBuffer,  "Buffering vertex create");
-	// perflogPrintCsv(perfLogger.copyVertexBuffer,    "Buffering vertex copy");
-	// perflogPrintCsv(perfLogger.mapIndexBuffer,      "Buffering index map");
-	// perflogPrintCsv(perfLogger.createIndexBuffer,   "Buffering index create");
-	// perflogPrintCsv(perfLogger.copyIndexBuffer,     "Buffering index copy");
-	// perflogPrintCsv(perfLogger.destroyChunk,     "Destroy per chunk");
 }
 
 //**** STATIC METHODS **********************************************************

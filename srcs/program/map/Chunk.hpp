@@ -14,7 +14,6 @@
 # include <program/map/PerlinNoise.hpp>
 # include <program/perfLogger/PerfLogger.hpp> // TODO : Remove
 
-
 using ChunkMesh = Mesh<VertexVoxel>;
 using ChunkBorderMesh = Mesh<VertexPos>;
 

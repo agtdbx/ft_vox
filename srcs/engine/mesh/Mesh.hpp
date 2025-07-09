@@ -413,7 +413,7 @@ public:
 	 */
 	void	translate(const gm::Vec3f &movement)
 	{
-		this->position += movement; // TODO : CHANGE IT FOR MATRIX TRANSLATE
+		this->position += movement;
 	}
 	/**
 	 * @brief Apply a rotation on the mesh.

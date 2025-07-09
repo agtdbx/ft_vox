@@ -46,4 +46,3 @@ cd release
 - enable/disable fdf view				tab
 - enable/disable chunk border view		c
 - enable/disable fps count on screen	f
-- display number of draw call		l <!-- TODO: REMOVE -->

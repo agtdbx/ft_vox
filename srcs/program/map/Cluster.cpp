@@ -112,18 +112,14 @@ void	Cluster::giveChunk(const gm::Vec2i &chunkPos, Chunk *chunk)
 void	Cluster::draw(
 				Engine &engine,
 				Camera &camera,
-				ChunkShader &chunkShader,
-				int &nbDrawCall)
+				ChunkShader &chunkShader)
 {
 	for (int i = 0; i <  CLUSTER_SIZE2; i++)
 	{
 		if (this->chunks[i] != NULL)
 		{
 			if (camera.isCubeInFrutum(this->chunks[i]->getBoundingCube()))
-			{
 				this->chunks[i]->draw(engine, camera, chunkShader);
-				nbDrawCall++;
-			}
 		}
 	}
 }

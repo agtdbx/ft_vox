@@ -86,8 +86,7 @@ public:
 	void	draw(
 				Engine &engine,
 				Camera &camera,
-				ChunkShader &chunkShader,
-				int &nbDrawCall); // TODO: Remove nbDrawCall
+				ChunkShader &chunkShader);
 	/**
 	 * @brief Draw water on chunks.
 	 *
