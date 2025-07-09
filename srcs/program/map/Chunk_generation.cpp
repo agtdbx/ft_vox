@@ -11,7 +11,10 @@ PerlinNoise	createNoise(const gm::Vec2i &shape, unsigned int octaves, float pers
 	if (!randomInit)
 	{
 		randomInit = true;
-		gm::initRandom();
+		uint seed = gm::initRandom();
+		// uint seed = 1752060786;
+		// gm::initRandom(seed);
+		std::cout << "SEED : " << seed << std::endl;
 	}
 
 	return PerlinNoise(gm::uRand(), shape, octaves, persistence);

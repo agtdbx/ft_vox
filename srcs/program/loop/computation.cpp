@@ -3,7 +3,8 @@
 
 static void perfLog(
 				double delta,
-				Text &fpsText,
+				Objects &objects,
+				Camera &camera,
 				Window &window);
 static void cameraMovements(
 				Engine &engine,
@@ -31,12 +32,12 @@ void	computation(
 			Shaders &shaders,
 			double delta)
 {
-	perfLog(delta, objects.fpsText, engine.window);
+	perfLog(delta, objects, camera, engine.window);
 
 	cameraMovements(engine , camera, delta);
 
 	if (engine.inputManager.f.isPressed())
-		objects.displayFps = !objects.displayFps;
+		objects.displayUi = !objects.displayUi;
 
 	if (engine.inputManager.tab.isPressed())
 		shaders.chunkShader.shaderFdfEnable = !shaders.chunkShader.shaderFdfEnable;
@@ -55,7 +56,8 @@ void	computation(
 
 static void perfLog(
 				double delta,
-				Text &fpsText,
+				Objects &objects,
+				Camera &camera,
 				Window &window)
 {
 	static double	printFpsTime = 0.0;
@@ -79,15 +81,23 @@ static void perfLog(
 		double minFps = 1 / maxDelta;
 		double maxFps = 1 / minDelta;
 
+		// Title
 		char	stringTitle[50] = {0};
-		char	stringFps[50] = {0};
-
-		sprintf(stringTitle, "fps : %7.2f | min %7.2f | max %8.2f",
+		snprintf(stringTitle,  49, "fps : %7.2f | min %7.2f | max %8.2f",
 				avgFps, minFps, maxFps);
-		sprintf(stringFps, "fps : %.2f", avgFps);
-
-		fpsText.setText(std::string(stringFps));
 		window.setTitle(std::string(stringTitle));
+
+		// Fps text
+		char	stringFps[50] = {0};
+		snprintf(stringFps, 49, "fps : %.2f", avgFps);
+		objects.textFps.setText(std::string(stringFps));
+
+		// Position text
+		gm::Vec3f	pos = camera.getPosition();
+		char	stringPosition[50] = {0};
+		snprintf(stringPosition, 49, "pos (%.2f, %.2f, %.2f)",
+				pos.x, pos.y, pos.z);
+		objects.textPosition.setText(std::string(stringPosition));
 
 		printFpsTime = 0.0;
 		minDelta = 1000.0;
@@ -124,6 +134,7 @@ static void cameraMovements(
 	else if (engine.inputManager.lshift.isDown())
 		camera.moveUp(-speed);
 
+	// Rotate with mouse
 	gm::Vec2i	windowCenter = engine.window.getSize() / 2;
 	gm::Vec2d	mousePos;
 	int			mx, my;
@@ -278,5 +289,15 @@ static void	updateChunkMesh(
 {
 	Chunk	*tmpChunk = map.getChunk(chunkX, chunkY);
 	if (tmpChunk && tmpChunk->isMeshCreated())
-		tmpChunk->updateMesh(engine, map);
+	{
+		try
+		{
+			tmpChunk->updateMesh(engine, map);
+		}
+		catch(const std::exception& e)
+		{
+			printf("Delete chunk %i %i error :\n", chunkX, chunkY);
+			std::cerr << e.what() << std::endl;
+		}
+	}
 }

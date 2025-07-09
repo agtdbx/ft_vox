@@ -36,7 +36,9 @@ Map::~Map()
 Chunk	*Map::getChunk(int x, int y)
 {
 	std::size_t	hash = gm::hashSmall(gm::Vec2i(x, y));
+	this->chunksMutex.lock();
 	ChunkMap::iterator	chunkFind = this->chunks.find(hash);
+	this->chunksMutex.unlock();
 
 	if (chunkFind != this->chunks.end())
 		return (&chunkFind->second);
@@ -48,7 +50,9 @@ Chunk	*Map::getChunk(int x, int y)
 CubeBitmap	*Map::getChunkBitmap(int x, int y)
 {
 	std::size_t	hash = gm::hashSmall(gm::Vec2i(x, y));
+	this->chunksMutex.lock();
 	ChunkMap::iterator	chunkFind = this->chunks.find(hash);
+	this->chunksMutex.unlock();
 
 	if (chunkFind != this->chunks.end())
 		return (&chunkFind->second.getCubeBitmap());
@@ -135,6 +139,7 @@ void	Map::init(
 		this->threadsData[i].maxChunkId = this->maxChunkIdOffset;
 		this->threadsData[i].cameraChunkId = cameraChunkId;
 		this->threadsData[i].chunks = &this->chunks;
+		this->threadsData[i].chunksMutex = &this->chunksMutex;
 		this->threadsData[i].map = this;
 		this->threadsData[i].engine = &engine;
 		this->threadsData[i].camera = &camera;
@@ -309,6 +314,7 @@ static void	threadRoutine(ThreadData *threadData)
 
 	int					threadId = threadData->threadId;
 	ChunkMap			&chunks = *threadData->chunks;
+	std::mutex			&chunksMutex = *threadData->chunksMutex;
 	Map					&map = *threadData->map;
 	Engine				&engine = *threadData->engine;
 	Camera				&camera = *threadData->camera;
@@ -338,10 +344,29 @@ static void	threadRoutine(ThreadData *threadData)
 				for (int y = minId.y; y < maxId.y; y++)
 				{
 					curId = gm::Vec2i(x, y);
+					chunksMutex.lock();
 					ChunkMap::iterator	it = chunks.find(gm::hashSmall(curId));
+					chunksMutex.unlock();
 
 					if (it == chunks.end())
-						continue;
+					{
+						int i = 0;
+						while  (i < 10)
+						{
+							usleep(1000);
+							chunksMutex.lock();
+							it = chunks.find(gm::hashSmall(gm::Vec2i(x, y)));
+							chunksMutex.unlock();
+
+							if (it == chunks.end())
+								i++;
+							else
+								break;
+						}
+
+						if (it == chunks.end())
+							continue;
+					}
 
 					try
 					{
@@ -379,7 +404,9 @@ static void	threadRoutine(ThreadData *threadData)
 			{
 				for (int y = minId.y; y < maxId.y; y++)
 				{
+					chunksMutex.lock();
 					ChunkMap::iterator	it = chunks.find(gm::hashSmall(gm::Vec2i(x, y)));
+					chunksMutex.unlock();
 
 					if (it == chunks.end())
 						continue;
@@ -401,7 +428,6 @@ static void	threadRoutine(ThreadData *threadData)
 					catch(const std::exception& e)
 					{
 					}
-
 				}
 			}
 
@@ -427,10 +453,14 @@ static void	threadRoutine(ThreadData *threadData)
 			{
 				for (int y = minId.y; y < maxId.y; y++)
 				{
+					chunksMutex.lock();
 					ChunkMap::iterator	it = chunks.find(gm::hashSmall(gm::Vec2i(x, y)));
+					chunksMutex.unlock();
 
 					if (it == chunks.end())
+					{
 						continue;
+					}
 
 					try
 					{

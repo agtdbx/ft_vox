@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 15:33:15 by aderouba          #+#    #+#             */
-/*   Updated: 2025/07/01 11:56:41 by gugus            ###   ########.fr       */
+/*   Updated: 2025/07/09 17:18:43 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ int	main(void)
 	double	delta = MIN_DELTA;
 	double	currentTime = 0;
 	double	lastTime = 0;
+
 	while (!glfwWindowShouldClose(engine.glfwWindow))
 	{
 		currentTime = glfwGetTime();

@@ -169,9 +169,8 @@ void	Text::updateBuffers(Engine &engine)
 
 	for (const char &c : this->text)
 	{
-		int		ascii = c;
-		float	texX = (float)(ascii % 16) * 32.0f / 512.0f;
-		float	texY = (float)(ascii / 16) * 32.0f / 256.0f;
+		float	texX = (float)(c % 16) * 32.0f / 512.0f;
+		float	texY = (float)(c / 16) * 32.0f / 256.0f;
 
 		// Create vertex
 		vertices.push_back({{x        , y        , 0.0f}, {texX           , texY           }});

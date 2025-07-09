@@ -13,8 +13,12 @@ void	draw(
 	{
 		objects.skybox.draw(engine, camera, shaders.skyboxShader);
 		objects.map.draw(engine, camera, shaders.chunkShader);
-		if (objects.displayFps)
-			objects.fpsText.draw(engine, shaders.textShader);
+		if (objects.displayUi)
+		{
+			objects.textFps.draw(engine, shaders.textShader);
+			objects.textCrossAir.draw(engine, shaders.textShader);
+			objects.textPosition.draw(engine, shaders.textShader);
+		}
 	}
 	catch(const std::exception& e)
 	{

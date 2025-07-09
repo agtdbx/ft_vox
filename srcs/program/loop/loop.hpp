@@ -19,8 +19,10 @@ struct Objects
 {
 	Map		map;
 	Skybox	skybox;
-	Text	fpsText;
-	bool	displayFps;
+	Text	textFps;
+	Text	textCrossAir;
+	Text	textPosition;
+	bool	displayUi;
 
 	/**
 	 * @brief Destroy all object in struct.
@@ -31,7 +33,9 @@ struct Objects
 	{
 		map.destroy(engine);
 		skybox.destroy(engine);
-		fpsText.destroy(engine);
+		textFps.destroy(engine);
+		textCrossAir.destroy(engine);
+		textPosition.destroy(engine);
 	}
 };
 

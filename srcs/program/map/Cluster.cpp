@@ -105,7 +105,6 @@ void	Cluster::giveChunk(const gm::Vec2i &chunkPos, Chunk *chunk)
 	int	cx = chunkPos.x - this->minChunk.x;
 	int	cy = chunkPos.y - this->minChunk.y;
 	int	id = cx + cy * CLUSTER_SIZE;
-
 	this->chunks[id] = chunk;
 }
 

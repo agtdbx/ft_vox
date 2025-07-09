@@ -71,6 +71,9 @@ struct StagingBuffer
 
 		if (this->memory != NULL)
 			vkFreeMemory(device, this->memory, nullptr);
+
+		this->offset = 0;
+		this->size = 0;
 	}
 
 };

@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/07/08 11:31:32 by gugus            ###   ########.fr       */
+/*   Updated: 2025/07/09 15:42:19 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ const float MIN_DELTA = 1.0 / MAX_FPS;
 # define WIN_W 1600 // TODO: CHANGE TO FULL SCREEN
 # define WIN_H 900
 
-const int MAX_FRAMES_IN_FLIGHT = 2;
+const int MAX_FRAMES_IN_FLIGHT = 1;
 
 // Camera defines
 # define FOV 80.0f
@@ -79,8 +79,8 @@ const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
 # define MAX_CHUNK_BUFFER_SIZE 150000
 # define MIN_CHUNK_PER_THREAD 4
 
-const int	MAP_NB_THREAD = 7;
-const int	MAP_CLUSTER_ARROUND = 2; // Map have x cluster arround center one
+const int	MAP_NB_THREAD = 15;
+const int	MAP_CLUSTER_ARROUND = 3; // Map have x cluster arround center one
 const int	MAP_CLUSTER_WIDTH = MAP_CLUSTER_ARROUND + 1 + MAP_CLUSTER_ARROUND;
 const int	MAP_CLUSTER_SIZE = MAP_CLUSTER_WIDTH * MAP_CLUSTER_WIDTH;
 

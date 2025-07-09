@@ -241,7 +241,6 @@ private:
 //**** PRIVATE ATTRIBUTS *******************************************************
 	gm::Vec2i		chunkId;
 	gm::Vec3f		chunkPosition;
-	std::vector<gm::Vec3f>	positions;
 	Cube			cubes[CHUNK_TOTAL_SIZE]; // id = x + z * SIZE + y * SIZE2
 	CubeBitmap		cubeBitmap;
 	ChunkMesh		mesh, liquidMesh;

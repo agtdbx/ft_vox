@@ -37,6 +37,7 @@ struct ThreadData
 	PerfLogger		perfLogger;
 	int				threadId;
 	ChunkMap		*chunks; // Chunks container
+	std::mutex		*chunksMutex;
 	Map				*map;
 	Engine			*engine;
 	Camera			*camera;
@@ -175,6 +176,7 @@ public:
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
 	ChunkMap				chunks;
+	std::mutex				chunksMutex;
 	std::vector<Cluster>	clusters;
 	std::vector<gm::Vec2i>	clusterOffsets;
 	gm::Vec2i				minChunkIdOffset, maxChunkIdOffset,
