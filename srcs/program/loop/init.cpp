@@ -23,7 +23,9 @@ bool init(
 
 		// Vulkan attributs creation
 		loadShaders(engine, shaders);
+
 		objects.map.init(engine, camera, shaders.chunkShader);
+
 		objects.skybox.init(engine, camera, shaders.skyboxShader);
 
 		objects.textFps.init(engine, shaders.textShader);

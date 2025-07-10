@@ -75,8 +75,6 @@ void	Text::setFontSize(float fontSize)
 
 void	Text::setText(const std::string &text)
 {
-	if (this->text == text)
-		return ;
 	this->text = text;
 	this->needUpdateBuffers = true;
 }
@@ -146,7 +144,8 @@ void	Text::destroy(Engine &engine)
 //**** STATIC METHODS **********************************************************
 //**** PRIVATE METHODS *********************************************************
 
-const float	charTexW = 32.0f / 512.0f;
+const float	charTexWClassic = 26.0f / 512.0f;
+const float	charTexWSmall = 8.0f / 512.0f;
 const float	charTexH = 32.0f / 256.0f;
 
 void	Text::updateBuffers(Engine &engine)
@@ -156,7 +155,8 @@ void	Text::updateBuffers(Engine &engine)
 
 	this->mesh.destroy();
 
-	float	charW = 32.0f / engine.window.getSize().x * this->fontSize;
+	float	charWClassic = 26.0f / engine.window.getSize().x * this->fontSize;
+	float	charWSmall = 8.0f / engine.window.getSize().x * this->fontSize;
 	float	charH = 32.0f / engine.window.getSize().y * this->fontSize;
 
 	float	x = 0.0f;
@@ -166,9 +166,17 @@ void	Text::updateBuffers(Engine &engine)
 	int	nbVertex = 0;
 	std::vector<VertexPosTex>	&vertices = this->mesh.getVertices();
 	std::vector<uint32_t>		&indices = this->mesh.getIndices();
-
 	for (const char &c : this->text)
 	{
+		float	charW = charWClassic;
+		float	charTexW = charTexWClassic;
+
+		if (c == '.' || c == ',' || c == '!' || c == ':' || c == ';')
+		{
+			charW = charWSmall;
+			charTexW = charTexWSmall;
+		}
+
 		float	texX = (float)(c % 16) * 32.0f / 512.0f;
 		float	texY = (float)(c / 16) * 32.0f / 256.0f;
 

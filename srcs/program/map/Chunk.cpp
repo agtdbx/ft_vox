@@ -39,6 +39,7 @@ Chunk::Chunk(const Chunk &obj)
 	for (int i = 0; i < CHUNK_TOTAL_SIZE; i++)
 		this->cubes[i] = obj.cubes[i];
 	this->cubeBitmap = obj.cubeBitmap;
+	this->initDone = false;
 	this->generationDone = false;
 	this->meshCreate = false;
 	this->bufferCreate = false;

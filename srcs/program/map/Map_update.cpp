@@ -72,8 +72,10 @@ void	Map::update(Engine &engine, Camera &camera)
 				{
 					std::size_t	hash = gm::hashSmall(gm::Vec2i(x, y));
 
+					this->chunksMutex.lock();
 					if (this->chunks.find(hash) != this->chunks.end())
 						this->chunks.erase(hash);
+					this->chunksMutex.unlock();
 				}
 			}
 
@@ -93,8 +95,10 @@ void	Map::update(Engine &engine, Camera &camera)
 				{
 					std::size_t	hash = gm::hashSmall(gm::Vec2i(x, y));
 
+					this->chunksMutex.lock();
 					if (this->chunks.find(hash) != this->chunks.end())
 						this->chunks.erase(hash);
+					this->chunksMutex.unlock();
 				}
 			}
 
@@ -141,7 +145,9 @@ MapStatus	Map::prepareGeneration(Engine &engine, Camera &camera)
 	}
 
 	if (this->currentView == this->targetView)
+	{
 		return (status);
+	}
 
 	this->minDelete = gm::Vec2i(0, 0);
 	this->maxDelete = gm::Vec2i(0, 0);
@@ -228,12 +234,18 @@ bool	Map::generatingX(void)
 					{
 						hash = gm::hashSmall(gm::Vec2i(x, y));
 
-						if (this->chunks.find(hash) != this->chunks.end())
+						this->chunksMutex.lock();
+						ChunkMap::iterator	it = this->chunks.find(hash);
+						this->chunksMutex.unlock();
+
+						if (it != this->chunks.end())
 							continue;
 
 						try
 						{
-							this->chunks[hash] = Chunk();
+							this->chunksMutex.lock();
+							this->chunks.insert(std::pair<std::size_t, Chunk>(hash, Chunk()));
+							this->chunksMutex.unlock();
 						}
 						catch(const std::exception& e)
 						{
@@ -258,7 +270,9 @@ bool	Map::generatingX(void)
 			}
 		}
 		else
+		{
 			allGenerationDone = false;
+		}
 	}
 
 	return (allGenerationDone);
@@ -295,12 +309,18 @@ bool	Map::generatingY(void)
 					{
 						hash = gm::hashSmall(gm::Vec2i(x, y));
 
-						if (this->chunks.find(hash) != this->chunks.end())
+						this->chunksMutex.lock();
+						ChunkMap::iterator	it = this->chunks.find(hash);
+						this->chunksMutex.unlock();
+
+						if (it != this->chunks.end())
 							continue;
 
 						try
 						{
-							this->chunks[hash] = Chunk();
+							this->chunksMutex.lock();
+							this->chunks.insert(std::pair<std::size_t, Chunk>(hash, Chunk()));
+							this->chunksMutex.unlock();
 						}
 						catch(const std::exception& e)
 						{
@@ -356,7 +376,10 @@ bool	Map::meshingX(void)
 				for (int y = minId.y; y < maxId.y; y++)
 				{
 					gm::Vec2i	chunkPos = gm::Vec2i(x, y);
+
+					this->chunksMutex.lock();
 					ChunkMap::iterator	it = this->chunks.find(gm::hashSmall(chunkPos));
+					this->chunksMutex.unlock();
 
 					if (it == this->chunks.end())
 						continue;
@@ -435,7 +458,9 @@ bool	Map::meshingY(void)
 				for (int y = minId.y; y < maxId.y; y++)
 				{
 					gm::Vec2i	chunkPos = gm::Vec2i(x, y);
+					this->chunksMutex.lock();
 					ChunkMap::iterator	it = this->chunks.find(gm::hashSmall(chunkPos));
+					this->chunksMutex.unlock();
 
 					if (it == this->chunks.end())
 						continue;
@@ -523,7 +548,9 @@ bool	Map::destroyingX(void)
 				{
 					for (int y = minId.y; y < maxId.y; y++)
 					{
+						this->chunksMutex.lock();
 						ChunkMap::iterator it = this->chunks.find(gm::hashSmall(gm::Vec2i(x, y)));
+						this->chunksMutex.unlock();
 
 						if (it == this->chunks.end())
 							continue;
@@ -583,7 +610,9 @@ bool	Map::destroyingY(void)
 				{
 					for (int y = minId.y; y < maxId.y; y++)
 					{
+						this->chunksMutex.lock();
 						ChunkMap::iterator it = this->chunks.find(gm::hashSmall(gm::Vec2i(x, y)));
+						this->chunksMutex.unlock();
 
 						if (it == this->chunks.end())
 							continue;
