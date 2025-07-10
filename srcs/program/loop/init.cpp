@@ -5,7 +5,10 @@ static void	loadTextures(Engine &engine);
 static void loadShaders(
 				Engine &engine,
 				Shaders &shaders);
-
+static void	initUi(
+				Engine &engine,
+				Objects &objects,
+				Shaders &shaders);
 
 bool init(
 		Engine &engine,
@@ -24,33 +27,10 @@ bool init(
 		// Vulkan attributs creation
 		loadShaders(engine, shaders);
 
+		initUi(engine, objects, shaders);
+
 		objects.map.init(engine, camera, shaders.chunkShader);
-
 		objects.skybox.init(engine, camera, shaders.skyboxShader);
-
-		objects.textFps.init(engine, shaders.textShader);
-		objects.textFps.setPos({-0.99f, -0.99f});
-		objects.textFps.setDrawPos(TEXT_TOP_LEFT);
-		objects.textFps.setFontSize(1.0f);
-		objects.textFps.setTextColor({1, 1, 1, 1});
-		objects.textFps.setBackgroundColor({0, 0, 0, 0.3});
-
-		objects.textCrossAir.init(engine, shaders.textShader);
-		objects.textCrossAir.setText("+");
-		objects.textCrossAir.setPos({0.0f, 0.0f});
-		objects.textCrossAir.setDrawPos(TEXT_MID_CENTER);
-		objects.textCrossAir.setFontSize(1.0f);
-		objects.textCrossAir.setTextColor({1, 1, 1, 1});
-		objects.textCrossAir.setBackgroundColor({0, 0, 0, 0});
-
-		objects.textPosition.init(engine, shaders.textShader);
-		objects.textPosition.setPos({0.99f, -0.99f});
-		objects.textPosition.setDrawPos(TEXT_TOP_RIGHT);
-		objects.textPosition.setFontSize(1.0f);
-		objects.textPosition.setTextColor({1, 1, 1, 1});
-		objects.textPosition.setBackgroundColor({0, 0, 0, 0.3});
-
-		objects.displayUi = true;
 	}
 	catch(const std::exception& e)
 	{
@@ -58,7 +38,7 @@ bool init(
 		return (false);
 	}
 
-	camera.setPosition(gm::Vec3f(0.0f, 250.0f, 0.0f));
+	camera.setPosition(gm::Vec3f(0.0f, 150.0f, 0.0f));
 	camera.setRotation(-30.0f, -90.0f, 0.0f);
 	engine.inputManager.mouse.setMouseMode(engine.glfwWindow, GLFW_CURSOR_DISABLED);
 
@@ -139,4 +119,35 @@ static void loadShaders(
 						DEPTH_DISABLE, FCUL_NONE, DRAW_POLYGON, ALPHA_ON,
 						"shadersbin/text_vert.spv", "shadersbin/text_frag.spv",
 						bufferTextInfosChunk, imageInfosSkybox);
+}
+
+
+static void	initUi(
+				Engine &engine,
+				Objects &objects,
+				Shaders &shaders)
+{
+	objects.textFps.init(engine, shaders.textShader);
+	objects.textFps.setPos({-0.99f, -0.99f});
+	objects.textFps.setDrawPos(TEXT_TOP_LEFT);
+	objects.textFps.setFontSize(1.0f);
+	objects.textFps.setTextColor({1, 1, 1, 1});
+	objects.textFps.setBackgroundColor({0, 0, 0, 0.3});
+
+	objects.textCrossAir.init(engine, shaders.textShader);
+	objects.textCrossAir.setText("+");
+	objects.textCrossAir.setPos({0.0f, 0.0f});
+	objects.textCrossAir.setDrawPos(TEXT_MID_CENTER);
+	objects.textCrossAir.setFontSize(1.0f);
+	objects.textCrossAir.setTextColor({1, 1, 1, 1});
+	objects.textCrossAir.setBackgroundColor({0, 0, 0, 0});
+
+	objects.textPosition.init(engine, shaders.textShader);
+	objects.textPosition.setPos({0.99f, -0.99f});
+	objects.textPosition.setDrawPos(TEXT_TOP_RIGHT);
+	objects.textPosition.setFontSize(1.0f);
+	objects.textPosition.setTextColor({1, 1, 1, 1});
+	objects.textPosition.setBackgroundColor({0, 0, 0, 0.3});
+
+	objects.displayUi = true;
 }
