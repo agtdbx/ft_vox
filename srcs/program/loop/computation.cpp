@@ -35,7 +35,7 @@ void	computation(
 			Shaders &shaders,
 			double delta)
 {
-	// perfLog(delta, camera, engine.window);
+	perfLog(delta, camera, engine.window);
 
 	cameraMovements(engine , camera, delta);
 

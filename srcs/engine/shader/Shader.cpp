@@ -88,9 +88,15 @@ void	Shader::destroy(Engine &engine)
 
 	// Free pipeline
 	if (this->graphicsPipeline != NULL)
+	{
 		vkDestroyPipeline(device, this->graphicsPipeline, nullptr);
+		this->graphicsPipeline = NULL;
+	}
 	if (this->pipelineLayout != NULL)
+	{
 		vkDestroyPipelineLayout(device, this->pipelineLayout, nullptr);
+		this->pipelineLayout = NULL;
+	}
 }
 
 //**** STATIC METHODS **********************************************************

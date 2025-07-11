@@ -5,15 +5,13 @@ layout(binding = 1) uniform UniformBufferObject
     vec4    textColor;
     vec4    backgroundColor;
 } ubo;
+layout(binding = 2) uniform sampler2D sampleFont;
 
 // Input from vertex
-layout(location = 0) in vec2 fragTexCoord;
+layout(location = 0) in vec2    fragTexCoord;
 
 // Output
 layout(location = 0) out vec4   outColor;
-
-// Binding buffer
-layout(binding = 2) uniform sampler2D sampleFont;
 
 // Main
 void main()

@@ -101,7 +101,7 @@ runval: all
 
 runvalall: all
 	@echo "$(BLUE)Start project with $(UNDERLINE)valgrind full option$(NOC)"
-	@cd $(MESON_BUILD_DIR) && valgrind --suppressions=vsupp --leak-check=full --show-leak-kinds=all ./$(EXECUTABLE_NAME) $(ARG) || echo "Exit at 1"
+	@cd $(MESON_BUILD_DIR) && valgrind --suppressions=vsupp --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(EXECUTABLE_NAME) $(ARG) || echo "Exit at 1"
 	@echo "$(GREEN)Bye !$(NOC)"
 
 genvsupp: all

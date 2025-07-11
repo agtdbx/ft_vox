@@ -78,8 +78,7 @@ void	ShaderParam::destroy(Engine &engine)
 	VkDevice	device = engine.context.getDevice();
 
 	// Free uniforms buffers
-	size_t nbBuffers = this->uniformBuffers.size();
-	for (size_t i = 0; i < nbBuffers; i++)
+	for (size_t i = 0; i < this->uniformBuffers.size(); i++)
 	{
 		if (this->uniformBuffers[i] != VK_NULL_HANDLE)
 		{
@@ -94,10 +93,8 @@ void	ShaderParam::destroy(Engine &engine)
 	}
 
 	// Free descriptor pool
-	// printf("Call free\n");
 	if (this->descriptorPool != NULL)
 	{
-		// printf("Destroy pool\n");
 		vkDestroyDescriptorPool(device, this->descriptorPool, nullptr);
 		this->descriptorPool = NULL;
 	}
@@ -173,7 +170,6 @@ void	ShaderParam::createDescriptorPool(VkDevice device, size_t nbImages)
 
 	if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &this->descriptorPool) != VK_SUCCESS)
 		throw std::runtime_error("Create descriptor pool failed");
-	// printf("Create pool\n");
 }
 
 
