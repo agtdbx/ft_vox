@@ -18,7 +18,6 @@ using ChunkMesh = Mesh<VertexVoxel>;
 using ChunkBorderMesh = Mesh<VertexPos>;
 
 class Map;
-#define SEED 42
 
 struct ChunkShader
 {

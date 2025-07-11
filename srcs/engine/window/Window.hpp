@@ -134,6 +134,7 @@ public:
 	 */
 	void	destroy(VkInstance instance);
 //---- Draw --------------------------------------------------------------------
+	void	waitCurrentFence(void);
 	/**
 	 * @brief Prepare drawing.
 	 *

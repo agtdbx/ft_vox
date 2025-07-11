@@ -25,5 +25,8 @@ void	draw(
 	}
 
 	// End drawing
+	engine.queueMutex.lock();
+	vkQueueWaitIdle(engine.context.getGraphicsQueue().value);
 	engine.window.endDraw();
+	engine.queueMutex.unlock();
 }

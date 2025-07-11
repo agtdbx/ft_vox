@@ -26,6 +26,7 @@ Window::Window(void)
 	// Create window
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+	glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 	this->window = glfwCreateWindow(this->size.x, this->size.y,
 										this->title.c_str(), nullptr, nullptr);
 	if (window == NULL)
@@ -250,10 +251,16 @@ void	Window::destroy(VkInstance instance)
 
 //---- Draw --------------------------------------------------------------------
 
+void	Window::waitCurrentFence(void)
+{
+	vkWaitForFences(this->copyDevice, 1, &this->inFlightFences[this->currentFrame], VK_TRUE, UINT64_MAX);
+}
+
 void	Window::startDraw(void)
 {
 	// Wait the end of render of previous frame
-	vkWaitForFences(this->copyDevice, 1, &this->inFlightFences[this->currentFrame], VK_TRUE, UINT64_MAX);
+	// vkWaitForFences(this->copyDevice, 1, &this->inFlightFences[this->currentFrame], VK_TRUE, UINT64_MAX);
+	this->waitCurrentFence();
 
 	// Get an image from swap chain
 	VkResult result = vkAcquireNextImageKHR(this->copyDevice, this->swapChain, UINT64_MAX, this->imageAvailableSemaphores[this->currentFrame], VK_NULL_HANDLE, &this->imageIndex);

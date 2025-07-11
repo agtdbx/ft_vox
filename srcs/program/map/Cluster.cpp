@@ -96,16 +96,17 @@ void	Cluster::move(Map &map, const gm::Vec2i &movement)
 }
 
 
-void	Cluster::giveChunk(const gm::Vec2i &chunkPos, Chunk *chunk)
+bool	Cluster::giveChunk(const gm::Vec2i &chunkPos, Chunk *chunk)
 {
 	if (chunkPos.x < this->minChunk.x || chunkPos.y < this->minChunk.y
 		|| chunkPos.x >= this->maxChunk.x || chunkPos.y >= this->maxChunk.y)
-		return ;
+		return (false);
 
 	int	cx = chunkPos.x - this->minChunk.x;
 	int	cy = chunkPos.y - this->minChunk.y;
 	int	id = cx + cy * CLUSTER_SIZE;
 	this->chunks[id] = chunk;
+	return (true);
 }
 
 

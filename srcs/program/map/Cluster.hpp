@@ -73,8 +73,10 @@ public:
 	 *
 	 * @param chunkPos The position of the chunk.
 	 * @param chunk The chunk to add.
+	 *
+	 * @return True if the chunk was put in cluster, false else.
 	 */
-	void	giveChunk(const gm::Vec2i &chunkPos, Chunk *chunk);
+	bool	giveChunk(const gm::Vec2i &chunkPos, Chunk *chunk);
 	/**
 	 * @brief Draw chunks.
 	 *

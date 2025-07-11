@@ -19,7 +19,6 @@ enum ThreadStatus
 	THREAD_GENERATING,		// Generation in progress
 	THREAD_NEED_MESH,		// Ask meshing
 	THREAD_MESHING,			// Meshing in progress
-	THREAD_MESH_END,		// Meshing asked finish
 	THREAD_NEED_DESTROY,	// Ask destroying
 	THREAD_DESTROYING,		// Destroying in progress
 	THREAD_STOPPING,		// Ask stopping thread
@@ -29,19 +28,21 @@ enum ThreadStatus
 
 struct ThreadData
 {
-	std::mutex		mutex; // Mutex for the struct
-	ThreadStatus	status;
-	gm::Vec2i		minChunkId; // Min id of chunk to generate or mesh
-	gm::Vec2i		maxChunkId; // Max id of chunk to generate or mesh
-	gm::Vec2i		cameraChunkId; // Chunk id for the camera
-	PerfLogger		perfLogger;
-	int				threadId;
-	ChunkMap		*chunks; // Chunks container
-	std::mutex		*chunksMutex;
-	Map				*map;
-	Engine			*engine;
-	Camera			*camera;
-	ChunkShader		*chunkShader;
+	std::mutex				mutex; // Mutex for the struct
+	ThreadStatus			status;
+	gm::Vec2i				minChunkId; // Min id of chunk to generate or mesh
+	gm::Vec2i				maxChunkId; // Max id of chunk to generate or mesh
+	gm::Vec2i				cameraChunkId; // Chunk id for the camera
+	PerfLogger				perfLogger;
+	int						threadId;
+	ChunkMap				*chunks; // Chunks container
+	std::mutex				*chunksMutex;
+	std::vector<Cluster>	*clusters;
+	std::mutex				*clustersMutex;
+	Map						*map;
+	Engine					*engine;
+	Camera					*camera;
+	ChunkShader				*chunkShader;
 
 };
 
@@ -175,8 +176,8 @@ public:
 
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
+	std::mutex				chunksMutex, clustersMutex;
 	ChunkMap				chunks;
-	std::mutex				chunksMutex;
 	std::vector<Cluster>	clusters;
 	std::vector<gm::Vec2i>	clusterOffsets;
 	gm::Vec2i				minChunkIdOffset, maxChunkIdOffset,

@@ -140,8 +140,10 @@ MapStatus	Map::prepareGeneration(Engine &engine, Camera &camera)
 		this->targetView.maxMeshChunk = this->cameraChunkId + this->maxChunkIdOffset;
 		this->targetView.tmpId = this->targetView.minGenChunk;
 
+		this->clustersMutex.lock();
 		for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
 			this->clusters[i].move(*this, movement);
+		this->clustersMutex.unlock();
 	}
 
 	if (this->currentView == this->targetView)
@@ -365,35 +367,6 @@ bool	Map::meshingX(void)
 		threadStatus = this->threadsData[i].status;
 		this->threadsData[i].mutex.unlock();
 
-		// Update when thread end creating mesh for asked chunks
-		if (threadStatus == THREAD_MESH_END)
-		{
-			gm::Vec2i	minId = this->threadsData[i].minChunkId;
-			gm::Vec2i	maxId = this->threadsData[i].maxChunkId;
-
-			for (int x = minId.x; x < maxId.x; x++)
-			{
-				for (int y = minId.y; y < maxId.y; y++)
-				{
-					gm::Vec2i	chunkPos = gm::Vec2i(x, y);
-
-					this->chunksMutex.lock();
-					ChunkMap::iterator	it = this->chunks.find(gm::hashSmall(chunkPos));
-					this->chunksMutex.unlock();
-
-					if (it == this->chunks.end())
-						continue;
-
-					for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
-					{
-						this->clusters[i].giveChunk(chunkPos, &it->second);
-					}
-				}
-			}
-
-			threadStatus = THREAD_RUNNING;
-		}
-
 		if (threadStatus == THREAD_RUNNING)
 		{
 			if (this->currentView.tmpId.y != this->targetView.maxMeshChunk.y)
@@ -446,34 +419,6 @@ bool	Map::meshingY(void)
 		this->threadsData[i].mutex.lock();
 		threadStatus = this->threadsData[i].status;
 		this->threadsData[i].mutex.unlock();
-
-		// Update when thread end creating mesh for asked chunks
-		if (threadStatus == THREAD_MESH_END)
-		{
-			gm::Vec2i	minId = this->threadsData[i].minChunkId;
-			gm::Vec2i	maxId = this->threadsData[i].maxChunkId;
-
-			for (int x = minId.x; x < maxId.x; x++)
-			{
-				for (int y = minId.y; y < maxId.y; y++)
-				{
-					gm::Vec2i	chunkPos = gm::Vec2i(x, y);
-					this->chunksMutex.lock();
-					ChunkMap::iterator	it = this->chunks.find(gm::hashSmall(chunkPos));
-					this->chunksMutex.unlock();
-
-					if (it == this->chunks.end())
-						continue;
-
-					for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
-					{
-						this->clusters[i].giveChunk(chunkPos, &it->second);
-					}
-				}
-			}
-
-			threadStatus = THREAD_RUNNING;
-		}
 
 		if (threadStatus == THREAD_RUNNING)
 		{
@@ -651,10 +596,6 @@ bool	Map::destroyingChunks(void)
 		this->threadsData[i].mutex.lock();
 		threadStatus = this->threadsData[i].status;
 		this->threadsData[i].mutex.unlock();
-
-		// Update when thread end destroying asked chunks
-		if (threadStatus == THREAD_MESH_END)
-			threadStatus = THREAD_RUNNING;
 
 		if (threadStatus == THREAD_RUNNING)
 		{

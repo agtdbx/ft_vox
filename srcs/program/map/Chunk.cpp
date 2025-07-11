@@ -212,7 +212,6 @@ void	Chunk::createBuffers(
 	if (this->bufferCreate)
 		return ;
 	this->bufferCreate = true;
-	this->canBeDraw = true;
 
 	perflogStart(perfLogger.createBuffer);
 
@@ -226,8 +225,9 @@ void	Chunk::createBuffers(
 
 void	Chunk::updateMesh(Engine &engine, Map &map)
 {
-	PerfLogger    perfLogger;
+	PerfLogger	perfLogger;
 
+	engine.window.waitCurrentFence();
 	this->mesh.destroy();
 	this->createMesh(map, perfLogger);
 	this->mesh.createBuffers(engine.commandPool);
@@ -236,10 +236,10 @@ void	Chunk::updateMesh(Engine &engine, Map &map)
 
 void	Chunk::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 {
-	this->uboPos.view = camera.getView();
-
 	if (!this->canBeDraw)
 		return ;
+
+	this->uboPos.view = camera.getView();
 
 	// Draw mesh
 	if (!chunkShader.shaderFdfEnable)
@@ -263,6 +263,9 @@ void	Chunk::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 
 void	Chunk::drawLiquid(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 {
+	if (!this->canBeDraw)
+		return ;
+
 	if (this->liquidMesh.getNbIndex() == 0)
 		return ;
 

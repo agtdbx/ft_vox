@@ -3,13 +3,16 @@
 
 static void perfLog(
 				double delta,
-				Objects &objects,
 				Camera &camera,
 				Window &window);
 static void cameraMovements(
 				Engine &engine,
 				Camera &camera,
 				double delta);
+static void updateTexts(
+				double delta,
+				Objects &objects,
+				Camera &camera);
 static void	destroyBlock(
 				Engine &engine,
 				Camera &camera,
@@ -32,9 +35,11 @@ void	computation(
 			Shaders &shaders,
 			double delta)
 {
-	perfLog(delta, objects, camera, engine.window);
+	// perfLog(delta, camera, engine.window);
 
 	cameraMovements(engine , camera, delta);
+
+	updateTexts(delta, objects, camera);
 
 	if (engine.inputManager.f.isPressed())
 		objects.displayUi = !objects.displayUi;
@@ -56,7 +61,6 @@ void	computation(
 
 static void perfLog(
 				double delta,
-				Objects &objects,
 				Camera &camera,
 				Window &window)
 {
@@ -77,27 +81,15 @@ static void perfLog(
 	if (printFpsTime > PRINT_FPS_TIME)
 	{
 		double avgDelta = printFpsTime / (double)nbCall;
-		double avgFps = 1 / avgDelta;
-		double minFps = 1 / maxDelta;
-		double maxFps = 1 / minDelta;
+		double avgFps = 1.0 / avgDelta;
+		double minFps = 1.0 / maxDelta;
+		double maxFps = 1.0 / minDelta;
 
 		// Title
 		char	stringTitle[50] = {0};
 		snprintf(stringTitle,  49, "fps : %7.2f | min %7.2f | max %8.2f",
 				avgFps, minFps, maxFps);
 		window.setTitle(std::string(stringTitle));
-
-		// Fps text
-		char	stringFps[50] = {0};
-		snprintf(stringFps, 49, "fps : %.2f", avgFps);
-		objects.textFps.setText(std::string(stringFps));
-
-		// Position text
-		gm::Vec3f	pos = camera.getPosition();
-		char	stringPosition[50] = {0};
-		snprintf(stringPosition, 49, "pos (%.2f, %.2f, %.2f)",
-				pos.x, pos.y, pos.z);
-		objects.textPosition.setText(std::string(stringPosition));
 
 		printFpsTime = 0.0;
 		minDelta = 1000.0;
@@ -164,6 +156,40 @@ static void cameraMovements(
 	// Status
 	if (engine.inputManager.p.isPressed())
 		camera.printStatus();
+}
+
+
+static void updateTexts(
+				double delta,
+				Objects &objects,
+				Camera &camera)
+{
+	static double	printFpsTime = 0.0;
+	static int		nbCall = 0;
+
+	printFpsTime += delta;
+	nbCall++;
+
+	if (printFpsTime > UPDATE_TEXT_TIME)
+	{
+		double avgDelta = printFpsTime / (double)nbCall;
+		double avgFps = 1.0 / avgDelta;
+
+		// Fps text
+		char	stringFps[50] = {0};
+		snprintf(stringFps, 49, "fps : %.2f", avgFps);
+		objects.textFps.setText(std::string(stringFps));
+
+		// Position text
+		gm::Vec3f	pos = camera.getPosition();
+		char	stringPosition[50] = {0};
+		snprintf(stringPosition, 49, "pos (%.2f, %.2f, %.2f)",
+				pos.x, pos.y, pos.z);
+		objects.textPosition.setText(std::string(stringPosition));
+
+		printFpsTime = 0.0;
+		nbCall = 0;
+	}
 }
 
 
@@ -290,14 +316,16 @@ static void	updateChunkMesh(
 	Chunk	*tmpChunk = map.getChunk(chunkX, chunkY);
 	if (tmpChunk && tmpChunk->isMeshCreated())
 	{
+		engine.queueMutex.lock();
 		try
 		{
 			tmpChunk->updateMesh(engine, map);
 		}
 		catch(const std::exception& e)
 		{
-			printf("Delete chunk %i %i error :\n", chunkX, chunkY);
+			printf("Update chunk %i %i error :\n", chunkX, chunkY);
 			std::cerr << e.what() << std::endl;
 		}
+		engine.queueMutex.unlock();
 	}
 }

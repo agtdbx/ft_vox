@@ -140,6 +140,8 @@ void	Map::init(
 		this->threadsData[i].cameraChunkId = cameraChunkId;
 		this->threadsData[i].chunks = &this->chunks;
 		this->threadsData[i].chunksMutex = &this->chunksMutex;
+		this->threadsData[i].clusters = &this->clusters;
+		this->threadsData[i].clustersMutex = &this->clustersMutex;
 		this->threadsData[i].map = this;
 		this->threadsData[i].engine = &engine;
 		this->threadsData[i].camera = &camera;
@@ -158,6 +160,7 @@ void	Map::init(
 
 void	Map::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 {
+	this->clustersMutex.lock();
 	for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
 	{
 		if (camera.isCubeInFrutum(this->clusters[i].getBoundingCube()))
@@ -169,6 +172,7 @@ void	Map::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 		if (camera.isCubeInFrutum(this->clusters[i].getBoundingCube()))
 			this->clusters[i].drawLiquid(engine, camera, chunkShader);
 	}
+	this->clustersMutex.unlock();
 }
 
 
@@ -280,15 +284,17 @@ static void	threadRoutine(ThreadData *threadData)
 	gm::Vec2i		minId, maxId, curId;
 	StagingBuffer	stagingBuffer;
 
-	int					threadId = threadData->threadId;
-	ChunkMap			&chunks = *threadData->chunks;
-	std::mutex			&chunksMutex = *threadData->chunksMutex;
-	Map					&map = *threadData->map;
-	Engine				&engine = *threadData->engine;
-	Camera				&camera = *threadData->camera;
-	ChunkShader			&chunkShader = *threadData->chunkShader;
-	VulkanCommandPool	&commandPool = engine.commandPoolThreads[threadId];
-	PerfLogger			&perfLogger = threadData->perfLogger;
+	int						threadId = threadData->threadId;
+	ChunkMap				&chunks = *threadData->chunks;
+	std::mutex				&chunksMutex = *threadData->chunksMutex;
+	std::vector<Cluster>	&clusters = *threadData->clusters;
+	std::mutex				&clustersMutex = *threadData->clustersMutex;
+	Map						&map = *threadData->map;
+	Engine					&engine = *threadData->engine;
+	Camera					&camera = *threadData->camera;
+	ChunkShader				&chunkShader = *threadData->chunkShader;
+	VulkanCommandPool		&commandPool = engine.commandPoolThreads[threadId];
+	PerfLogger				&perfLogger = threadData->perfLogger;
 
 	stagingBuffer.create(engine.commandPoolThreads[threadId], MAX_CHUNK_BUFFER_SIZE * MIN_CHUNK_PER_THREAD); // Big size to avoid buffer creation
 
@@ -400,12 +406,38 @@ static void	threadRoutine(ThreadData *threadData)
 			}
 
 			engine.queueMutex.lock();
+			vkQueueWaitIdle(engine.context.getTransferQueue().value);
 			commandPool.endSingleTimeCommands(commandBuffer);
 			engine.queueMutex.unlock();
 
+			for (int x = minId.x; x < maxId.x; x++)
+			{
+				for (int y = minId.y; y < maxId.y; y++)
+				{
+					gm::Vec2i	chunkPos(x, y);
+
+					chunksMutex.lock();
+					ChunkMap::iterator	it = chunks.find(gm::hashSmall(chunkPos));
+					chunksMutex.unlock();
+
+					if (it == chunks.end())
+						continue;
+
+					it->second.setDrawable(true);
+
+					clustersMutex.lock();
+					for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
+					{
+						if (clusters[i].giveChunk(chunkPos, &it->second))
+							break;
+					}
+					clustersMutex.unlock();
+				}
+			}
+
 			threadData->mutex.lock();
 			if (threadData->status != THREAD_STOPPING)
-				threadData->status = THREAD_MESH_END;
+				threadData->status = THREAD_RUNNING;
 			threadData->mutex.unlock();
 		}
 
