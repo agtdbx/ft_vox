@@ -39,10 +39,8 @@ static void	createTriangleFace(
 //**** STATIC METHODS **********************************************************
 //**** PRIVATE METHODS *********************************************************
 
-void	Chunk::createBorderMesh(PerfLogger &perfLogger)
+void	Chunk::createBorderMesh(void)
 {
-	perflogStart(perfLogger.meshChunk);
-
 	std::vector<VertexPos>	&vertices = this->borderMesh.getVertices();
 	std::vector<uint32_t>	&indices = this->borderMesh.getIndices();
 	float	h0, h1;
@@ -78,16 +76,12 @@ void	Chunk::createBorderMesh(PerfLogger &perfLogger)
 		nbVertex += 8;
 	}
 
-	perflogEnd(perfLogger.meshChunk);
-
 	this->borderMesh.updateMeshInfo();
 }
 
 
-void	Chunk::createMesh(Map &map, PerfLogger &perfLogger)
+void	Chunk::createMesh(Map &map)
 {
-	perflogStart(perfLogger.meshBlock);
-
 	std::unordered_map<std::size_t, uint32_t>	vertexIndex;
 	std::vector<VertexVoxel>					&vertices = this->mesh.getVertices();
 	std::vector<uint32_t>						&indices = this->mesh.getIndices();
@@ -104,7 +98,6 @@ void	Chunk::createMesh(Map &map, PerfLogger &perfLogger)
 	uint64_t	chunkLeftBlock, chunkCurrLine, chunkRightBlock;
 	gm::Vec3f	pointLU, pointLD, pointRD, pointRU;
 
-	perflogStart(perfLogger.meshBlockCopyBitmap);
 	CubeBitmap	cBitmapL = this->cubeBitmap;
 	CubeBitmap	cBitmapR = this->cubeBitmap;
 
@@ -118,10 +111,8 @@ void	Chunk::createMesh(Map &map, PerfLogger &perfLogger)
 	{
 		cBitmapR.axisY[i] = reverse256Bytes(cBitmapR.axisY[i]);
 	}
-	perflogEnd(perfLogger.meshBlockCopyBitmap);
 
 	// y axis
-	perflogStart(perfLogger.meshBlockYaxis);
 	for (int z = 0; z < CHUNK_SIZE; z++)
 	{
 		idZ = z * CHUNK_SIZE;
@@ -298,15 +289,12 @@ void	Chunk::createMesh(Map &map, PerfLogger &perfLogger)
 			}
 		}
 	}
-	perflogEnd(perfLogger.meshBlockYaxis);
-
 
 	for (int y = 0; y < CHUNK_HEIGHT; y++)
 	{
 		idY = y * CHUNK_SIZE;
 
 		// z axis
-		perflogStart(perfLogger.meshBlockZaxis);
 		for (int x = 0; x < CHUNK_SIZE; x++)
 		{
 			// Face front
@@ -531,10 +519,8 @@ void	Chunk::createMesh(Map &map, PerfLogger &perfLogger)
 									pointLU, pointLD, pointRD, pointRU, normalBack, type);
 			}
 		}
-		perflogEnd(perfLogger.meshBlockZaxis);
 
 		// x axis
-		perflogStart(perfLogger.meshBlockXaxis);
 		for (int z = 0; z < CHUNK_SIZE; z++)
 		{
 			// Contruct chunk line
@@ -760,19 +746,15 @@ void	Chunk::createMesh(Map &map, PerfLogger &perfLogger)
 									pointLU, pointLD, pointRD, pointRU, normalLeft, type);
 			}
 		}
-		perflogEnd(perfLogger.meshBlockXaxis);
 	}
 
-	perflogEnd(perfLogger.meshBlock);
 
 	this->mesh.updateMeshInfo();
 }
 
 
-void	Chunk::createLiquidMesh(PerfLogger &perfLogger)
+void	Chunk::createLiquidMesh(void)
 {
-	perflogStart(perfLogger.meshLiquid);
-
 	std::unordered_map<std::size_t, uint32_t>	vertexIndex;
 	std::vector<VertexVoxel>					&vertices = this->liquidMesh.getVertices();
 	std::vector<uint32_t>						&indices = this->liquidMesh.getIndices();
@@ -848,8 +830,6 @@ void	Chunk::createLiquidMesh(PerfLogger &perfLogger)
 			x += w;
 		}
 	}
-
-	perflogEnd(perfLogger.meshLiquid);
 
 	this->liquidMesh.updateMeshInfo();
 }

@@ -4,7 +4,6 @@
 # include <engine/mesh/Vertex.hpp>
 # include <engine/mesh/StagingBuffer.hpp>
 # include <engine/vulkan/VulkanCommandPool.hpp>
-# include <program/perfLogger/PerfLogger.hpp> // TODO : Remove
 
 # include <vector>
 # include <cstring>
@@ -322,11 +321,9 @@ public:
 		StagingBuffer	stagingBuffer;
 		stagingBuffer.create(commandPool, bufferSize);
 
-		PerfLogger perfLogger;
-
 		VkCommandBuffer	commandBuffer = commandPool.beginSingleTimeCommands();
-		this->createVertexBuffer(stagingBuffer, commandBuffer, perfLogger);
-		this->createIndexBuffer(stagingBuffer, commandBuffer, perfLogger);
+		this->createVertexBuffer(stagingBuffer, commandBuffer);
+		this->createIndexBuffer(stagingBuffer, commandBuffer);
 		commandPool.endSingleTimeCommands(commandBuffer);
 
 		// Release temp buffer
@@ -342,8 +339,7 @@ public:
 	void	createBuffers(
 				VulkanCommandPool &commandPool,
 				StagingBuffer &stagingBuffer,
-				VkCommandBuffer &commandBuffer,
-				PerfLogger &perfLogger)
+				VkCommandBuffer &commandBuffer)
 	{
 		if (this->nbIndex == 0)
 			return ;
@@ -352,8 +348,8 @@ public:
 
 		this->commandPool = &commandPool;
 
-		this->createVertexBuffer(stagingBuffer, commandBuffer, perfLogger);
-		this->createIndexBuffer(stagingBuffer, commandBuffer, perfLogger);
+		this->createVertexBuffer(stagingBuffer, commandBuffer);
+		this->createIndexBuffer(stagingBuffer, commandBuffer);
 	}
 	/**
 	 * @brief Clear allocated memory.
@@ -463,8 +459,7 @@ private:
 	 */
 	void	createVertexBuffer(
 				StagingBuffer &stagingBuffer,
-				VkCommandBuffer commandBuffer,
-				PerfLogger &perfLogger)
+				VkCommandBuffer commandBuffer)
 	{
 		if (this->commandPool == NULL || this->nbVertex == 0)
 			return ;
@@ -476,34 +471,27 @@ private:
 		VkDeviceSize	bufferSize = sizeof(this->vertices[0]) * this->nbVertex;
 
 		// Map data to vertex buffer
-		perflogStart(perfLogger.mapVertexBuffer);
 		void	*data;
 		vkMapMemory(copyDevice, stagingBuffer.memory, offset, bufferSize, 0, &data);
 		memcpy(data, this->vertices.data(), (size_t) bufferSize);
 		vkUnmapMemory(copyDevice, stagingBuffer.memory);
-		perflogEnd(perfLogger.mapVertexBuffer);
 
 		// Create final buffer
-		perflogStart(perfLogger.createVertexBuffer);
 		createVulkanBuffer(copyDevice, copyPhysicalDevice,
 							bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 							VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 							this->vertexBuffer, this->vertexBufferMemory);
-		perflogEnd(perfLogger.createVertexBuffer);
 
 		// Copy data form temp to final buffer
-		perflogStart(perfLogger.copyVertexBuffer);
 		copyBufferAsync(commandBuffer, stagingBuffer.buffer, this->vertexBuffer, offset, bufferSize);
 		stagingBuffer.offset += bufferSize;
-		perflogEnd(perfLogger.copyVertexBuffer);
 	}
 	/**
 	 * @brief Create index buffer and index buffer memory.
 	 */
 	void	createIndexBuffer(
 				StagingBuffer &stagingBuffer,
-				VkCommandBuffer commandBuffer,
-				PerfLogger &perfLogger)
+				VkCommandBuffer commandBuffer)
 	{
 		if (this->commandPool == NULL || this->nbIndex == 0)
 			return ;
@@ -515,25 +503,19 @@ private:
 		VkDeviceSize	bufferSize = sizeof(this->indices[0]) * this->nbIndex;
 
 		// Map data to vertex buffer
-		perflogStart(perfLogger.mapIndexBuffer);
 		void* data;
 		vkMapMemory(copyDevice, stagingBuffer.memory, offset, bufferSize, 0, &data);
 		memcpy(data, this->indices.data(), (size_t) bufferSize);
 		vkUnmapMemory(copyDevice, stagingBuffer.memory);
-		perflogEnd(perfLogger.mapIndexBuffer);
 
 		// Create final buffer
-		perflogStart(perfLogger.createIndexBuffer);
 		createVulkanBuffer(copyDevice, copyPhysicalDevice,
 							bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
 							VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, this->indexBuffer, this->indexBufferMemory);
-		perflogEnd(perfLogger.createIndexBuffer);
 
 		// Copy data form temp to final buffer
-		perflogStart(perfLogger.copyIndexBuffer);
 		copyBufferAsync(commandBuffer, stagingBuffer.buffer, this->indexBuffer, offset, bufferSize);
 		stagingBuffer.offset += bufferSize;
-		perflogEnd(perfLogger.copyIndexBuffer);
 	}
 	/**
 	 * @brief Update vertex buffer.

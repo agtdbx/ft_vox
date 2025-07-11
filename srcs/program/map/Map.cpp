@@ -178,8 +178,6 @@ void	Map::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 
 void	Map::destroy(Engine &engine)
 {
-	PerfLogger	perfLogger;
-
 	this->minDelete = this->cameraChunkId + this->minChunkIdOffset - gm::Vec2i(1, 1);
 	this->maxDelete = this->cameraChunkId + this->maxChunkIdOffset + gm::Vec2i(1, 1);
 	this->currentView.tmpId = this->minDelete;
@@ -231,7 +229,6 @@ void	Map::destroy(Engine &engine)
 				if (this->threadsData[i].status == THREAD_STOP)
 				{
 					this->threadsData[i].mutex.unlock();
-					perfLogger += this->threadsData[i].perfLogger;
 					break;
 				}
 				this->threadsData[i].mutex.unlock();
@@ -247,30 +244,6 @@ void	Map::destroy(Engine &engine)
 	}
 
 	this->stagingBuffer.destroy(engine.context.getDevice());
-
-	printf("\nTerrain generation stats !\n\n");
-	printf("Generation :\n");
-	perflogPrint(perfLogger.generateChunk,       " - per chunk     ");
-	printf("Meshing :\n");
-	perflogPrint(perfLogger.chunkMeshing,        " - per chunk     ");
-	perflogPrint(perfLogger.meshChunk,           " - border mesh   ");
-	perflogPrint(perfLogger.meshBlock,           " - block mesh    ");
-	perflogPrint(perfLogger.meshBlockCopyBitmap, " - copy bitmap   ");
-	perflogPrint(perfLogger.meshBlockXaxis,      " - block x axis  ");
-	perflogPrint(perfLogger.meshBlockYaxis,      " - block y axis  ");
-	perflogPrint(perfLogger.meshBlockZaxis,      " - block z axis  ");
-	perflogPrint(perfLogger.meshLiquid,          " - liquid mesh   ");
-	printf("Buffering :\n");
-	perflogPrint(perfLogger.createBuffer,        " - per chunk     ");
-	perflogPrint(perfLogger.createUpdateStaging, " - staging buffer");
-	perflogPrint(perfLogger.mapVertexBuffer,     " - vertex map    ");
-	perflogPrint(perfLogger.createVertexBuffer,  " - vertex create ");
-	perflogPrint(perfLogger.copyVertexBuffer,    " - vertex copy   ");
-	perflogPrint(perfLogger.mapIndexBuffer,      " - index map     ");
-	perflogPrint(perfLogger.createIndexBuffer,   " - index create  ");
-	perflogPrint(perfLogger.copyIndexBuffer,     " - index copy    ");
-	printf("Destroy :\n");
-	perflogPrint(perfLogger.destroyChunk,        " - per chunk     ");
 }
 
 //**** STATIC METHODS **********************************************************
@@ -294,7 +267,6 @@ static void	threadRoutine(ThreadData *threadData)
 	Camera					&camera = *threadData->camera;
 	ChunkShader				&chunkShader = *threadData->chunkShader;
 	VulkanCommandPool		&commandPool = engine.commandPoolThreads[threadId];
-	PerfLogger				&perfLogger = threadData->perfLogger;
 
 	stagingBuffer.create(engine.commandPoolThreads[threadId], MAX_CHUNK_BUFFER_SIZE * MIN_CHUNK_PER_THREAD); // Big size to avoid buffer creation
 
@@ -345,7 +317,7 @@ static void	threadRoutine(ThreadData *threadData)
 					try
 					{
 						it->second.init(engine, camera, chunkShader);
-						it->second.generate(curId, perfLogger);
+						it->second.generate(curId);
 					}
 					catch(const std::exception& e)
 					{
@@ -370,7 +342,7 @@ static void	threadRoutine(ThreadData *threadData)
 			int	nbChunks = (maxId.x - minId.x) * (maxId.y - minId.y);
 			VkDeviceSize	minimalSize = nbChunks * MAX_CHUNK_BUFFER_SIZE;
 
-			stagingBuffer.update(commandPool, minimalSize, perfLogger);
+			stagingBuffer.update(commandPool, minimalSize);
 			stagingBuffer.offset = 0;
 			VkCommandBuffer	commandBuffer = commandPool.beginSingleTimeCommands();
 
@@ -387,7 +359,7 @@ static void	threadRoutine(ThreadData *threadData)
 
 					try
 					{
-						it->second.createMeshes(map, perfLogger);
+						it->second.createMeshes(map);
 
 						if (stagingBuffer.offset + it->second.getBufferSize() >= stagingBuffer.size)
 						{
@@ -397,7 +369,7 @@ static void	threadRoutine(ThreadData *threadData)
 							commandBuffer = commandPool.beginSingleTimeCommands();
 							stagingBuffer.offset = 0;
 						}
-						it->second.createBuffers(commandPool, stagingBuffer, commandBuffer, perfLogger);
+						it->second.createBuffers(commandPool, stagingBuffer, commandBuffer);
 					}
 					catch(const std::exception& e)
 					{
@@ -464,9 +436,7 @@ static void	threadRoutine(ThreadData *threadData)
 
 					try
 					{
-						perflogStart(perfLogger.destroyChunk);
 						it->second.destroy(engine);
-						perflogEnd(perfLogger.destroyChunk);
 					}
 					catch(const std::exception& e)
 					{
@@ -486,15 +456,6 @@ static void	threadRoutine(ThreadData *threadData)
 			usleep(10000);
 		}
 	}
-
-	perfLogger.meshBlockXaxis.nbCall = perfLogger.meshBlockYaxis.nbCall;
-	perfLogger.meshBlockZaxis.nbCall = perfLogger.meshBlockYaxis.nbCall;
-	perfLogger.mapVertexBuffer.nbCall = perfLogger.createBuffer.nbCall;
-	perfLogger.createVertexBuffer.nbCall = perfLogger.createBuffer.nbCall;
-	perfLogger.copyVertexBuffer.nbCall = perfLogger.createBuffer.nbCall;
-	perfLogger.mapIndexBuffer.nbCall = perfLogger.createBuffer.nbCall;
-	perfLogger.createIndexBuffer.nbCall = perfLogger.createBuffer.nbCall;
-	perfLogger.copyIndexBuffer.nbCall = perfLogger.createBuffer.nbCall;
 
 	stagingBuffer.destroy(engine.context.getDevice());
 

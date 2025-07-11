@@ -12,7 +12,6 @@
 # include <program/map/Cube.hpp>
 # include <program/map/CubeBitmap.hpp>
 # include <program/map/PerlinNoise.hpp>
-# include <program/perfLogger/PerfLogger.hpp> // TODO : Remove
 
 using ChunkMesh = Mesh<VertexVoxel>;
 using ChunkBorderMesh = Mesh<VertexPos>;
@@ -184,13 +183,13 @@ public:
 	 *
 	 * @param chunkId Id of the chunk.
 	 */
-	void	generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger);
+	void	generate(const gm::Vec2i &chunkId);
 	/**
 	 * @brief Create chunk meshes.
 	 *
 	 * @param map Map containing other chunks.
 	 */
-	void	createMeshes(Map &map, PerfLogger &perfLogger);
+	void	createMeshes(Map &map);
 	/**
 	 * @brief Create chunk meshes buffers.
 	 *
@@ -201,8 +200,7 @@ public:
 	void	createBuffers(
 				VulkanCommandPool &commandPool,
 				StagingBuffer &stagingBuffer,
-				VkCommandBuffer &commandBuffer,
-				PerfLogger &perfLogger);
+				VkCommandBuffer &commandBuffer);
 	/**
 	 * @brief Update mesh according to chunk blocks.
 	 *
@@ -253,17 +251,17 @@ private:
 	/**
 	 * @brief Create borderMesh.
 	 */
-	void	createBorderMesh(PerfLogger &perfLogger);
+	void	createBorderMesh(void);
 	/**
 	 * @brief Create mesh.
 	 *
 	 * @param map Map that contain chunks.
 	 */
-	void	createMesh(Map &map, PerfLogger &perfLogger);
+	void	createMesh(Map &map);
 	/**
 	 * @brief Create liquid mesh.
 	 */
-	void	createLiquidMesh(PerfLogger &perfLogger);
+	void	createLiquidMesh(void);
 };
 
 //**** FUNCTIONS ***************************************************************

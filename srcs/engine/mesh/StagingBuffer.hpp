@@ -3,7 +3,6 @@
 
 # include <engine/vulkan/VulkanCommandPool.hpp>
 # include <engine/vulkan/VulkanUtils.hpp>
-# include <program/perfLogger/PerfLogger.hpp> // TODO : Remove
 
 /**
  * @brief Struct for temporary buffer for mesh creation
@@ -40,13 +39,10 @@ struct StagingBuffer
 	 */
 	void	update(
 				VulkanCommandPool &commandPool,
-				VkDeviceSize bufferSize,
-				PerfLogger &perfLogger)
+				VkDeviceSize bufferSize)
 	{
 		if (bufferSize <= this->size)
 			return ;
-
-		perflogStart(perfLogger.createUpdateStaging);
 
 		this->destroy(commandPool.getCopyDevice());
 
@@ -57,7 +53,6 @@ struct StagingBuffer
 							this->size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 							VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 							this->buffer, this->memory);
-		perflogEnd(perfLogger.createUpdateStaging);
 	}
 	/**
 	 * @brief Create buffers.

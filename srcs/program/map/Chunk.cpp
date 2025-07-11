@@ -185,17 +185,15 @@ void	Chunk::init(
 }
 
 
-void	Chunk::createMeshes(Map &map, PerfLogger &perfLogger)
+void	Chunk::createMeshes(Map &map)
 {
 	if (this->meshCreate)
 		return ;
 	this->meshCreate = true;
 
-	perflogStart(perfLogger.chunkMeshing);
-	this->createBorderMesh(perfLogger);
-	this->createMesh(map, perfLogger);
-	this->createLiquidMesh(perfLogger);
-	perflogEnd(perfLogger.chunkMeshing);
+	this->createBorderMesh();
+	this->createMesh(map);
+	this->createLiquidMesh();
 
 	this->mesh.setPosition(this->chunkPosition);
 	this->uboPos.model = this->mesh.getModel();
@@ -206,30 +204,23 @@ void	Chunk::createMeshes(Map &map, PerfLogger &perfLogger)
 void	Chunk::createBuffers(
 				VulkanCommandPool &commandPool,
 				StagingBuffer &stagingBuffer,
-				VkCommandBuffer &commandBuffer,
-				PerfLogger &perfLogger)
+				VkCommandBuffer &commandBuffer)
 {
 	if (this->bufferCreate)
 		return ;
 	this->bufferCreate = true;
 
-	perflogStart(perfLogger.createBuffer);
-
-	this->mesh.createBuffers(commandPool, stagingBuffer, commandBuffer, perfLogger);
-	this->borderMesh.createBuffers(commandPool, stagingBuffer, commandBuffer, perfLogger);
-	this->liquidMesh.createBuffers(commandPool, stagingBuffer, commandBuffer, perfLogger);
-
-	perflogEnd(perfLogger.createBuffer);
+	this->mesh.createBuffers(commandPool, stagingBuffer, commandBuffer);
+	this->borderMesh.createBuffers(commandPool, stagingBuffer, commandBuffer);
+	this->liquidMesh.createBuffers(commandPool, stagingBuffer, commandBuffer);
 }
 
 
 void	Chunk::updateMesh(Engine &engine, Map &map)
 {
-	PerfLogger	perfLogger;
-
 	engine.window.waitCurrentFence();
 	this->mesh.destroy();
-	this->createMesh(map, perfLogger);
+	this->createMesh(map);
 	this->mesh.createBuffers(engine.commandPool);
 }
 

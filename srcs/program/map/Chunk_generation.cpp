@@ -44,13 +44,11 @@ const float	scaleMineral = 1.0f / 10.0f;
 //**** STATIC FUNCTIONS DEFINE *************************************************
 //**** PUBLIC METHODS **********************************************************
 
-void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
+void	Chunk::generate(const gm::Vec2i &chunkId)
 {
 	if (this->generationDone)
 		return ;
 	this->generationDone = true;
-
-	perflogStart(perfLogger.generateChunk);
 
 	this->chunkId = chunkId;
 	this->chunkPosition.x = this->chunkId.x * CHUNK_SIZE;
@@ -200,8 +198,6 @@ void	Chunk::generate(const gm::Vec2i &chunkId, PerfLogger &perfLogger)
 			}
 		}
 	}
-
-	perflogEnd(perfLogger.generateChunk);
 }
 
 //**** FUNCTIONS ***************************************************************
