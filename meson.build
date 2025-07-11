@@ -53,7 +53,6 @@ executable('ft_vox',
             include_directories('srcs'),
             include_directories('lib'),
           ],
-          link_args : ['/usr/lib/x86_64-linux-gnu/libOpenCL.so.1'],
           install : true)
 
 install_subdir('shadersbin', install_dir:'.')
