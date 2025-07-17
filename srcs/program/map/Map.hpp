@@ -200,37 +200,37 @@ private:
 	 *
 	 * @return True is the generation is finish, false else.
 	 */
-	bool		generatingX(void);
+	bool		generatingX(std::clock_t &start);
 	/**
 	 * @brief Method to order generation of chunk block to threads optimize of Y axis.
 	 *
 	 * @return True is the generation is finish, false else.
 	 */
-	bool		generatingY(void);
+	bool		generatingY(std::clock_t &start);
 	/**
 	 * @brief Method to order meshing of chunk block to threads optimize of X axis.
 	 *
 	 * @return True is the meshing is finish, false else.
 	 */
-	bool		meshingX(void);
+	bool		meshingX(std::clock_t &start);
 	/**
 	 * @brief Method to order meshing of chunk block to threads optimize of Y axis.
 	 *
 	 * @return True is the meshing is finish, false else.
 	 */
-	bool		meshingY(void);
+	bool		meshingY(std::clock_t &start);
 	/**
 	 * @brief Method to order destroying of chunk block to threads optimize of X axis.
 	 *
 	 * @return True is the destroying is finish, false else.
 	 */
-	bool		destroyingX(void);
+	bool		destroyingX(std::clock_t &start);
 	/**
 	 * @brief Method to order destroying of chunk block to threads optimize of Y axis.
 	 *
 	 * @return True is the destroying is finish, false else.
 	 */
-	bool		destroyingY(void);
+	bool		destroyingY(std::clock_t &start);
 	/**
 	 * @brief Method to order destroying of chunk block to threads.
 	 *

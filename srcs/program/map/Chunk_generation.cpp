@@ -4,24 +4,11 @@
 
 #include <unordered_map>
 
-PerlinNoise	createNoise(const gm::Vec2i &shape, unsigned int octaves, float persistence)
-{
-	static bool	randomInit = false;
+//**** STATIC FUNCTIONS DEFINE *************************************************
 
-	if (!randomInit)
-	{
-		randomInit = true;
-		#ifndef SEED
-		uint seed = gm::initRandom();
-		#else
-		uint seed = SEED;
-		gm::initRandom(seed);
-		#endif
-		std::cout << "SEED : " << seed << std::endl;
-	}
+static PerlinNoise	createNoise(const gm::Vec2i &shape, unsigned int octaves, float persistence);
 
-	return PerlinNoise(gm::uRand(), shape, octaves, persistence);
-}
+//**** STATIC VARIABLES DEFINE *************************************************
 
 PerlinNoise	perlinTerrainLevel = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
 PerlinNoise	perlinTerrainModifer = createNoise(gm::Vec2i(128, 128), 4, 0.3);
@@ -41,7 +28,6 @@ const float	scaleCaveHeightX = 1.0f / 256.0f;
 const float	scaleCaveHeightY = 1.0f / 64.0f;
 const float	scaleMineral = 1.0f / 10.0f;
 
-//**** STATIC FUNCTIONS DEFINE *************************************************
 //**** PUBLIC METHODS **********************************************************
 
 void	Chunk::generate(const gm::Vec2i &chunkId)
@@ -202,3 +188,22 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 
 //**** FUNCTIONS ***************************************************************
 //**** STATIC FUNCTIONS ********************************************************
+
+static PerlinNoise	createNoise(const gm::Vec2i &shape, unsigned int octaves, float persistence)
+{
+	static bool	randomInit = false;
+
+	if (!randomInit)
+	{
+		randomInit = true;
+		#ifndef SEED
+		uint seed = gm::initRandom();
+		#else
+		uint seed = SEED;
+		gm::initRandom(seed);
+		#endif
+		std::cout << "SEED : " << seed << std::endl;
+	}
+
+	return PerlinNoise(gm::uRand(), shape, octaves, persistence);
+}

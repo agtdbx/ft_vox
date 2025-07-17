@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   define.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/07/11 14:38:41 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/07/17 23:52:21 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ const int MAX_FRAMES_IN_FLIGHT = 1;
 # define FOV 80.0f
 # define NEAR 0.1f
 # define FAR 10000.0f
-# define SPEED 1.0f
+# define SPEED 5.0f // TODO : Put to 1.0f
 # define SPRINT 20.0f
 # define ROTATE 45.0f
 # define SENSITIVITY 5.0f // 0.0 = no movement, 1.0f is normal, higher is faster (negatif is reverse)
@@ -79,6 +79,7 @@ const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
 # define MAP_SIZE 4096
 # define MAX_CHUNK_BUFFER_SIZE 150000
 # define MIN_CHUNK_PER_THREAD 4
+# define MAP_MAX_TIME_PER_LOOP 0.01f
 
 const int	MAP_NB_THREAD = 7;
 const int	MAP_CLUSTER_ARROUND = 2; // Map have x cluster arround center one
