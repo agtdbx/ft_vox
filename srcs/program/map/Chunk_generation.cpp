@@ -10,18 +10,22 @@ static PerlinNoise	createNoise(const gm::Vec2i &shape, unsigned int octaves, flo
 
 //**** STATIC VARIABLES DEFINE *************************************************
 
-PerlinNoise	perlinTerrainLevel = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
-PerlinNoise	perlinTerrainModifer = createNoise(gm::Vec2i(128, 128), 4, 0.3);
-PerlinNoise	perlinBiome = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
-PerlinNoise	perlinCaveSize1 = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
-PerlinNoise	perlinCaveSize2 = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
-PerlinNoise	perlinCaveHeight = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
-PerlinNoise	perlinMineral = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
+const PerlinNoise	perlinSea = createNoise(gm::Vec2i(128, 128), 4, 0.3);
+const PerlinNoise	perlinPlaine = createNoise(gm::Vec2i(128, 128), 4, 0.3f);
+const PerlinNoise	perlinMountain = createNoise(gm::Vec2i(128, 128), 4, 0.5f);
+const PerlinNoise	perlinBiomeHeight = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
+// const PerlinNoise	perlinBiome = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
+const PerlinNoise	perlinCaveSize1 = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
+const PerlinNoise	perlinCaveSize2 = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
+const PerlinNoise	perlinCaveHeight = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
+const PerlinNoise	perlinMineral = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
 
 const gm::Vec3f	CHUNK_MIDDLE_OFFSET(CHUNK_SIZE / 2, CHUNK_HEIGHT / 2, CHUNK_SIZE / 2);
-const float	scaleTerrainLevel = 1.0f / 256.0f;
-const float	scaleTerrainModifier = 1.0f / 128.0f;
-const float	scaleBiome = 1.0f / 1024.0f;
+const float	scaleSea = 1.0f / 256.0f;
+const float	scalePlaine = 1.0f / 192.0f;
+const float	scaleMountain = 1.0f / 128.0f;
+const float	scaleBiomeHeight = 1.0f / 1024.0f;
+// const float	scaleBiome = 1.0f / 1024.0f;
 const float	scaleCaveSize1 = 1.0f / 64.0f;
 const float	scaleCaveSize2 = 1.0f / 128.0f;
 const float	scaleCaveHeightX = 1.0f / 256.0f;
@@ -46,7 +50,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 
 	int		idZ, idXZ, id, height, maxHeight;
 	float	perlinX, perlinZ,
-			baseHeight, modifierHeight, biome,
+			seaHeight, plaineHeight, mountainHeight, baseHeight, biomeHeight, biome,
 			caveSize, caveSize1, caveSize2, caveHeight, mineral, diffCave;
 
 	for (int z = 0; z < CHUNK_SIZE; z++)
@@ -58,20 +62,28 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 			idXZ = x + idZ;
 			perlinX = this->chunkPosition.x + x;
 
-			baseHeight = perlinTerrainLevel.getNoise(perlinX * scaleTerrainLevel, perlinZ * scaleTerrainLevel);
-			baseHeight = (baseHeight * baseHeight * baseHeight) * 100.0f + baseHeight * 50 + 80.0f;
+			biomeHeight = perlinBiomeHeight.getNoise(perlinX * scaleBiomeHeight, perlinZ * scaleBiomeHeight);
 
-			modifierHeight = perlinTerrainModifer.getNoise(perlinX * scaleTerrainModifier, perlinZ * scaleTerrainModifier);
-			modifierHeight = modifierHeight * 16.0f;
+			plaineHeight = perlinPlaine.getNoise(perlinX * scalePlaine, perlinZ * scalePlaine) * 20.0f + 70.0f;
+			if (biomeHeight < 0.0f)
+			{
+				seaHeight = perlinSea.getNoise(perlinX * scaleSea, perlinZ * scaleSea) * 10.0f - 10.0f;
+				baseHeight = gm::lerp(plaineHeight, seaHeight, -biomeHeight);
+			}
+			else
+			{
+				mountainHeight = perlinMountain.getNoise(perlinX * scaleMountain, perlinZ * scaleMountain) * 250.0f + 200.0f;
+				baseHeight = gm::lerp(plaineHeight, mountainHeight, biomeHeight);
+			}
 
-			biome = perlinBiome.getNoise(perlinX * scaleBiome, perlinZ * scaleBiome);
+			// biome = perlinBiome.getNoise(perlinX * scaleBiome, perlinZ * scaleBiome);
 
-			height = baseHeight + modifierHeight;
+			height = baseHeight;
 			maxHeight = gm::max(height, CHUNK_LIQUID_LEVEL);
 
 			caveSize1 = perlinCaveSize1.getNoiseNormalize(perlinX * scaleCaveSize1, perlinZ * scaleCaveSize2);
 			caveSize2 = perlinCaveSize2.getNoiseNormalize(perlinX * scaleCaveSize2, perlinZ * scaleCaveSize1);
-			caveSize = gm::max(gm::max(caveSize1, caveSize2) - 0.7f, 0.0f) * 42.0f;
+			caveSize = gm::max(gm::max(caveSize1, caveSize2) - 0.6f, 0.0f) * 42.0f;
 
 			if (caveSize <= 0.0f)
 			{
@@ -102,14 +114,15 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 
 				if (y <= height)
 				{
+					// Cave
 					diffCave = gm::abs(y - caveHeight);
 					if (diffCave < caveSize)
 						continue;
 					else if (diffCave < caveSize + 1)
 					{
-						if (mineral >= 0.5f)
+						if (mineral >= 0.7f)
 							this->cubes[id] = CUBE_IRON;
-						else if (mineral <= -0.75f)
+						else if (mineral <= -0.9f)
 							this->cubes[id] = CUBE_DIAMOND;
 						else
 							this->cubes[id] = CUBE_STONE;
@@ -123,25 +136,19 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 						continue;
 					}
 
-					// Cold biome
-					if (biome < -0.4)
+					// Mountain top
+					if (y > 150)
 					{
-						if (y <= height && y >= height - 4)
-						{
-							this->cubes[id] = CUBE_SNOW;
-							this->cubeBitmap.set(x, y, z, true);
-						}
+						this->cubes[id] = CUBE_SNOW;
+						this->cubeBitmap.set(x, y, z, true);
 					}
-					// Hot biome
-					else if (biome > 0.4)
+					// Mountain
+					else if (y > 75)
 					{
-						if (y <= height && y >= height - 4)
-						{
-							this->cubes[id] = CUBE_SAND;
-							this->cubeBitmap.set(x, y, z, true);
-						}
+						this->cubes[id] = CUBE_STONE;
+						this->cubeBitmap.set(x, y, z, true);
 					}
-					// Normal biome
+					// Plaine
 					else
 					{
 						if (y == height && y >= CHUNK_LIQUID_LEVEL)
@@ -156,30 +163,9 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 						}
 					}
 				}
-				// Stone between lava and water
-				else if (gm::abs(0.4 - biome) < 0.001)
-				{
-					this->cubes[id] = CUBE_STONE;
-					this->cubeBitmap.set(x, y, z, true);
-				}
 				else if (y >= CHUNK_LIQUID_LEVEL)
 				{
-					// Cold biome
-					if (biome < -0.4)
-					{
-						this->cubes[id] = CUBE_ICE;
-						this->cubeBitmap.set(x, y, z, true);
-					}
-					// Hot biome
-					else if (biome > 0.4)
-					{
-						this->cubes[id] = CUBE_LAVA;
-					}
-					// Normal biome
-					else
-					{
-						this->cubes[id] = CUBE_WATER;
-					}
+					this->cubes[id] = CUBE_WATER;
 				}
 			}
 		}
