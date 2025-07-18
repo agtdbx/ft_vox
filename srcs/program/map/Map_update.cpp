@@ -20,7 +20,7 @@ void	Map::update(Engine &engine, Camera &camera)
 	if (MAP_NB_THREAD == 0)
 		return ;
 
-	std::clock_t	start;
+	std::clock_t	start = std::clock();
 
 	if (status == MAP_NONE)
 	{
@@ -76,19 +76,6 @@ void	Map::update(Engine &engine, Camera &camera)
 		{
 			this->currentView.tmpId = this->targetView.tmpId;
 
-			for (int x = this->minDelete.x; x < this->maxDelete.x; x++)
-			{
-				for (int y = this->minDelete.y; y < this->maxDelete.y; y++)
-				{
-					std::size_t	hash = gm::hashSmall(gm::Vec2i(x, y));
-
-					this->chunksMutex.lock();
-					if (this->chunks.find(hash) != this->chunks.end())
-						this->chunks.erase(hash);
-					this->chunksMutex.unlock();
-				}
-			}
-
 			status = MAP_NONE;
 		}
 	}
@@ -98,19 +85,6 @@ void	Map::update(Engine &engine, Camera &camera)
 		if (this->destroyingY(start))
 		{
 			this->currentView.tmpId = this->targetView.tmpId;
-
-			for (int x = this->minDelete.x; x < this->maxDelete.x; x++)
-			{
-				for (int y = this->minDelete.y; y < this->maxDelete.y; y++)
-				{
-					std::size_t	hash = gm::hashSmall(gm::Vec2i(x, y));
-
-					this->chunksMutex.lock();
-					if (this->chunks.find(hash) != this->chunks.end())
-						this->chunks.erase(hash);
-					this->chunksMutex.unlock();
-				}
-			}
 
 			status = MAP_NONE;
 		}
@@ -226,11 +200,6 @@ bool	Map::generatingX(std::clock_t &start)
 
 	while (threadId < MAP_NB_THREAD)
 	{
-		if (getTime(start) >= MAP_MAX_TIME_PER_LOOP)
-		{
-			allGenerationDone = false;
-			break;
-		}
 		this->threadsData[threadId].mutex.lock();
 		threadStatus = this->threadsData[threadId].status;
 		this->threadsData[threadId].mutex.unlock();
@@ -244,32 +213,6 @@ bool	Map::generatingX(std::clock_t &start)
 				gm::Vec2i	minId = this->currentView.tmpId;
 				this->currentView.tmpId += gm::Vec2i(gm::min(chunkLeftBeforeEndLine, widthGeneratePerThread), 0);
 				gm::Vec2i	maxId = this->currentView.tmpId + gm::Vec2i(0, 1);
-
-				std::size_t	hash;
-				for (int x = minId.x; x < maxId.x; x++)
-				{
-					for (int y = minId.y; y < maxId.y; y++)
-					{
-						hash = gm::hashSmall(gm::Vec2i(x, y));
-
-						this->chunksMutex.lock();
-						ChunkMap::iterator	it = this->chunks.find(hash);
-						this->chunksMutex.unlock();
-
-						if (it != this->chunks.end())
-							continue;
-
-						try
-						{
-							this->chunksMutex.lock();
-							this->chunks.insert(std::pair<std::size_t, Chunk>(hash, Chunk()));
-							this->chunksMutex.unlock();
-						}
-						catch(const std::exception& e)
-						{
-						}
-					}
-				}
 
 				this->threadsData[threadId].mutex.lock();
 				this->threadsData[threadId].minChunkId = minId;
@@ -311,11 +254,6 @@ bool	Map::generatingY(std::clock_t &start)
 
 	while (threadId < MAP_NB_THREAD)
 	{
-		if (getTime(start) >= MAP_MAX_TIME_PER_LOOP)
-		{
-			allGenerationDone = false;
-			break;
-		}
 		this->threadsData[threadId].mutex.lock();
 		threadStatus = this->threadsData[threadId].status;
 		this->threadsData[threadId].mutex.unlock();
@@ -329,32 +267,6 @@ bool	Map::generatingY(std::clock_t &start)
 				gm::Vec2i	minId = this->currentView.tmpId;
 				this->currentView.tmpId += gm::Vec2i(0, gm::min(chunkLeftBeforeEndLine, heightGeneratePerThread));
 				gm::Vec2i	maxId = this->currentView.tmpId + gm::Vec2i(1, 0);
-
-				std::size_t	hash;
-				for (int x = minId.x; x < maxId.x; x++)
-				{
-					for (int y = minId.y; y < maxId.y; y++)
-					{
-						hash = gm::hashSmall(gm::Vec2i(x, y));
-
-						this->chunksMutex.lock();
-						ChunkMap::iterator	it = this->chunks.find(hash);
-						this->chunksMutex.unlock();
-
-						if (it != this->chunks.end())
-							continue;
-
-						try
-						{
-							this->chunksMutex.lock();
-							this->chunks.insert(std::pair<std::size_t, Chunk>(hash, Chunk()));
-							this->chunksMutex.unlock();
-						}
-						catch(const std::exception& e)
-						{
-						}
-					}
-				}
 
 				this->threadsData[threadId].mutex.lock();
 				this->threadsData[threadId].minChunkId = minId;
@@ -394,11 +306,6 @@ bool	Map::meshingX(std::clock_t &start)
 
 	while (threadId < MAP_NB_THREAD)
 	{
-		if (getTime(start) >= MAP_MAX_TIME_PER_LOOP)
-		{
-			allMeshDone = false;
-			break;
-		}
 		this->threadsData[threadId].mutex.lock();
 		threadStatus = this->threadsData[threadId].status;
 		this->threadsData[threadId].mutex.unlock();
@@ -438,6 +345,11 @@ bool	Map::meshingX(std::clock_t &start)
 		else
 			allMeshDone = false;
 		threadId++;
+		if (threadId < MAP_NB_THREAD && getTime(start) >= MAP_MAX_TIME_PER_LOOP)
+		{
+			allMeshDone = false;
+			break;
+		}
 	}
 
 	if (threadId == MAP_NB_THREAD)
@@ -457,11 +369,6 @@ bool	Map::meshingY(std::clock_t &start)
 
 	while (threadId < MAP_NB_THREAD)
 	{
-		if (getTime(start) >= MAP_MAX_TIME_PER_LOOP)
-		{
-			allMeshDone = false;
-			break;
-		}
 		this->threadsData[threadId].mutex.lock();
 		threadStatus = this->threadsData[threadId].status;
 		this->threadsData[threadId].mutex.unlock();
@@ -501,6 +408,11 @@ bool	Map::meshingY(std::clock_t &start)
 		else
 			allMeshDone = false;
 		threadId++;
+		if (threadId < MAP_NB_THREAD && getTime(start) >= MAP_MAX_TIME_PER_LOOP)
+		{
+			allMeshDone = false;
+			break;
+		}
 	}
 
 	if (threadId == MAP_NB_THREAD)
@@ -520,11 +432,6 @@ bool	Map::destroyingX(std::clock_t &start)
 
 	while (threadId < MAP_NB_THREAD)
 	{
-		if (getTime(start) >= MAP_MAX_TIME_PER_LOOP)
-		{
-			allDestroyDone = false;
-			break;
-		}
 		this->threadsData[threadId].mutex.lock();
 		threadStatus = this->threadsData[threadId].status;
 		this->threadsData[threadId].mutex.unlock();
@@ -545,21 +452,6 @@ bool	Map::destroyingX(std::clock_t &start)
 				this->threadsData[threadId].status = THREAD_NEED_DESTROY;
 				this->threadsData[threadId].mutex.unlock();
 
-				for (int x = minId.x; x < maxId.x; x++)
-				{
-					for (int y = minId.y; y < maxId.y; y++)
-					{
-						this->chunksMutex.lock();
-						ChunkMap::iterator it = this->chunks.find(gm::hashSmall(gm::Vec2i(x, y)));
-						this->chunksMutex.unlock();
-
-						if (it == this->chunks.end())
-							continue;
-
-						it->second.setDrawable(false);
-					}
-				}
-
 				chunkLeftBeforeEndLine = this->maxDelete.x - this->currentView.tmpId.x;
 				if (chunkLeftBeforeEndLine == 0)
 				{
@@ -573,6 +465,11 @@ bool	Map::destroyingX(std::clock_t &start)
 		else
 			allDestroyDone = false;
 		threadId++;
+		if (threadId < MAP_NB_THREAD && getTime(start) >= MAP_MAX_TIME_PER_LOOP)
+		{
+			allDestroyDone = false;
+			break;
+		}
 	}
 
 	if (threadId == MAP_NB_THREAD)
@@ -592,11 +489,6 @@ bool	Map::destroyingY(std::clock_t &start)
 
 	while (threadId < MAP_NB_THREAD)
 	{
-		if (getTime(start) >= MAP_MAX_TIME_PER_LOOP)
-		{
-			allDestroyDone = false;
-			break;
-		}
 		this->threadsData[threadId].mutex.lock();
 		threadStatus = this->threadsData[threadId].status;
 		this->threadsData[threadId].mutex.unlock();
@@ -617,21 +509,6 @@ bool	Map::destroyingY(std::clock_t &start)
 				this->threadsData[threadId].status = THREAD_NEED_DESTROY;
 				this->threadsData[threadId].mutex.unlock();
 
-				for (int x = minId.x; x < maxId.x; x++)
-				{
-					for (int y = minId.y; y < maxId.y; y++)
-					{
-						this->chunksMutex.lock();
-						ChunkMap::iterator it = this->chunks.find(gm::hashSmall(gm::Vec2i(x, y)));
-						this->chunksMutex.unlock();
-
-						if (it == this->chunks.end())
-							continue;
-
-						it->second.setDrawable(false);
-					}
-				}
-
 				chunkLeftBeforeEndLine = this->maxDelete.y - this->currentView.tmpId.y;
 				if (chunkLeftBeforeEndLine == 0)
 				{
@@ -645,6 +522,11 @@ bool	Map::destroyingY(std::clock_t &start)
 		else
 			allDestroyDone = false;
 		threadId++;
+		if (threadId < MAP_NB_THREAD && getTime(start) >= MAP_MAX_TIME_PER_LOOP)
+		{
+			allDestroyDone = false;
+			break;
+		}
 	}
 
 	if (threadId == MAP_NB_THREAD)

@@ -290,34 +290,23 @@ static void	threadRoutine(ThreadData *threadData)
 				for (int y = minId.y; y < maxId.y; y++)
 				{
 					curId = gm::Vec2i(x, y);
+					std::size_t	hash = gm::hashSmall(curId);
 					chunksMutex.lock();
-					ChunkMap::iterator	it = chunks.find(gm::hashSmall(curId));
+					ChunkMap::iterator	it = chunks.find(hash);
 					chunksMutex.unlock();
 
-					if (it == chunks.end())
-					{
-						int i = 0;
-						while  (i < 10)
-						{
-							usleep(1000);
-							chunksMutex.lock();
-							it = chunks.find(gm::hashSmall(gm::Vec2i(x, y)));
-							chunksMutex.unlock();
-
-							if (it == chunks.end())
-								i++;
-							else
-								break;
-						}
-
-						if (it == chunks.end())
-							continue;
-					}
+					if (it != chunks.end())
+						continue;
 
 					try
 					{
-						it->second.init(engine, camera, chunkShader);
-						it->second.generate(curId);
+						chunksMutex.lock();
+						chunks[hash] = Chunk();
+						chunksMutex.unlock();
+						Chunk *chunk = &chunks[hash];
+
+						chunk->init(engine, camera, chunkShader);
+						chunk->generate(curId);
 					}
 					catch(const std::exception& e)
 					{
@@ -371,7 +360,7 @@ static void	threadRoutine(ThreadData *threadData)
 						}
 						it->second.createBuffers(commandPool, stagingBuffer, commandBuffer);
 					}
-					catch(const std::exception& e)
+					catch(const std::exception &e)
 					{
 					}
 				}
@@ -425,8 +414,9 @@ static void	threadRoutine(ThreadData *threadData)
 			{
 				for (int y = minId.y; y < maxId.y; y++)
 				{
+					std::size_t hash	= gm::hashSmall(gm::Vec2i(x, y));
 					chunksMutex.lock();
-					ChunkMap::iterator	it = chunks.find(gm::hashSmall(gm::Vec2i(x, y)));
+					ChunkMap::iterator	it = chunks.find(hash);
 					chunksMutex.unlock();
 
 					if (it == chunks.end())
@@ -437,6 +427,9 @@ static void	threadRoutine(ThreadData *threadData)
 					try
 					{
 						it->second.destroy(engine);
+						chunksMutex.lock();
+						chunks.erase(hash);
+						chunksMutex.unlock();
 					}
 					catch(const std::exception& e)
 					{

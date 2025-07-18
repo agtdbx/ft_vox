@@ -12,9 +12,9 @@ static PerlinNoise	createNoise(const gm::Vec2i &shape, unsigned int octaves, flo
 
 const PerlinNoise	perlinSea = createNoise(gm::Vec2i(128, 128), 4, 0.3);
 const PerlinNoise	perlinPlaine = createNoise(gm::Vec2i(128, 128), 4, 0.3f);
-const PerlinNoise	perlinMountain = createNoise(gm::Vec2i(128, 128), 4, 0.5f);
+const PerlinNoise	perlinMountain = createNoise(gm::Vec2i(128, 128), 6, 0.5f);
 const PerlinNoise	perlinBiomeHeight = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
-// const PerlinNoise	perlinBiome = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
+const PerlinNoise	perlinBiome = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
 const PerlinNoise	perlinCaveSize1 = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
 const PerlinNoise	perlinCaveSize2 = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
 const PerlinNoise	perlinCaveHeight = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
@@ -24,8 +24,8 @@ const gm::Vec3f	CHUNK_MIDDLE_OFFSET(CHUNK_SIZE / 2, CHUNK_HEIGHT / 2, CHUNK_SIZE
 const float	scaleSea = 1.0f / 256.0f;
 const float	scalePlaine = 1.0f / 192.0f;
 const float	scaleMountain = 1.0f / 128.0f;
-const float	scaleBiomeHeight = 1.0f / 1024.0f;
-// const float	scaleBiome = 1.0f / 1024.0f;
+const float	scaleBiomeHeight = 1.0f / 512.0f;
+const float	scaleBiome = 1.0f / 1024.0f;
 const float	scaleCaveSize1 = 1.0f / 64.0f;
 const float	scaleCaveSize2 = 1.0f / 128.0f;
 const float	scaleCaveHeightX = 1.0f / 256.0f;
@@ -63,6 +63,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 			perlinX = this->chunkPosition.x + x;
 
 			biomeHeight = perlinBiomeHeight.getNoise(perlinX * scaleBiomeHeight, perlinZ * scaleBiomeHeight);
+			biome = perlinBiome.getNoise(perlinX * scaleBiome, perlinZ * scaleBiome);
 
 			plaineHeight = perlinPlaine.getNoise(perlinX * scalePlaine, perlinZ * scalePlaine) * 20.0f + 70.0f;
 			if (biomeHeight < 0.0f)
@@ -72,11 +73,9 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 			}
 			else
 			{
-				mountainHeight = perlinMountain.getNoise(perlinX * scaleMountain, perlinZ * scaleMountain) * 250.0f + 200.0f;
-				baseHeight = gm::lerp(plaineHeight, mountainHeight, biomeHeight);
+				mountainHeight = perlinMountain.getNoise(perlinX * scaleMountain, perlinZ * scaleMountain) * 300.0f + 250.0f;
+				baseHeight = gm::lerp(plaineHeight, mountainHeight, gm::max(biomeHeight - 0.4f, 0.0f) / 0.6f);
 			}
-
-			// biome = perlinBiome.getNoise(perlinX * scaleBiome, perlinZ * scaleBiome);
 
 			height = baseHeight;
 			maxHeight = gm::max(height, CHUNK_LIQUID_LEVEL);
@@ -136,14 +135,20 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 						continue;
 					}
 
+					// Sand beach
+					if (biomeHeight < 0.0 && y < CHUNK_LIQUID_LEVEL + 3)
+					{
+						this->cubes[id] = CUBE_SAND;
+						this->cubeBitmap.set(x, y, z, true);
+					}
 					// Mountain top
-					if (y > 150)
+					else if (biomeHeight - 0.4f > 0.0f && y > 175)
 					{
 						this->cubes[id] = CUBE_SNOW;
 						this->cubeBitmap.set(x, y, z, true);
 					}
 					// Mountain
-					else if (y > 75)
+					else if (biomeHeight - 0.4f > 0.0f && y > 75)
 					{
 						this->cubes[id] = CUBE_STONE;
 						this->cubeBitmap.set(x, y, z, true);
