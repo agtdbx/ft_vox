@@ -12,9 +12,9 @@ static PerlinNoise	createNoise(const gm::Vec2i &shape, unsigned int octaves, flo
 
 const PerlinNoise	perlinSea = createNoise(gm::Vec2i(128, 128), 4, 0.3);
 const PerlinNoise	perlinPlaine = createNoise(gm::Vec2i(128, 128), 4, 0.3f);
-const PerlinNoise	perlinMountain = createNoise(gm::Vec2i(128, 128), 6, 0.5f);
+const PerlinNoise	perlinMountain = createNoise(gm::Vec2i(128, 128), 4, 0.5f);
 const PerlinNoise	perlinBiomeHeight = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
-const PerlinNoise	perlinBiome = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
+const PerlinNoise	perlinBiomeTemp = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
 const PerlinNoise	perlinCaveSize1 = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
 const PerlinNoise	perlinCaveSize2 = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
 const PerlinNoise	perlinCaveHeight = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
@@ -22,10 +22,12 @@ const PerlinNoise	perlinMineral = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
 
 const gm::Vec3f	CHUNK_MIDDLE_OFFSET(CHUNK_SIZE / 2, CHUNK_HEIGHT / 2, CHUNK_SIZE / 2);
 const float	scaleSea = 1.0f / 256.0f;
-const float	scalePlaine = 1.0f / 192.0f;
+const float	scalePlaine = 1.0f / 128.0f;
+const float	scaleDesert = 1.0f / 64.0f;
 const float	scaleMountain = 1.0f / 128.0f;
-const float	scaleBiomeHeight = 1.0f / 512.0f;
-const float	scaleBiome = 1.0f / 1024.0f;
+const float	scaleMessa = 1.0f / 256.0f;
+const float	scaleBiomeHeight = 1.0f / 1024.0f;
+const float	scaleBiomeTemp = 1.0f / 1024.0f;
 const float	scaleCaveSize1 = 1.0f / 64.0f;
 const float	scaleCaveSize2 = 1.0f / 128.0f;
 const float	scaleCaveHeightX = 1.0f / 256.0f;
@@ -50,8 +52,9 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 
 	int		idZ, idXZ, id, height, maxHeight;
 	float	perlinX, perlinZ,
-			seaHeight, plaineHeight, mountainHeight, baseHeight, biomeHeight, biome,
+			seaHeight, plaineHeight, mountainHeight, baseHeight, biomeHeight, biomeTemp,
 			caveSize, caveSize1, caveSize2, caveHeight, mineral, diffCave;
+	bool	seaBiome, mountainBiome, coldBiome, hotBiome, lavaHotEnough;
 
 	for (int z = 0; z < CHUNK_SIZE; z++)
 	{
@@ -62,20 +65,67 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 			idXZ = x + idZ;
 			perlinX = this->chunkPosition.x + x;
 
-			biomeHeight = perlinBiomeHeight.getNoise(perlinX * scaleBiomeHeight, perlinZ * scaleBiomeHeight);
-			biome = perlinBiome.getNoise(perlinX * scaleBiome, perlinZ * scaleBiome);
+			// biomeTemp = perlinBiomeTemp.getNoise(perlinX * scaleBiomeTemp, perlinZ * scaleBiomeTemp);
+			biomeTemp = 0.8f;
+			coldBiome = (biomeTemp < -0.4f);
+			hotBiome = (biomeTemp > 0.4f);
+			lavaHotEnough = (biomeTemp > 0.5f);
 
-			plaineHeight = perlinPlaine.getNoise(perlinX * scalePlaine, perlinZ * scalePlaine) * 20.0f + 70.0f;
-			if (biomeHeight < 0.0f)
+			// Cold version
+			if (coldBiome)
 			{
-				seaHeight = perlinSea.getNoise(perlinX * scaleSea, perlinZ * scaleSea) * 10.0f - 10.0f;
-				baseHeight = gm::lerp(plaineHeight, seaHeight, -biomeHeight);
+
 			}
+			// Hot version
+			else if (hotBiome)
+			{
+				biomeHeight = perlinBiomeHeight.getNoise(perlinX * scaleBiomeHeight, perlinZ * scaleBiomeHeight);
+				plaineHeight = perlinPlaine.getNoise(perlinX * scaleDesert, perlinZ * scaleDesert) * 30.0f + 80.0f;
+				if (biomeHeight < 0.0f)
+				{
+					seaHeight = perlinSea.getNoise(perlinX * scaleSea, perlinZ * scaleSea) * 10.0f - 10.0f;
+					baseHeight = gm::lerp(plaineHeight, seaHeight, -biomeHeight);
+					seaBiome = true;
+					mountainBiome = false;
+				}
+				else
+				{
+					mountainHeight = perlinMountain.getNoise(perlinX * scaleMessa, perlinZ * scaleMessa);
+					baseHeight = gm::lerp(plaineHeight, mountainHeight, biomeHeight);
+					if (mountainHeight > 0.0f && (int)(mountainHeight * 10.0f) % 2)
+					{
+						baseHeight = mountainHeight * 30.0f + 100.0f;
+						mountainBiome = true;
+					}
+					else
+					{
+						baseHeight = plaineHeight;
+						mountainBiome = false;
+					}
+					seaBiome = false;
+				}
+			}
+			// Classic version
 			else
 			{
-				mountainHeight = perlinMountain.getNoise(perlinX * scaleMountain, perlinZ * scaleMountain) * 300.0f + 250.0f;
-				baseHeight = gm::lerp(plaineHeight, mountainHeight, gm::max(biomeHeight - 0.4f, 0.0f) / 0.6f);
+				biomeHeight = perlinBiomeHeight.getNoise(perlinX * scaleBiomeHeight, perlinZ * scaleBiomeHeight);
+				plaineHeight = perlinPlaine.getNoise(perlinX * scalePlaine, perlinZ * scalePlaine) * 20.0f + 70.0f;
+				if (biomeHeight < 0.0f)
+				{
+					seaHeight = perlinSea.getNoise(perlinX * scaleSea, perlinZ * scaleSea) * 10.0f - 10.0f;
+					baseHeight = gm::lerp(plaineHeight, seaHeight, -biomeHeight);
+					seaBiome = true;
+					mountainBiome = false;
+				}
+				else
+				{
+					mountainHeight = perlinMountain.getNoise(perlinX * scaleMountain, perlinZ * scaleMountain) * 400.0f + 140.0f;
+					baseHeight = gm::lerp(plaineHeight, mountainHeight, gm::max(biomeHeight - 0.4f, 0.0f) / 0.6f);
+					seaBiome = false;
+					mountainBiome = (biomeHeight - 0.4f > 0.0f);
+				}
 			}
+
 
 			height = baseHeight;
 			maxHeight = gm::max(height, CHUNK_LIQUID_LEVEL);
@@ -92,7 +142,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 			else
 			{
 				caveHeight = perlinCaveHeight.getNoiseNormalize(perlinX * scaleCaveHeightX, perlinZ * scaleCaveHeightY);
-				caveHeight = caveHeight * 42.0f + 12.0;
+				caveHeight = caveHeight * baseHeight;
 
 				mineral = perlinMineral.getNoise(perlinX * scaleMineral, perlinZ * scaleMineral);
 			}
@@ -111,66 +161,113 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 				if (y > maxHeight)
 					break;
 
-				if (y <= height)
+				// Cave
+				diffCave = gm::abs(y - caveHeight);
+				if (diffCave < caveSize)
+					continue;
+				else if (diffCave < caveSize + 1)
 				{
-					// Cave
-					diffCave = gm::abs(y - caveHeight);
-					if (diffCave < caveSize)
-						continue;
-					else if (diffCave < caveSize + 1)
-					{
-						if (mineral >= 0.7f)
-							this->cubes[id] = CUBE_IRON;
-						else if (mineral <= -0.9f)
-							this->cubes[id] = CUBE_DIAMOND;
-						else
-							this->cubes[id] = CUBE_STONE;
-						this->cubeBitmap.set(x, y, z, true);
-						continue;
-					}
-					else if (y < height - 4)
-					{
-						this->cubes[id] = CUBE_STONE;
-						this->cubeBitmap.set(x, y, z, true);
-						continue;
-					}
-
-					// Sand beach
-					if (biomeHeight < 0.0 && y < CHUNK_LIQUID_LEVEL + 3)
-					{
-						this->cubes[id] = CUBE_SAND;
-						this->cubeBitmap.set(x, y, z, true);
-					}
-					// Mountain top
-					else if (biomeHeight - 0.4f > 0.0f && y > 175)
-					{
-						this->cubes[id] = CUBE_SNOW;
-						this->cubeBitmap.set(x, y, z, true);
-					}
-					// Mountain
-					else if (biomeHeight - 0.4f > 0.0f && y > 75)
-					{
-						this->cubes[id] = CUBE_STONE;
-						this->cubeBitmap.set(x, y, z, true);
-					}
-					// Plaine
+					if (mineral >= 0.7f)
+						this->cubes[id] = CUBE_IRON;
+					else if (mineral <= -0.9f)
+						this->cubes[id] = CUBE_DIAMOND;
 					else
+						this->cubes[id] = CUBE_STONE;
+					this->cubeBitmap.set(x, y, z, true);
+					continue;
+				}
+				else if (y < height - 4)
+				{
+					this->cubes[id] = CUBE_STONE;
+					this->cubeBitmap.set(x, y, z, true);
+					continue;
+				}
+
+				// Cold version
+				if (coldBiome)
+				{
+
+				}
+				// Hot version
+				else if (hotBiome)
+				{
+					if (y <= height)
 					{
-						if (y == height && y >= CHUNK_LIQUID_LEVEL)
+						// Sand beach
+						if (seaBiome && y < CHUNK_LIQUID_LEVEL + 3)
 						{
-							this->cubes[id] = CUBE_GRASS;
+							this->cubes[id] = CUBE_SAND;
 							this->cubeBitmap.set(x, y, z, true);
 						}
-						else if (y >= height - 4)
+						// Mountain top
+						else if (mountainBiome && y > 175)
 						{
-							this->cubes[id] = CUBE_DIRT;
+							this->cubes[id] = CUBE_SNOW;
 							this->cubeBitmap.set(x, y, z, true);
 						}
+						// Mountain
+						else if (mountainBiome && y > 75)
+						{
+							this->cubes[id] = CUBE_STONE;
+							this->cubeBitmap.set(x, y, z, true);
+						}
+						// Plaine
+						else
+						{
+							this->cubes[id] = CUBE_SAND;
+							this->cubeBitmap.set(x, y, z, true);
+						}
+					}
+					else if (y >= CHUNK_LIQUID_LEVEL)
+					{
+						if (lavaHotEnough)
+							this->cubes[id] = CUBE_LAVA;
+						else
+							this->cubes[id] = CUBE_WATER;
 					}
 				}
-				else if (y >= CHUNK_LIQUID_LEVEL)
+				// Classic version
+				else
 				{
-					this->cubes[id] = CUBE_WATER;
+					if (y <= height)
+					{
+						// Sand beach
+						if (seaBiome && y < CHUNK_LIQUID_LEVEL + 3)
+						{
+							this->cubes[id] = CUBE_SAND;
+							this->cubeBitmap.set(x, y, z, true);
+						}
+						// Mountain top
+						else if (mountainBiome && y > 175)
+						{
+							this->cubes[id] = CUBE_SNOW;
+							this->cubeBitmap.set(x, y, z, true);
+						}
+						// Mountain
+						else if (mountainBiome && y > 75)
+						{
+							this->cubes[id] = CUBE_STONE;
+							this->cubeBitmap.set(x, y, z, true);
+						}
+						// Plaine
+						else
+						{
+							if (y == height && y >= CHUNK_LIQUID_LEVEL)
+							{
+								this->cubes[id] = CUBE_GRASS;
+								this->cubeBitmap.set(x, y, z, true);
+							}
+							else if (y >= height - 4)
+							{
+								this->cubes[id] = CUBE_DIRT;
+								this->cubeBitmap.set(x, y, z, true);
+							}
+						}
+					}
+					else if (y >= CHUNK_LIQUID_LEVEL)
+					{
+						this->cubes[id] = CUBE_WATER;
+					}
 				}
 			}
 		}
