@@ -87,10 +87,13 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 				}
 				else
 				{
-					mountainHeight = perlinMountain.getNoise(perlinX * scaleVolcano, perlinZ * scaleVolcano) * 400.0f + 200.0f;
-					baseHeight = gm::lerp(plaineHeight, mountainHeight, gm::max(biomeHeight - 0.5f, 0.0f) / 0.5f);
+					mountainHeight = perlinMountain.getNoise(perlinX * scaleVolcano, perlinZ * scaleVolcano) * 400.0f + 300.0f;
+					baseHeight = gm::lerp(plaineHeight, mountainHeight, gm::max(biomeHeight - 0.5f, 0.0f) / 0.25f);
+					if (baseHeight > 175.0f)
+						baseHeight = 175.0f - (baseHeight - 175.0f);
 					seaBiome = false;
 					mountainBiome = (biomeHeight - 0.5f > 0.0f);
+					// TODO: PUT LAVA
 				}
 			}
 			// Hot version
@@ -209,14 +212,16 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 				{
 					if (y <= height)
 					{
-						// Mountain top
-						if (mountainBiome && y > 175)
-						{
-							this->cubes[id] = CUBE_SNOW;
-							this->cubeBitmap.set(x, y, z, true);
-						}
+						// // Volcano hole
+						// if (mountainBiome && height > 175 && y > 175 - height)
+						// {
+						// 	continue;
+						// 	// this->cubes[id] = CUBE_SNOW;
+						// 	// this->cubeBitmap.set(x, y, z, true);
+						// }
+
 						// Mountain
-						else if (mountainBiome && y > 75)
+						if (mountainBiome && y > 75)
 						{
 							this->cubes[id] = CUBE_STONE;
 							this->cubeBitmap.set(x, y, z, true);
