@@ -23,8 +23,10 @@ const PerlinNoise	perlinMineral = createNoise(gm::Vec2i(128, 128), 1, 0.0f);
 const gm::Vec3f	CHUNK_MIDDLE_OFFSET(CHUNK_SIZE / 2, CHUNK_HEIGHT / 2, CHUNK_SIZE / 2);
 const float	scaleSea = 1.0f / 256.0f;
 const float	scalePlaine = 1.0f / 128.0f;
+const float	scaleToundra = 1.0f / 192.0f;
 const float	scaleDesert = 1.0f / 64.0f;
 const float	scaleMountain = 1.0f / 128.0f;
+const float	scaleVolcano = 1.0f / 192.0f;
 const float	scaleMessa = 1.0f / 256.0f;
 const float	scaleBiomeHeight = 1.0f / 1024.0f;
 const float	scaleBiomeTemp = 1.0f / 1024.0f;
@@ -66,7 +68,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 			perlinX = this->chunkPosition.x + x;
 
 			// biomeTemp = perlinBiomeTemp.getNoise(perlinX * scaleBiomeTemp, perlinZ * scaleBiomeTemp);
-			biomeTemp = 0.8f;
+			biomeTemp = -0.7f;
 			coldBiome = (biomeTemp < -0.4f);
 			hotBiome = (biomeTemp > 0.4f);
 			lavaHotEnough = (biomeTemp > 0.5f);
@@ -74,7 +76,22 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 			// Cold version
 			if (coldBiome)
 			{
-
+				biomeHeight = perlinBiomeHeight.getNoise(perlinX * scaleBiomeHeight, perlinZ * scaleBiomeHeight);
+				plaineHeight = perlinPlaine.getNoise(perlinX * scaleToundra, perlinZ * scaleToundra) * 20.0f + 70.0f;
+				if (biomeHeight < -0.2f)
+				{
+					seaHeight = perlinSea.getNoise(perlinX * scaleSea, perlinZ * scaleSea) * 10.0f - 10.0f;
+					baseHeight = gm::lerp(plaineHeight, seaHeight, -(biomeHeight + 0.2f));
+					seaBiome = true;
+					mountainBiome = false;
+				}
+				else
+				{
+					mountainHeight = perlinMountain.getNoise(perlinX * scaleVolcano, perlinZ * scaleVolcano) * 400.0f + 200.0f;
+					baseHeight = gm::lerp(plaineHeight, mountainHeight, gm::max(biomeHeight - 0.5f, 0.0f) / 0.5f);
+					seaBiome = false;
+					mountainBiome = (biomeHeight - 0.5f > 0.0f);
+				}
 			}
 			// Hot version
 			else if (hotBiome)
@@ -94,7 +111,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 					baseHeight = gm::lerp(plaineHeight, mountainHeight, biomeHeight);
 					if (mountainHeight > 0.0f && (int)(mountainHeight * 10.0f) % 2)
 					{
-						baseHeight = mountainHeight * 30.0f + 100.0f;
+						baseHeight = mountainHeight * 30.0f + plaineHeight / 10.0f + 80.0f;
 						mountainBiome = true;
 					}
 					else
@@ -126,10 +143,11 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 				}
 			}
 
-
+			// Terrain height
 			height = baseHeight;
 			maxHeight = gm::max(height, CHUNK_LIQUID_LEVEL);
 
+			// Cave
 			caveSize1 = perlinCaveSize1.getNoiseNormalize(perlinX * scaleCaveSize1, perlinZ * scaleCaveSize2);
 			caveSize2 = perlinCaveSize2.getNoiseNormalize(perlinX * scaleCaveSize2, perlinZ * scaleCaveSize1);
 			caveSize = gm::max(gm::max(caveSize1, caveSize2) - 0.6f, 0.0f) * 42.0f;
@@ -147,6 +165,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 				mineral = perlinMineral.getNoise(perlinX * scaleMineral, perlinZ * scaleMineral);
 			}
 
+			// Put blocs
 			for (int y = 0; y < CHUNK_HEIGHT; y++)
 			{
 				id = idXZ + y * CHUNK_SIZE2;
@@ -176,7 +195,9 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 					this->cubeBitmap.set(x, y, z, true);
 					continue;
 				}
-				else if (y < height - 4)
+
+				// Put stone for most terrain body
+				if (y < height - 4)
 				{
 					this->cubes[id] = CUBE_STONE;
 					this->cubeBitmap.set(x, y, z, true);
@@ -186,7 +207,36 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 				// Cold version
 				if (coldBiome)
 				{
-
+					if (y <= height)
+					{
+						// Mountain top
+						if (mountainBiome && y > 175)
+						{
+							this->cubes[id] = CUBE_SNOW;
+							this->cubeBitmap.set(x, y, z, true);
+						}
+						// Mountain
+						else if (mountainBiome && y > 75)
+						{
+							this->cubes[id] = CUBE_STONE;
+							this->cubeBitmap.set(x, y, z, true);
+						}
+						// Plaine
+						else
+						{
+							this->cubes[id] = CUBE_SNOW;
+							this->cubeBitmap.set(x, y, z, true);
+						}
+					}
+					else if (y >= CHUNK_LIQUID_LEVEL)
+					{
+						this->cubes[id] = CUBE_ICE;
+						this->cubeBitmap.set(x, y, z, true);
+					}
+					else
+					{
+						this->cubes[id] = CUBE_WATER;
+					}
 				}
 				// Hot version
 				else if (hotBiome)
@@ -218,7 +268,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 							this->cubeBitmap.set(x, y, z, true);
 						}
 					}
-					else if (y >= CHUNK_LIQUID_LEVEL)
+					else
 					{
 						if (lavaHotEnough)
 							this->cubes[id] = CUBE_LAVA;
@@ -257,14 +307,14 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 								this->cubes[id] = CUBE_GRASS;
 								this->cubeBitmap.set(x, y, z, true);
 							}
-							else if (y >= height - 4)
+							else
 							{
 								this->cubes[id] = CUBE_DIRT;
 								this->cubeBitmap.set(x, y, z, true);
 							}
 						}
 					}
-					else if (y >= CHUNK_LIQUID_LEVEL)
+					else
 					{
 						this->cubes[id] = CUBE_WATER;
 					}

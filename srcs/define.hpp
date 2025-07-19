@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   define.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/07/18 14:16:17 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/07/19 21:01:58 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
 // Map defines
 // # define SEED 42
 # define MAP_SIZE 4096
-# define MAX_CHUNK_BUFFER_SIZE 150000
+# define MAX_CHUNK_BUFFER_SIZE 200000
 # define MIN_CHUNK_PER_THREAD 4
 
 const float	MAP_MAX_TIME_PER_LOOP = 1.0f; //0.000001;
