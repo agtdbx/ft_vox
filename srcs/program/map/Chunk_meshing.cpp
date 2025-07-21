@@ -765,69 +765,102 @@ void	Chunk::createLiquidMesh(void)
 	bool	cubeMeshed[CHUNK_SIZE2] = {0};
 
 	int	x, w, h, tmpW, idZ, idZ2;
-	int	y = CHUNK_LIQUID_LEVEL;
-	for (int z = 0; z < CHUNK_SIZE; z++)
+	// int	y = CHUNK_LIQUID_LEVEL;
+	for (int y = 0; y < CHUNK_HEIGHT; y++)
 	{
-		idZ = z * CHUNK_SIZE;
-		x = 0;
-		while (x < CHUNK_SIZE)
+		if (!this->waterLevels[y])
+			continue;
+
+		for (int z = 0; z < CHUNK_SIZE; z++)
 		{
-			if (cubeMeshed[x + idZ])
+			idZ = z * CHUNK_SIZE;
+			x = 0;
+			while (x < CHUNK_SIZE)
 			{
-				x++;
-				continue;
-			}
-
-			const Cube	&cube = this->at(x, y, z);
-
-			if (cube != CUBE_WATER && cube != CUBE_LAVA)
-			{
-				x++;
-				continue;
-			}
-
-			w = 1;
-			while (x + w < CHUNK_SIZE)
-			{
-				if (cubeMeshed[(x + w) + idZ])
-					break;
-				if (this->at(x + w, y, z) != cube)
-					break;
-				cubeMeshed[(x + w) + idZ] = true;
-				w++;
-			}
-
-			h = 1;
-			while (z + h < CHUNK_SIZE)
-			{
-				tmpW = 0;
-				idZ2 = (z + h) * CHUNK_SIZE;
-				while (tmpW < w)
+				if (cubeMeshed[x + idZ])
 				{
-					if (cubeMeshed[(x + tmpW) + idZ2])
-						break;
-					if (this->at(x + tmpW, y, z + h) != cube)
-						break;
-					tmpW++;
+					x++;
+					continue;
 				}
 
-				if (tmpW < w)
-					break;
+				const Cube	&cube = this->at(x, y, z);
 
-				for (int i = 0; i < w; i++)
-					cubeMeshed[(x + i) + idZ2] = true;
-				h++;
+				if (cube != CUBE_WATER && cube != CUBE_LAVA)
+				{
+					x++;
+					continue;
+				}
+
+				if (y != CHUNK_MAX_H)
+				{
+					const Cube	&test = this->at(x, y + 1, z);
+
+					if (test == CUBE_WATER || test == CUBE_LAVA)
+					{
+						x++;
+						continue;
+					}
+				}
+
+				w = 1;
+				while (x + w < CHUNK_SIZE)
+				{
+					if (cubeMeshed[(x + w) + idZ])
+						break;
+					if (this->at(x + w, y, z) != cube)
+						break;
+
+					if (y != CHUNK_MAX_H)
+					{
+						const Cube	&test = this->at(x + w, y + 1, z);
+						if (test == CUBE_WATER || test == CUBE_LAVA)
+							break;
+					}
+
+					cubeMeshed[(x + w) + idZ] = true;
+					w++;
+				}
+
+				h = 1;
+				while (z + h < CHUNK_SIZE)
+				{
+					tmpW = 0;
+					idZ2 = (z + h) * CHUNK_SIZE;
+					while (tmpW < w)
+					{
+						if (cubeMeshed[(x + tmpW) + idZ2])
+							break;
+						if (this->at(x + tmpW, y, z + h) != cube)
+							break;
+
+						if (y != CHUNK_MAX_H)
+						{
+							const Cube	&test = this->at(x + tmpW, y + 1, z + h);
+							if (test == CUBE_WATER || test == CUBE_LAVA)
+								break;
+						}
+
+						tmpW++;
+					}
+
+					if (tmpW < w)
+						break;
+
+					for (int i = 0; i < w; i++)
+						cubeMeshed[(x + i) + idZ2] = true;
+					h++;
+				}
+
+				// Face up
+				pointLU = gm::Vec3f(x    , y + 1 - 0.2f, z    );
+				pointLD = gm::Vec3f(x    , y + 1 - 0.2f, z + h);
+				pointRD = gm::Vec3f(x + w, y + 1 - 0.2f, z + h);
+				pointRU = gm::Vec3f(x + w, y + 1 - 0.2f, z    );
+				createTriangleFace(vertexIndex, vertices, indices, nbVertex,
+									pointLU, pointLD, pointRD, pointRU, normalUp, cube);
+
+				x += w;
 			}
-
-			// Face up
-			pointLU = gm::Vec3f(x    , y + 1 - 0.2f, z    );
-			pointLD = gm::Vec3f(x    , y + 1 - 0.2f, z + h);
-			pointRD = gm::Vec3f(x + w, y + 1 - 0.2f, z + h);
-			pointRU = gm::Vec3f(x + w, y + 1 - 0.2f, z    );
-			createTriangleFace(vertexIndex, vertices, indices, nbVertex,
-								pointLU, pointLD, pointRD, pointRU, normalUp, cube);
-
-			x += w;
 		}
 	}
 

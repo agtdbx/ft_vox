@@ -246,6 +246,7 @@ private:
 					shaderParamFdfLiquid, shaderParamBorder;
 	BoundingCube	boundingCube;
 	bool			initDone, generationDone, meshCreate, bufferCreate, canBeDraw;
+	bool			waterLevels[CHUNK_HEIGHT];
 
 //**** PRIVATE METHODS *********************************************************
 	/**

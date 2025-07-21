@@ -220,7 +220,7 @@ static void	destroyBlock(
 		int	cubeZ = pos.z - (chunkId.y * CHUNK_SIZE);
 		Cube	cube = currentChunk->getCube(cubeX, cubeY, cubeZ);
 
-		if (cube == CUBE_AIR || cube == CUBE_WATER)
+		if (cube == CUBE_AIR || cube == CUBE_WATER || cube == CUBE_LAVA)
 			continue;
 
 		currentChunk->setCube(cubeX, cubeY, cubeZ, CUBE_AIR);
@@ -269,7 +269,7 @@ static void	placeBlock(
 		int	cubeZ = pos.z - (chunkId.y * CHUNK_SIZE);
 		Cube	cube = currentChunk->getCube(cubeX, cubeY, cubeZ);
 
-		if (cube == CUBE_AIR || cube == CUBE_WATER)
+		if (cube == CUBE_AIR || cube == CUBE_WATER || cube == CUBE_LAVA)
 			continue;
 
 		posSolidBlock = i;

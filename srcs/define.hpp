@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/07/19 21:55:47 by gugus            ###   ########.fr       */
+/*   Updated: 2025/07/21 11:12:23 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ const std::vector<std::string>	CUBE_TEXTURES = {
 const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
 
 // Map defines
-# define SEED 1752954927
+// # define SEED 1752954927
 # define MAP_SIZE 4096
 # define MAX_CHUNK_BUFFER_SIZE 200000
 # define MIN_CHUNK_PER_THREAD 4

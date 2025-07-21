@@ -25,6 +25,9 @@ Chunk::Chunk(void)
 	this->bufferCreate = false;
 	this->canBeDraw = false;
 
+	for (int i = 0; i < CHUNK_HEIGHT; i++)
+		this->waterLevels[i] = false;
+
 	int	halfChunkSize = CHUNK_SIZE / 2;
 	int	halfChunkHeight = CHUNK_HEIGHT / 2;
 	this->boundingCube.center = gm::Vec3f(halfChunkSize, halfChunkHeight, halfChunkSize);
@@ -44,6 +47,8 @@ Chunk::Chunk(const Chunk &obj)
 	this->meshCreate = false;
 	this->bufferCreate = false;
 	this->canBeDraw = false;
+	for (int i = 0; i < CHUNK_HEIGHT; i++)
+		this->waterLevels[i] = obj.waterLevels[i];
 	this->mesh = obj.mesh;
 	this->boundingCube = obj.boundingCube;
 }
@@ -160,6 +165,9 @@ Chunk	&Chunk::operator=(const Chunk &obj)
 
 	this->boundingCube = obj.boundingCube;
 
+	for (int i = 0; i < CHUNK_HEIGHT; i++)
+		this->waterLevels[i] = obj.waterLevels[i];
+
 	return (*this);
 }
 
@@ -222,6 +230,10 @@ void	Chunk::updateMesh(Engine &engine, Map &map)
 	this->mesh.destroy();
 	this->createMesh(map);
 	this->mesh.createBuffers(engine.commandPool);
+	engine.window.waitCurrentFence();
+	this->liquidMesh.destroy();
+	this->createLiquidMesh();
+	this->liquidMesh.createBuffers(engine.commandPool);
 }
 
 
