@@ -57,7 +57,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 			seaHeight, plaineHeight, mountainHeight,
 			baseColdHeight, baseClassicHeight, baseHotHeight, baseHeight, stoneHeight, biomeHeight, biomeTemp,
 			caveSize, caveSize1, caveSize2, caveHeight, mineral, diffCave;
-	bool	seaBiome, mountainBiome, coldBiome, hotBiome, messaMountain;
+	bool	seaBiome, mountainBiome, coldBiome, hotBiome, messaMountain, generateLog, generateLeaf;
 	Cube	liquidType;
 
 	baseColdHeight = 0.0f;
@@ -184,14 +184,13 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 			else if (biomeTemp < 0.45f)
 			{
 				baseHeight = gm::lerp(baseClassicHeight, baseHotHeight, (biomeTemp - 0.35f) / 0.10f);
-				if (seaBiome)
-					stoneHeight = baseHeight - 4;
+				stoneHeight = baseHeight - 4;
 			}
 			// Full hot biome
 			else
 			{
 				baseHeight = baseHotHeight;
-				if (seaBiome)
+				if (!messaMountain || baseHeight <= liquidHeight)
 					stoneHeight = baseHeight - 4;
 			}
 

@@ -64,16 +64,17 @@ struct CubeBitmap
 
 		this->axisY[x + z * CHUNK_SIZE].set(y, cube);
 
-		if ((this->axisX[z + idY] & maskX) == cube)
-			return ;
-
 		if (cube)
 		{
+			if ((this->axisX[z + idY] & maskX) == maskX)
+				return ;
 			this->axisX[z + idY] += maskX;
 			this->axisZ[x + idY] += maskZ;
 		}
 		else
 		{
+			if ((this->axisX[z + idY] & maskX) != maskX)
+				return ;
 			this->axisX[z + idY] -= maskX;
 			this->axisZ[x + idY] -= maskZ;
 		}

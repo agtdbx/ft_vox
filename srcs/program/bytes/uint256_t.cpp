@@ -66,18 +66,22 @@ void	uint256_t::set(int offset, bool status)
 	if (offset < 0 || offset >= 256)
 		return ;
 
-
 	if (offset < 64)
 	{
 		const uint64_t	mask = 1ull << offset;
 
-		if ((this->parts[3] & mask) == status)
-			return ;
-
 		if (status)
+		{
+			if ((this->parts[3] & mask) == mask)
+				return ;
 			this->parts[3] += mask;
+		}
 		else
+		{
+			if ((this->parts[3] & mask) != mask)
+				return ;
 			this->parts[3] -= mask;
+		}
 	}
 	else if (offset < 128)
 	{
@@ -87,9 +91,17 @@ void	uint256_t::set(int offset, bool status)
 			return ;
 
 		if (status)
+		{
+			if ((this->parts[2] & mask) == mask)
+				return ;
 			this->parts[2] += mask;
+		}
 		else
+		{
+			if ((this->parts[2] & mask) != mask)
+				return ;
 			this->parts[2] -= mask;
+		}
 	}
 	else if (offset < 192)
 	{
@@ -99,21 +111,34 @@ void	uint256_t::set(int offset, bool status)
 			return ;
 
 		if (status)
+		{
+			if ((this->parts[1] & mask) == mask)
+				return ;
 			this->parts[1] += mask;
+		}
 		else
+		{
+			if ((this->parts[1] & mask) != mask)
+				return ;
 			this->parts[1] -= mask;
+		}
 	}
 	else
 	{
 		const uint64_t	mask = 1ull << (offset - 192);
 
-		if ((this->parts[0] & mask) == status)
-			return ;
-
 		if (status)
+		{
+			if ((this->parts[0] & mask) == mask)
+				return ;
 			this->parts[0] += mask;
+		}
 		else
+		{
+			if ((this->parts[0] & mask) != mask)
+				return ;
 			this->parts[0] -= mask;
+		}
 	}
 }
 
