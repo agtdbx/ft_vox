@@ -55,17 +55,19 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 	int		idZ, idXZ, id, height, liquidHeight, maxHeight;
 	float	perlinX, perlinZ,
 			seaHeight, plaineHeight, mountainHeight,
-			baseColdHeight, baseClassicHeight, baseHotHeight, baseHeight, biomeHeight, biomeTemp,
+			baseColdHeight, baseClassicHeight, baseHotHeight, baseHeight, stoneHeight, biomeHeight, biomeTemp,
 			caveSize, caveSize1, caveSize2, caveHeight, mineral, diffCave;
-	bool	seaBiome, mountainBiome, coldBiome, hotBiome;
+	bool	seaBiome, mountainBiome, coldBiome, hotBiome, messaMountain;
 	Cube	liquidType;
 
 	baseColdHeight = 0.0f;
 	baseClassicHeight = 0.0f;
 	baseHotHeight = 0.0f;
+	stoneHeight = 0.0f;
 	seaBiome = false;
 	mountainBiome = false;
 	seaBiome = false;
+	messaMountain = false;
 	for (int z = 0; z < CHUNK_SIZE; z++)
 	{
 		idZ = z * CHUNK_SIZE;
@@ -119,20 +121,24 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 				else
 				{
 					mountainHeight = perlinMountain.getNoise(perlinX * scaleMessa, perlinZ * scaleMessa);
-					baseHotHeight = gm::lerp(plaineHeight, mountainHeight, biomeHeight);
-					if (mountainHeight > 0.0f && (int)(mountainHeight * 10.0f) % 2)
+					baseHotHeight = plaineHeight;
+					if (mountainHeight > 0.0f)
 					{
-						baseHotHeight = mountainHeight * 30.0f + plaineHeight / 10.0f + 80.0f;
+						if ((int)(mountainHeight * 10.0f) % 2)
+						{
+							baseHotHeight = mountainHeight * 30.0f + plaineHeight / 10.0f + 80.0f;
+							messaMountain = true;
+						}
+						else
+							messaMountain = false;
 						mountainBiome = true;
 					}
 					else
-					{
-						baseHotHeight = plaineHeight;
 						mountainBiome = false;
-					}
 					seaBiome = false;
 					if (biomeTemp > 0.5f)
 						liquidType = CUBE_LAVA;
+					stoneHeight = plaineHeight - 4;
 				}
 			}
 			// Classic version
@@ -160,26 +166,33 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 			if (biomeTemp <= -0.45f)
 			{
 				baseHeight = baseColdHeight;
+				stoneHeight = baseHeight - 4;
 			}
 			// Cold to classic biome
 			else if (biomeTemp < -0.35f)
 			{
 				baseHeight = gm::lerp(baseColdHeight, baseClassicHeight, (biomeTemp + 0.45f) / 0.10f);
+				stoneHeight = baseHeight - 4;
 			}
 			// Full classic biome
 			else if (biomeTemp < 0.35f)
 			{
 				baseHeight = baseClassicHeight;
+				stoneHeight = baseHeight - 4;
 			}
 			// Classic to hot biome
 			else if (biomeTemp < 0.45f)
 			{
 				baseHeight = gm::lerp(baseClassicHeight, baseHotHeight, (biomeTemp - 0.35f) / 0.10f);
+				if (seaBiome)
+					stoneHeight = baseHeight - 4;
 			}
 			// Full hot biome
 			else
 			{
 				baseHeight = baseHotHeight;
+				if (seaBiome)
+					stoneHeight = baseHeight - 4;
 			}
 
 			// Terrain height
@@ -211,7 +224,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 
 				if (y == 0)
 				{
-					this->cubes[id] = CUBE_STONE;
+					this->cubes[id] = CUBE_BEDROCK;
 					this->cubeBitmap.set(x, y, z, true);
 					continue;
 				}
@@ -236,7 +249,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 				}
 
 				// Put stone for most terrain body
-				if (y < height - 4)
+				if (y < stoneHeight)
 				{
 					this->cubes[id] = CUBE_STONE;
 					this->cubeBitmap.set(x, y, z, true);
@@ -250,29 +263,16 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 					{
 						// Mountain
 						if (mountainBiome && y > 75)
-						{
 							this->cubes[id] = CUBE_STONE;
-							this->cubeBitmap.set(x, y, z, true);
-						}
-						// Plaine
+						// Toundra
 						else
-						{
 							this->cubes[id] = CUBE_SNOW;
-							this->cubeBitmap.set(x, y, z, true);
-						}
+						this->cubeBitmap.set(x, y, z, true);
 					}
 					else if (y == liquidHeight)
 					{
-						if (liquidHeight == 170)
-						{
-							this->cubes[id] = CUBE_LAVA;
-							this->waterLevels[y] = true;
-						}
-						else
-						{
-							this->cubes[id] = CUBE_ICE;
-							this->cubeBitmap.set(x, y, z, true);
-						}
+						this->cubes[id] = CUBE_ICE;
+						this->cubeBitmap.set(x, y, z, true);
 					}
 					else
 					{
@@ -285,30 +285,31 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 				{
 					if (y <= height)
 					{
-						// Sand beach
-						if (seaBiome && y < liquidHeight + 3)
-						{
-							this->cubes[id] = CUBE_SAND;
-							this->cubeBitmap.set(x, y, z, true);
-						}
 						// Mountain top
-						else if (mountainBiome && y > 175)
-						{
+						if (mountainBiome && y > 175)
 							this->cubes[id] = CUBE_SNOW;
-							this->cubeBitmap.set(x, y, z, true);
-						}
 						// Mountain
-						else if (mountainBiome && y > 75)
+						else if (mountainBiome)
 						{
-							this->cubes[id] = CUBE_STONE;
-							this->cubeBitmap.set(x, y, z, true);
+							if (messaMountain)
+							{
+								int	terra_color = (y / 2) % 4;
+								if (terra_color == 0)
+									this->cubes[id] = CUBE_TERA_BROWN;
+								else if (terra_color == 1)
+									this->cubes[id] = CUBE_TERA_RED;
+								else if (terra_color == 2)
+									this->cubes[id] = CUBE_TERA_YELLOW;
+								else
+									this->cubes[id] = CUBE_TERA_WHITE;
+							}
+							else
+								this->cubes[id] = CUBE_RED_SAND;
 						}
-						// Plaine
+						// Desert
 						else
-						{
 							this->cubes[id] = CUBE_SAND;
-							this->cubeBitmap.set(x, y, z, true);
-						}
+						this->cubeBitmap.set(x, y, z, true);
 					}
 					else
 					{
@@ -323,36 +324,22 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 					{
 						// Sand beach
 						if (seaBiome && y < liquidHeight + 3)
-						{
 							this->cubes[id] = CUBE_SAND;
-							this->cubeBitmap.set(x, y, z, true);
-						}
 						// Mountain top
 						else if (mountainBiome && y > 175)
-						{
 							this->cubes[id] = CUBE_SNOW;
-							this->cubeBitmap.set(x, y, z, true);
-						}
 						// Mountain
 						else if (mountainBiome && y > 75)
-						{
 							this->cubes[id] = CUBE_STONE;
-							this->cubeBitmap.set(x, y, z, true);
-						}
 						// Plaine
 						else
 						{
 							if (y == height && y >= liquidHeight)
-							{
 								this->cubes[id] = CUBE_GRASS;
-								this->cubeBitmap.set(x, y, z, true);
-							}
 							else
-							{
 								this->cubes[id] = CUBE_DIRT;
-								this->cubeBitmap.set(x, y, z, true);
-							}
 						}
+						this->cubeBitmap.set(x, y, z, true);
 					}
 					else
 					{

@@ -6,7 +6,7 @@
 /*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/07/21 11:12:23 by gugus            ###   ########.fr       */
+/*   Updated: 2025/07/21 12:12:26 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,12 +62,20 @@ const int	CHUNK_TOTAL_SIZE = CHUNK_SIZE2 * CHUNK_HEIGHT;
 const int	CHUNK_MASK_SIZE = CHUNK_SIZE * CHUNK_HEIGHT;
 
 const std::vector<std::string>	CUBE_TEXTURES = {
-	"grass-up", "dirt-up", "stone-up", "water-up", "snow-up",
-	"ice-up", "sand-up", "lava-up", "iron-up", "diamond-up",
-	"grass-side", "dirt-side", "stone-side", "water-side", "snow-side",
-	"ice-side", "sand-side", "lava-side", "iron-side", "diamond-side",
-	"grass-down", "dirt-down", "stone-down", "water-down", "snow-down",
-	"ice-down", "sand-down", "lava-down", "iron-down", "diamond-down"
+	"grass-up", "dirt-up", "stone-up", "snow-up",
+	"ice-up", "sand-up", "red-sand-up", "terra-brown-up", "terra-red-up",
+	"terra-white-up", "terra-yellow-up", "iron-up", "diamond-up",
+	"bedrock-up", "wood-up", "leaves-up", "water-up", "lava-up",
+
+	"grass-side", "dirt-side", "stone-side", "snow-side",
+	"ice-side", "sand-side", "red-sand-side", "terra-brown-side", "terra-red-side",
+	"terra-white-side", "terra-yellow-side", "iron-side", "diamond-side",
+	"bedrock-side", "wood-side", "leaves-side", "water-side", "lava-side",
+
+	"grass-down", "dirt-down", "stone-down", "snow-down",
+	"ice-down", "sand-down", "red-sand-down", "terra-brown-down", "terra-red-down",
+	"terra-white-down", "terra-yellow-down", "iron-down", "diamond-down",
+	"bedrock-down", "wood-down", "leaves-down", "water-down", "lava-down"
 };
 
 // Cluster defines
@@ -75,8 +83,7 @@ const std::vector<std::string>	CUBE_TEXTURES = {
 const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
 
 // Map defines
-// # define SEED 1752954927
-# define MAP_SIZE 4096
+# define SEED 1753092615
 # define MAX_CHUNK_BUFFER_SIZE 200000
 # define MIN_CHUNK_PER_THREAD 4
 
