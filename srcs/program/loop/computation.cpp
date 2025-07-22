@@ -1,6 +1,5 @@
 #include <program/loop/loop.hpp>
 
-
 static void perfLog(
 				double delta,
 				Camera &camera,
@@ -126,22 +125,6 @@ static void cameraMovements(
 	else if (engine.inputManager.lshift.isDown())
 		camera.moveUp(-speed);
 
-	// Rotate with mouse
-	gm::Vec2i	windowCenter = engine.window.getSize() / 2;
-	gm::Vec2d	mousePos;
-	int			mx, my;
-
-	mousePos = engine.inputManager.mouse.getPos();
-	engine.inputManager.mouse.goTo(engine.glfwWindow, windowCenter.x, windowCenter.y);
-
-	mx = (int)mousePos.x;
-	if (mx != windowCenter.x)
-		camera.rotateY((mx - windowCenter.x) * SENSITIVITY * delta);
-
-	my = (int)mousePos.y;
-	if (my != windowCenter.y)
-		camera.rotateX((windowCenter.y - my) * SENSITIVITY * delta);
-
 	// Rotate with keys
 	if (engine.inputManager.down.isDown())
 		camera.rotateX(-rot);
@@ -152,6 +135,25 @@ static void cameraMovements(
 		camera.rotateY(-rot);
 	if (engine.inputManager.right.isDown())
 		camera.rotateY(rot);
+
+	// Rotate with mouse
+	if (glfwGetWindowAttrib(engine.glfwWindow, GLFW_FOCUSED) == GLFW_TRUE)
+	{
+		gm::Vec2i	windowCenter = engine.window.getSize() / 2;
+		gm::Vec2d	mousePos;
+		int			mx, my;
+
+		mousePos = engine.inputManager.mouse.getPos();
+		engine.inputManager.mouse.goTo(engine.glfwWindow, windowCenter.x, windowCenter.y);
+
+		mx = (int)mousePos.x;
+		if (mx != windowCenter.x)
+			camera.rotateY((mx - windowCenter.x) * SENSITIVITY * delta);
+
+		my = (int)mousePos.y;
+		if (my != windowCenter.y)
+			camera.rotateX((windowCenter.y - my) * SENSITIVITY * delta);
+	}
 
 	// Status
 	if (engine.inputManager.p.isPressed())

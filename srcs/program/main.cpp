@@ -6,7 +6,7 @@
 /*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 15:33:15 by aderouba          #+#    #+#             */
-/*   Updated: 2025/07/11 11:30:17 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/07/22 13:20:07 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,10 @@ int	main(void)
 
 	// Wait all vulkan tasks
 	vkDeviceWaitIdle(engine.context.getDevice());
+
+	// Release mouse
+	engine.inputManager.mouse.setMouseMode(engine.glfwWindow, GLFW_CURSOR_NORMAL);
+	glfwDestroyWindow(engine.glfwWindow);
 
 	// Destroy vulkans attributs
 	objects.destroy(engine);

@@ -766,7 +766,7 @@ void	Chunk::createLiquidMesh(void)
 
 	int	x, w, h, tmpW, idZ, idZ2;
 	// int	y = CHUNK_LIQUID_LEVEL;
-	for (int y = 0; y < CHUNK_HEIGHT; y++)
+	for (int y = 0; y <= CHUNK_LIQUID_LEVEL; y++)
 	{
 		if (!this->waterLevels[y])
 			continue;

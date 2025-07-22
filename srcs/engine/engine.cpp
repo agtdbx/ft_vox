@@ -29,5 +29,5 @@ void	destroyEngine(Engine &engine)
 
 	engine.window.destroy(engine.context.getInstance());
 	engine.context.destroy();
-	glfwDestroyWindow(engine.glfwWindow);
+	// glfwDestroyWindow(engine.glfwWindow);
 }

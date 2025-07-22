@@ -52,12 +52,12 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 	this->boundingCube.center = this->chunkPosition + CHUNK_MIDDLE_OFFSET;
 	this->boundingCube.computePoints();
 
-	int		idZ, idXZ, id, height, liquidHeight, maxHeight;
+	int		idZ, idXZ, id, height, maxHeight;
 	float	perlinX, perlinZ,
 			seaHeight, plaineHeight, mountainHeight,
 			baseColdHeight, baseClassicHeight, baseHotHeight, baseHeight, stoneHeight, biomeHeight, biomeTemp,
 			caveSize, caveSize1, caveSize2, caveHeight, mineral, diffCave;
-	bool	seaBiome, mountainBiome, coldBiome, hotBiome, messaMountain, generateLog, generateLeaf;
+	bool	seaBiome, mountainBiome, coldBiome, hotBiome, messaMountain;
 	Cube	liquidType;
 
 	baseColdHeight = 0.0f;
@@ -78,7 +78,6 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 			perlinX = this->chunkPosition.x + x;
 
 			liquidType = CUBE_WATER;
-			liquidHeight = CHUNK_LIQUID_LEVEL;
 
 			biomeTemp = perlinBiomeTemp.getNoise(perlinX * scaleBiomeTemp, perlinZ * scaleBiomeTemp);
 			coldBiome = (biomeTemp < -0.4f);
@@ -190,13 +189,13 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 			else
 			{
 				baseHeight = baseHotHeight;
-				if (!messaMountain || baseHeight <= liquidHeight)
+				if (!messaMountain || baseHeight <= CHUNK_LIQUID_LEVEL)
 					stoneHeight = baseHeight - 4;
 			}
 
 			// Terrain height
 			height = baseHeight;
-			maxHeight = gm::max(height, liquidHeight);
+			maxHeight = gm::max(height, CHUNK_LIQUID_LEVEL);
 
 			// Cave
 			caveSize1 = perlinCaveSize1.getNoiseNormalize(perlinX * scaleCaveSize1, perlinZ * scaleCaveSize2);
@@ -268,7 +267,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 							this->cubes[id] = CUBE_SNOW;
 						this->cubeBitmap.set(x, y, z, true);
 					}
-					else if (y == liquidHeight)
+					else if (y == CHUNK_LIQUID_LEVEL)
 					{
 						this->cubes[id] = CUBE_ICE;
 						this->cubeBitmap.set(x, y, z, true);
@@ -322,7 +321,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 					if (y <= height)
 					{
 						// Sand beach
-						if (seaBiome && y < liquidHeight + 3)
+						if (seaBiome && y < CHUNK_LIQUID_LEVEL + 3)
 							this->cubes[id] = CUBE_SAND;
 						// Mountain top
 						else if (mountainBiome && y > 175)
@@ -333,7 +332,7 @@ void	Chunk::generate(const gm::Vec2i &chunkId)
 						// Plaine
 						else
 						{
-							if (y == height && y >= liquidHeight)
+							if (y == height && y >= CHUNK_LIQUID_LEVEL)
 								this->cubes[id] = CUBE_GRASS;
 							else
 								this->cubes[id] = CUBE_DIRT;

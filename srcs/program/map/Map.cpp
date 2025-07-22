@@ -358,6 +358,7 @@ static void	threadRoutine(ThreadData *threadData)
 							commandBuffer = commandPool.beginSingleTimeCommands();
 							stagingBuffer.offset = 0;
 						}
+
 						it->second.createBuffers(commandPool, stagingBuffer, commandBuffer);
 					}
 					catch(const std::exception &e)
@@ -367,7 +368,7 @@ static void	threadRoutine(ThreadData *threadData)
 			}
 
 			engine.queueMutex.lock();
-			vkQueueWaitIdle(engine.context.getTransferQueue().value);
+			// vkQueueWaitIdle(engine.context.getTransferQueue().value);
 			commandPool.endSingleTimeCommands(commandBuffer);
 			engine.queueMutex.unlock();
 
@@ -410,32 +411,32 @@ static void	threadRoutine(ThreadData *threadData)
 			maxId = threadData->maxChunkId;
 			threadData->mutex.unlock();
 
-			for (int x = minId.x; x < maxId.x; x++)
-			{
-				for (int y = minId.y; y < maxId.y; y++)
-				{
-					std::size_t hash	= gm::hashSmall(gm::Vec2i(x, y));
-					chunksMutex.lock();
-					ChunkMap::iterator	it = chunks.find(hash);
-					chunksMutex.unlock();
+			// for (int x = minId.x; x < maxId.x; x++)
+			// {
+			// 	for (int y = minId.y; y < maxId.y; y++)
+			// 	{
+			// 		std::size_t hash = gm::hashSmall(gm::Vec2i(x, y));
+			// 		chunksMutex.lock();
+			// 		ChunkMap::iterator	it = chunks.find(hash);
+			// 		chunksMutex.unlock();
 
-					if (it == chunks.end())
-					{
-						continue;
-					}
+			// 		if (it == chunks.end())
+			// 		{
+			// 			continue;
+			// 		}
 
-					try
-					{
-						it->second.destroy(engine);
-						chunksMutex.lock();
-						chunks.erase(hash);
-						chunksMutex.unlock();
-					}
-					catch(const std::exception& e)
-					{
-					}
-				}
-			}
+			// 		try
+			// 		{
+			// 			it->second.destroy(engine);
+			// 			chunksMutex.lock();
+			// 			chunks.erase(hash);
+			// 			chunksMutex.unlock();
+			// 		}
+			// 		catch(const std::exception& e)
+			// 		{
+			// 		}
+			// 	}
+			// }
 
 			threadData->mutex.lock();
 			if (threadData->status != THREAD_STOPPING)

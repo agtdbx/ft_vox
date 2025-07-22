@@ -56,7 +56,10 @@ QueueFamilyIndices	findQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceK
 		VkBool32 presentSupport = false;
 		vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &presentSupport);
 		if (presentSupport)
+		{
+
 			queueFamilyIndices.presentFamily = i;
+		}
 
 		i++;
 	}

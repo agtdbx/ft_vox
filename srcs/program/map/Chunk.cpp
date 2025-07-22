@@ -209,6 +209,18 @@ void	Chunk::createMeshes(Map &map)
 }
 
 
+void	Chunk::createBuffers(VulkanCommandPool &commandPool)
+{
+	if (this->bufferCreate)
+		return ;
+	this->bufferCreate = true;
+
+	this->mesh.createBuffers(commandPool);
+	this->borderMesh.createBuffers(commandPool);
+	this->liquidMesh.createBuffers(commandPool);
+}
+
+
 void	Chunk::createBuffers(
 				VulkanCommandPool &commandPool,
 				StagingBuffer &stagingBuffer,

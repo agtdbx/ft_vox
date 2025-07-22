@@ -194,6 +194,13 @@ public:
 	 * @brief Create chunk meshes buffers.
 	 *
 	 * @param commandPool Command class for vulkan.
+	 */
+	void	createBuffers(
+				VulkanCommandPool &commandPool);
+	/**
+	 * @brief Create chunk meshes buffers.
+	 *
+	 * @param commandPool Command class for vulkan.
 	 * @param stagingBuffer Common tempory buffer for avoid buffer recreation.
  	 * @param commandBuffer The command buffer used for group copy commands.
 	 */

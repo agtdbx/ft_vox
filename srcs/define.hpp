@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   define.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
+/*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/07/21 12:12:26 by gugus            ###   ########.fr       */
+/*   Updated: 2025/07/22 13:35:28 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,14 +42,13 @@ const int MAX_FRAMES_IN_FLIGHT = 1;
 # define FOV 80.0f
 # define NEAR 0.1f
 # define FAR 10000.0f
-# define SPEED 5.0f // TODO : Put to 1.0f
+# define SPEED 1.0f // TODO : Put to 1.0f
 # define SPRINT 20.0f
 # define ROTATE 45.0f
 # define SENSITIVITY 5.0f // 0.0 = no movement, 1.0f is normal, higher is faster (negatif is reverse)
 
 // Skybox defines
 const float SKYBOX_DIST = 10.0f;
-const float SKYBOX_DIST2 = SKYBOX_DIST * 2.0f;
 
 // Chunk defines
 # define CHUNK_SIZE 32
