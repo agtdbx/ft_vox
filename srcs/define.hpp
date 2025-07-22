@@ -6,7 +6,7 @@
 /*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/07/22 13:35:28 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/07/22 16:21:44 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,7 @@ const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
 # define SEED 1753092615
 # define MAX_CHUNK_BUFFER_SIZE 200000
 # define MIN_CHUNK_PER_THREAD 4
+# define MAX_CHUNKS_FREE_PER_LOOP 1
 
 const float	MAP_MAX_TIME_PER_LOOP = 1.0f; //0.000001;
 const int	MAP_NB_THREAD = 7;

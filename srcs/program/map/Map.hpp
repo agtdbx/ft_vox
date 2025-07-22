@@ -14,15 +14,16 @@ using ChunkMap = std::unordered_map<std::size_t, Chunk>;
 
 enum ThreadStatus
 {
-	THREAD_RUNNING,			// Waiting status
-	THREAD_NEED_GENERATE,	// Ask generation
-	THREAD_GENERATING,		// Generation in progress
-	THREAD_NEED_MESH,		// Ask meshing
-	THREAD_MESHING,			// Meshing in progress
-	THREAD_NEED_DESTROY,	// Ask destroying
-	THREAD_DESTROYING,		// Destroying in progress
-	THREAD_STOPPING,		// Ask stopping thread
-	THREAD_STOP,			// Thread stopped
+	THREAD_RUNNING,				// Waiting status
+	THREAD_NEED_GENERATE,		// Ask generation
+	THREAD_GENERATING,			// Generation in progress
+	THREAD_NEED_MESH,			// Ask meshing
+	THREAD_MESHING,				// Meshing in progress
+	THREAD_NEED_DESTROY,		// Ask destroying
+	THREAD_NEED_FINAL_DESTROY,	// Ask final destroying
+	THREAD_DESTROYING,			// Destroying in progress
+	THREAD_STOPPING,			// Ask stopping thread
+	THREAD_STOP,				// Thread stopped
 };
 
 

@@ -368,7 +368,6 @@ static void	threadRoutine(ThreadData *threadData)
 			}
 
 			engine.queueMutex.lock();
-			// vkQueueWaitIdle(engine.context.getTransferQueue().value);
 			commandPool.endSingleTimeCommands(commandBuffer);
 			engine.queueMutex.unlock();
 
@@ -411,32 +410,91 @@ static void	threadRoutine(ThreadData *threadData)
 			maxId = threadData->maxChunkId;
 			threadData->mutex.unlock();
 
-			// for (int x = minId.x; x < maxId.x; x++)
-			// {
-			// 	for (int y = minId.y; y < maxId.y; y++)
-			// 	{
-			// 		std::size_t hash = gm::hashSmall(gm::Vec2i(x, y));
-			// 		chunksMutex.lock();
-			// 		ChunkMap::iterator	it = chunks.find(hash);
-			// 		chunksMutex.unlock();
+			for (int x = minId.x; x < maxId.x; x++)
+			{
+				for (int y = minId.y; y < maxId.y; y++)
+				{
+					bool	canBeFree = false;
 
-			// 		if (it == chunks.end())
-			// 		{
-			// 			continue;
-			// 		}
+					while (1)
+					{
+						engine.chunkFreeableMutex.lock();
+						if (engine.chunkFreeable > 0)
+						{
+							engine.chunkFreeable--;
+							canBeFree = true;
+						}
+						engine.chunkFreeableMutex.unlock();
 
-			// 		try
-			// 		{
-			// 			it->second.destroy(engine);
-			// 			chunksMutex.lock();
-			// 			chunks.erase(hash);
-			// 			chunksMutex.unlock();
-			// 		}
-			// 		catch(const std::exception& e)
-			// 		{
-			// 		}
-			// 	}
-			// }
+						if (canBeFree)
+							break;
+
+						usleep(1000);
+					}
+
+					std::size_t hash = gm::hashSmall(gm::Vec2i(x, y));
+					chunksMutex.lock();
+					ChunkMap::iterator	it = chunks.find(hash);
+					chunksMutex.unlock();
+
+					if (it == chunks.end())
+					{
+						continue;
+					}
+
+					try
+					{
+						it->second.destroy(engine);
+						chunksMutex.lock();
+						chunks.erase(hash);
+						chunksMutex.unlock();
+					}
+					catch(const std::exception& e)
+					{
+					}
+				}
+			}
+
+			threadData->mutex.lock();
+			if (threadData->status != THREAD_STOPPING)
+				threadData->status = THREAD_RUNNING;
+			threadData->mutex.unlock();
+		}
+
+		else if (status == THREAD_NEED_FINAL_DESTROY)
+		{
+			threadData->mutex.lock();
+			threadData->status = THREAD_DESTROYING;
+			minId = threadData->minChunkId;
+			maxId = threadData->maxChunkId;
+			threadData->mutex.unlock();
+
+			for (int x = minId.x; x < maxId.x; x++)
+			{
+				for (int y = minId.y; y < maxId.y; y++)
+				{
+					std::size_t hash = gm::hashSmall(gm::Vec2i(x, y));
+					chunksMutex.lock();
+					ChunkMap::iterator	it = chunks.find(hash);
+					chunksMutex.unlock();
+
+					if (it == chunks.end())
+					{
+						continue;
+					}
+
+					try
+					{
+						it->second.destroy(engine);
+						chunksMutex.lock();
+						chunks.erase(hash);
+						chunksMutex.unlock();
+					}
+					catch(const std::exception& e)
+					{
+					}
+				}
+			}
 
 			threadData->mutex.lock();
 			if (threadData->status != THREAD_STOPPING)

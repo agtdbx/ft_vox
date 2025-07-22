@@ -27,7 +27,14 @@ void	Map::update(Engine &engine, Camera &camera)
 		status = this->prepareGeneration(engine, camera);
 	}
 
-	else if (status == MAP_GENERATING_X)
+	if (status == MAP_NONE)
+		return ;
+
+	engine.chunkFreeableMutex.lock();
+	engine.chunkFreeable = MAX_CHUNKS_FREE_PER_LOOP;
+	engine.chunkFreeableMutex.unlock();
+
+	if (status == MAP_GENERATING_X)
 	{
 		if (this->generatingX(start))
 		{
@@ -562,7 +569,7 @@ bool	Map::destroyingChunks(void)
 				this->threadsData[i].mutex.lock();
 				this->threadsData[i].minChunkId = minId;
 				this->threadsData[i].maxChunkId = maxId;
-				this->threadsData[i].status = THREAD_NEED_DESTROY;
+				this->threadsData[i].status = THREAD_NEED_FINAL_DESTROY;
 				this->threadsData[i].mutex.unlock();
 
 				chunkLeftBeforeEndLine = this->maxDelete.x - this->currentView.tmpId.x;

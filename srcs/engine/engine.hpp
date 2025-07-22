@@ -21,6 +21,8 @@ struct Engine
 	TextureManager		textureManager;
 	InputManager		inputManager;
 	std::mutex			queueMutex;
+	int					chunkFreeable = 0;
+	std::mutex			chunkFreeableMutex;
 };
 
 /**
