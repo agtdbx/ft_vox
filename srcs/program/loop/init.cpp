@@ -16,7 +16,7 @@ bool init(
 		Objects &objects,
 		Shaders &shaders)
 {
-	camera.setPosition(gm::Vec3f(0.0f, 300.0f, 0.0f));
+	camera.setPosition(gm::Vec3f(0.0f, 200.0f, 0.0f));
 	camera.setRotation(-30.0f, -90.0f, 0.0f);
 
 	try
@@ -149,6 +149,13 @@ static void	initUi(
 	objects.textPosition.setFontSize(1.0f);
 	objects.textPosition.setTextColor({1, 1, 1, 1});
 	objects.textPosition.setBackgroundColor({0, 0, 0, 0.3});
+
+	objects.textMapStatus.init(engine, shaders.textShader);
+	objects.textMapStatus.setPos({-0.99f, -0.95f});
+	objects.textMapStatus.setDrawPos(TEXT_TOP_LEFT);
+	objects.textMapStatus.setFontSize(1.0f);
+	objects.textMapStatus.setTextColor({1, 1, 1, 1});
+	objects.textMapStatus.setBackgroundColor({0, 0, 0, 0.3});
 
 	objects.displayUi = true;
 }

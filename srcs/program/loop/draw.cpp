@@ -18,6 +18,7 @@ void	draw(
 			objects.textFps.draw(engine, shaders.textShader);
 			objects.textCrossAir.draw(engine, shaders.textShader);
 			objects.textPosition.draw(engine, shaders.textShader);
+			objects.textMapStatus.draw(engine, shaders.textShader);
 		}
 	}
 	catch(const std::exception& e)

@@ -110,6 +110,12 @@ public:
 //**** ACCESSORS ***************************************************************
 //---- Getters -----------------------------------------------------------------
 	/**
+	 * @brief Getter for map status.
+	 *
+	 * @return The status.
+	 */
+	MapStatus	getStatus(void) const;
+	/**
 	 * @brief Get chunk by id.
 	 *
 	 * @param x Id x.
@@ -176,6 +182,7 @@ public:
 
 private:
 //**** PRIVATE ATTRIBUTS *******************************************************
+	MapStatus				status;
 	std::mutex				chunksMutex, clustersMutex;
 	ChunkMap				chunks;
 	std::vector<Cluster>	clusters;
@@ -192,50 +199,36 @@ private:
 	 * @brief Method to prepare generation.
 	 *
 	 * @param camera The camera.
-	 *
-	 * @return The new status for map generation. Can be none if no generation is needed.
 	 */
-	MapStatus	prepareGeneration(Engine &engine, Camera &camera);
+	void	prepareGeneration(Engine &engine, Camera &camera);
 	/**
 	 * @brief Method to order generation of chunk block to threads optimize of X axis.
 	 *
 	 * @return True is the generation is finish, false else.
 	 */
-	bool		generatingX(std::clock_t &start);
+	void		generatingX(void);
 	/**
 	 * @brief Method to order generation of chunk block to threads optimize of Y axis.
-	 *
-	 * @return True is the generation is finish, false else.
 	 */
-	bool		generatingY(std::clock_t &start);
+	void		generatingY(void);
 	/**
 	 * @brief Method to order meshing of chunk block to threads optimize of X axis.
-	 *
-	 * @return True is the meshing is finish, false else.
 	 */
-	bool		meshingX(std::clock_t &start);
+	void		meshingX(void);
 	/**
 	 * @brief Method to order meshing of chunk block to threads optimize of Y axis.
-	 *
-	 * @return True is the meshing is finish, false else.
 	 */
-	bool		meshingY(std::clock_t &start);
+	void		meshingY(void);
 	/**
 	 * @brief Method to order destroying of chunk block to threads optimize of X axis.
-	 *
-	 * @return True is the destroying is finish, false else.
 	 */
-	bool		destroyingX(std::clock_t &start);
+	void		destroyingX(void);
 	/**
 	 * @brief Method to order destroying of chunk block to threads optimize of Y axis.
-	 *
-	 * @return True is the destroying is finish, false else.
 	 */
-	bool		destroyingY(std::clock_t &start);
+	void		destroyingY(void);
 	/**
 	 * @brief Method to order destroying of chunk block to threads.
-	 *
-	 * @return True is the destroying is finish, false else.
 	 */
 	bool		destroyingChunks(void);
 };

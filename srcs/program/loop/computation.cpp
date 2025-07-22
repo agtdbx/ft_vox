@@ -11,7 +11,8 @@ static void cameraMovements(
 static void updateTexts(
 				double delta,
 				Objects &objects,
-				Camera &camera);
+				Camera &camera,
+				MapStatus status);
 static void	destroyBlock(
 				Engine &engine,
 				Camera &camera,
@@ -38,7 +39,7 @@ void	computation(
 
 	cameraMovements(engine , camera, delta);
 
-	updateTexts(delta, objects, camera);
+	updateTexts(delta, objects, camera, objects.map.getStatus());
 
 	if (engine.inputManager.f.isPressed())
 		objects.displayUi = !objects.displayUi;
@@ -107,6 +108,8 @@ static void cameraMovements(
 	float speed = SPEED * delta;
 	if (engine.inputManager.lcontrol.isDown())
 		speed *= SPRINT;
+	else if (engine.inputManager.lalt.isDown())
+		speed *= FAST_SPRINT;
 	float rot = ROTATE * delta;
 
 	// Move
@@ -164,17 +167,18 @@ static void cameraMovements(
 static void updateTexts(
 				double delta,
 				Objects &objects,
-				Camera &camera)
+				Camera &camera,
+				MapStatus status)
 {
-	static double	printFpsTime = 0.0;
+	static double	updateTextTime = 0.0;
 	static int		nbCall = 0;
 
-	printFpsTime += delta;
+	updateTextTime += delta;
 	nbCall++;
 
-	if (printFpsTime > UPDATE_TEXT_TIME)
+	if (updateTextTime > UPDATE_TEXT_TIME)
 	{
-		double avgDelta = printFpsTime / (double)nbCall;
+		double avgDelta = updateTextTime / (double)nbCall;
 		double avgFps = 1.0 / avgDelta;
 
 		// Fps text
@@ -189,7 +193,17 @@ static void updateTexts(
 				pos.x, pos.y, pos.z);
 		objects.textPosition.setText(std::string(stringPosition));
 
-		printFpsTime = 0.0;
+		// Map status text
+		if (status == MAP_NONE)
+			objects.textMapStatus.setText("");
+		else if (status == MAP_GENERATING_X || status == MAP_GENERATING_Y)
+			objects.textMapStatus.setText("generating");
+		else if (status == MAP_MESHING_X || status == MAP_MESHING_Y)
+			objects.textMapStatus.setText("meshing");
+		else if (status == MAP_DESTROYING_X || status == MAP_DESTROYING_Y)
+			objects.textMapStatus.setText("destroying");
+
+		updateTextTime = 0.0;
 		nbCall = 0;
 	}
 }

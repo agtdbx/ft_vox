@@ -120,6 +120,9 @@ void	Text::init(Engine &engine, Shader &shader)
 
 void	Text::draw(Engine &engine, Shader &shader)
 {
+	if (this->text == "")
+		return ;
+
 	if (this->needUpdateBuffers)
 	{
 		this->updateBuffers(engine);

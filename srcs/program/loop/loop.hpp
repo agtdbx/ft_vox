@@ -22,6 +22,7 @@ struct Objects
 	Text	textFps;
 	Text	textCrossAir;
 	Text	textPosition;
+	Text	textMapStatus;
 	bool	displayUi;
 
 	/**
@@ -36,6 +37,7 @@ struct Objects
 		textFps.destroy(engine);
 		textCrossAir.destroy(engine);
 		textPosition.destroy(engine);
+		textMapStatus.destroy(engine);
 	}
 };
 

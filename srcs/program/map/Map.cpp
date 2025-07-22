@@ -33,6 +33,12 @@ Map::~Map()
 //**** ACCESSORS ***************************************************************
 //---- Getters -----------------------------------------------------------------
 
+MapStatus	Map::getStatus(void) const
+{
+	return (this->status);
+}
+
+
 Chunk	*Map::getChunk(int x, int y)
 {
 	std::size_t	hash = gm::hashSmall(gm::Vec2i(x, y));
@@ -82,6 +88,8 @@ void	Map::init(
 				Camera &camera,
 				ChunkShader &chunkShader)
 {
+	this->status = MAP_NONE;
+
 	// Create clusters
 	this->clusters.resize(MAP_CLUSTER_SIZE);
 	this->clusterOffsets.resize(MAP_CLUSTER_SIZE);
@@ -126,9 +134,6 @@ void	Map::init(
 	this->targetView.minMeshChunk = this->cameraChunkId + this->minChunkIdOffset;
 	this->targetView.maxMeshChunk = this->cameraChunkId + this->maxChunkIdOffset;
 	this->targetView.tmpId = this->targetView.minGenChunk;
-
-	// Get nb threads
-	printf("Nb threads : %i\n", MAP_NB_THREAD);
 
 	// Init generation info
 	this->threadsData = new ThreadData[MAP_NB_THREAD];
@@ -190,19 +195,7 @@ void	Map::destroy(Engine &engine)
 		usleep(10000);
 	}
 
-	// Free memory into map
-	for (int x = this->minDelete.x; x < this->maxDelete.x; x++)
-	{
-		for (int y = this->minDelete.y; y < this->maxDelete.y; y++)
-		{
-			std::size_t	hash = gm::hashSmall(gm::Vec2i(x, y));
-
-			if (this->chunks.find(hash) != this->chunks.end())
-				this->chunks.erase(hash);
-		}
-	}
-
-	// Save clean
+	// Safe clean
 	ChunkMap::iterator	it = this->chunks.begin();
 	while (it != this->chunks.end())
 	{

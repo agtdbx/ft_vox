@@ -6,7 +6,7 @@
 /*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/07/22 16:21:44 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/07/22 18:21:24 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,8 +42,9 @@ const int MAX_FRAMES_IN_FLIGHT = 1;
 # define FOV 80.0f
 # define NEAR 0.1f
 # define FAR 10000.0f
-# define SPEED 1.0f // TODO : Put to 1.0f
+# define SPEED 1.0f
 # define SPRINT 20.0f
+# define FAST_SPRINT 100.0f
 # define ROTATE 45.0f
 # define SENSITIVITY 5.0f // 0.0 = no movement, 1.0f is normal, higher is faster (negatif is reverse)
 
@@ -85,9 +86,8 @@ const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
 # define SEED 1753092615
 # define MAX_CHUNK_BUFFER_SIZE 200000
 # define MIN_CHUNK_PER_THREAD 4
-# define MAX_CHUNKS_FREE_PER_LOOP 1
+# define MAX_CHUNKS_FREE_PER_LOOP 2
 
-const float	MAP_MAX_TIME_PER_LOOP = 1.0f; //0.000001;
 const int	MAP_NB_THREAD = 7;
 const int	MAP_CLUSTER_ARROUND = 2; // Map have x cluster arround center one
 const int	MAP_CLUSTER_WIDTH = MAP_CLUSTER_ARROUND + 1 + MAP_CLUSTER_ARROUND;

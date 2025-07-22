@@ -4,105 +4,42 @@
 #include <chrono>
 
 //**** STATIC VARIABLES DEFINE *************************************************
-
-const float	INV_CLOCKS_PER_SEC = 1.0 / (float)CLOCKS_PER_SEC;
-
 //**** STATIC FUNCTIONS DEFINE *************************************************
-
-static float	getTime(std::clock_t &start);
-
 //**** PUBLIC METHODS **********************************************************
 
 void	Map::update(Engine &engine, Camera &camera)
 {
-	static MapStatus	status = MAP_NONE;
-
 	if (MAP_NB_THREAD == 0)
 		return ;
 
-	std::clock_t	start = std::clock();
+	if (this->status == MAP_NONE)
+		this->prepareGeneration(engine, camera);
 
-	if (status == MAP_NONE)
-	{
-		status = this->prepareGeneration(engine, camera);
-	}
-
-	if (status == MAP_NONE)
+	if (this->status == MAP_NONE)
 		return ;
 
 	engine.chunkFreeableMutex.lock();
 	engine.chunkFreeable = MAX_CHUNKS_FREE_PER_LOOP;
 	engine.chunkFreeableMutex.unlock();
 
-	if (status == MAP_GENERATING_X)
-	{
-		if (this->generatingX(start))
-		{
-			this->currentView.maxGenChunk = this->targetView.maxGenChunk;
-			this->currentView.tmpId = this->targetView.minMeshChunk;
-			status = MAP_MESHING_X;
-		}
-	}
-
-	else if (status == MAP_GENERATING_Y)
-	{
-		if (this->generatingY(start))
-		{
-			this->currentView.maxGenChunk = this->targetView.maxGenChunk;
-			this->currentView.tmpId = this->targetView.minMeshChunk;
-
-			status = MAP_MESHING_Y;
-		}
-	}
-
-	else if (status == MAP_MESHING_X)
-	{
-		if (this->meshingX(start))
-		{
-			this->currentView.maxMeshChunk = this->targetView.maxMeshChunk;
-			this->currentView.tmpId = this->minDelete;
-
-			status = MAP_DESTROYING_X;
-		}
-	}
-
-	else if (status == MAP_MESHING_Y)
-	{
-		if (this->meshingY(start))
-		{
-			this->currentView.maxMeshChunk = this->targetView.maxMeshChunk;
-			this->currentView.tmpId = this->minDelete;
-
-			status = MAP_DESTROYING_Y;
-		}
-	}
-
-	else if (status == MAP_DESTROYING_X)
-	{
-		if (this->destroyingX(start))
-		{
-			this->currentView.tmpId = this->targetView.tmpId;
-
-			status = MAP_NONE;
-		}
-	}
-
-	else if (status == MAP_DESTROYING_Y)
-	{
-		if (this->destroyingY(start))
-		{
-			this->currentView.tmpId = this->targetView.tmpId;
-
-			status = MAP_NONE;
-		}
-	}
+	if (this->status == MAP_GENERATING_X)
+		this->generatingX();
+	else if (this->status == MAP_GENERATING_Y)
+		this->generatingY();
+	else if (this->status == MAP_MESHING_X)
+			this->meshingX();
+	else if (this->status == MAP_MESHING_Y)
+			this->meshingY();
+	else if (this->status == MAP_DESTROYING_X)
+		this->destroyingX();
+	else if (this->status == MAP_DESTROYING_Y)
+		this->destroyingY();
 }
 
 //**** PRIVATE METHODS *********************************************************
 
-MapStatus	Map::prepareGeneration(Engine &engine, Camera &camera)
+void	Map::prepareGeneration(Engine &engine, Camera &camera)
 {
-	MapStatus	status = MAP_NONE;
 	gm::Vec3f	cameraIdf = camera.getPosition() / (float)CHUNK_SIZE;
 	gm::Vec2i	cameraId = gm::Vec2i(cameraIdf.x, cameraIdf.z);
 	gm::Vec2i	movement = cameraId - this->cameraChunkId;
@@ -138,9 +75,7 @@ MapStatus	Map::prepareGeneration(Engine &engine, Camera &camera)
 	}
 
 	if (this->currentView == this->targetView)
-	{
-		return (status);
-	}
+		return ;
 
 	this->minDelete = gm::Vec2i(0, 0);
 	this->maxDelete = gm::Vec2i(0, 0);
@@ -148,7 +83,7 @@ MapStatus	Map::prepareGeneration(Engine &engine, Camera &camera)
 	// Case of first generation
 	if (this->currentView.minGenChunk == this->currentView.maxGenChunk)
 	{
-		status = MAP_GENERATING_X;
+		this->status = MAP_GENERATING_X;
 	}
 	// Left movement
 	else if (movement.x < 0)
@@ -157,7 +92,7 @@ MapStatus	Map::prepareGeneration(Engine &engine, Camera &camera)
 		this->maxDelete = gm::Vec2i(this->currentView.maxGenChunk.x, this->currentView.maxGenChunk.y);
 		this->targetView.maxGenChunk = gm::Vec2i(this->currentView.minGenChunk.x, this->currentView.maxGenChunk.y);
 		this->targetView.maxMeshChunk = gm::Vec2i(this->currentView.minMeshChunk.x, this->currentView.maxMeshChunk.y);
-		status = MAP_GENERATING_Y;
+		this->status = MAP_GENERATING_Y;
 	}
 	// Right movement
 	else if (movement.x > 0)
@@ -166,7 +101,7 @@ MapStatus	Map::prepareGeneration(Engine &engine, Camera &camera)
 		this->maxDelete = gm::Vec2i(this->targetView.minGenChunk.x, this->currentView.maxGenChunk.y);
 		this->targetView.minGenChunk = gm::Vec2i(this->currentView.maxGenChunk.x, this->targetView.minGenChunk.y);
 		this->targetView.minMeshChunk = gm::Vec2i(this->currentView.maxMeshChunk.x, this->targetView.minMeshChunk.y);
-		status = MAP_GENERATING_Y;
+		this->status = MAP_GENERATING_Y;
 	}
 	// Front movement
 	else if (movement.y < 0)
@@ -175,7 +110,7 @@ MapStatus	Map::prepareGeneration(Engine &engine, Camera &camera)
 		this->maxDelete = gm::Vec2i(this->currentView.maxGenChunk.x, this->currentView.maxGenChunk.y);
 		this->targetView.maxGenChunk = gm::Vec2i(this->targetView.maxGenChunk.x, this->currentView.minGenChunk.y);
 		this->targetView.maxMeshChunk = gm::Vec2i(this->targetView.maxMeshChunk.x, this->currentView.minMeshChunk.y);
-		status = MAP_GENERATING_X;
+		this->status = MAP_GENERATING_X;
 	}
 	// Back movement
 	else
@@ -184,7 +119,7 @@ MapStatus	Map::prepareGeneration(Engine &engine, Camera &camera)
 		this->maxDelete = gm::Vec2i(this->currentView.maxGenChunk.x, this->targetView.minGenChunk.y);
 		this->targetView.minGenChunk = gm::Vec2i(this->targetView.minGenChunk.x, this->currentView.maxMeshChunk.y);
 		this->targetView.minMeshChunk = gm::Vec2i(this->targetView.minMeshChunk.x, this->currentView.maxMeshChunk.y);
-		status = MAP_GENERATING_X;
+		this->status = MAP_GENERATING_X;
 	}
 
 	this->currentView.minGenChunk = this->targetView.minGenChunk;
@@ -192,20 +127,17 @@ MapStatus	Map::prepareGeneration(Engine &engine, Camera &camera)
 	this->currentView.minMeshChunk = this->targetView.minMeshChunk;
 	this->currentView.maxMeshChunk = this->targetView.minMeshChunk;
 	this->currentView.tmpId = this->targetView.minGenChunk;
-
-	return (status);
 }
 
 
-bool	Map::generatingX(std::clock_t &start)
+void	Map::generatingX(void)
 {
-	static int		threadId = 0;
 	bool			allGenerationDone = true;
 	int				totalWidthGenerate = this->targetView.maxGenChunk.x - this->targetView.minGenChunk.x;
 	int				widthGeneratePerThread = gm::max(MIN_CHUNK_PER_THREAD, totalWidthGenerate / MAP_NB_THREAD);
 	ThreadStatus	threadStatus;
 
-	while (threadId < MAP_NB_THREAD)
+	for (int threadId = 0; threadId < MAP_NB_THREAD; threadId++)
 	{
 		this->threadsData[threadId].mutex.lock();
 		threadStatus = this->threadsData[threadId].status;
@@ -238,28 +170,26 @@ bool	Map::generatingX(std::clock_t &start)
 			}
 		}
 		else
-		{
 			allGenerationDone = false;
-		}
-		threadId++;
 	}
 
-	if (threadId == MAP_NB_THREAD)
-		threadId = 0;
-
-	return (allGenerationDone);
+	if (allGenerationDone)
+	{
+		this->status = MAP_MESHING_X;
+		this->currentView.maxGenChunk = this->targetView.maxGenChunk;
+		this->currentView.tmpId = this->targetView.minMeshChunk;
+	}
 }
 
 
-bool	Map::generatingY(std::clock_t &start)
+void	Map::generatingY(void)
 {
-	static int		threadId = 0;
 	bool			allGenerationDone = true;
 	int				totalHeightGenerate = this->targetView.maxGenChunk.y - this->targetView.minGenChunk.y;
 	int				heightGeneratePerThread = gm::max(MIN_CHUNK_PER_THREAD, totalHeightGenerate / MAP_NB_THREAD);
 	ThreadStatus	threadStatus;
 
-	while (threadId < MAP_NB_THREAD)
+	for (int threadId = 0; threadId < MAP_NB_THREAD; threadId++)
 	{
 		this->threadsData[threadId].mutex.lock();
 		threadStatus = this->threadsData[threadId].status;
@@ -293,25 +223,25 @@ bool	Map::generatingY(std::clock_t &start)
 		}
 		else
 			allGenerationDone = false;
-		threadId++;
 	}
 
-	if (threadId == MAP_NB_THREAD)
-		threadId = 0;
-
-	return (allGenerationDone);
+	if (allGenerationDone)
+	{
+		this->status = MAP_MESHING_Y;
+		this->currentView.maxGenChunk = this->targetView.maxGenChunk;
+		this->currentView.tmpId = this->targetView.minMeshChunk;
+	}
 }
 
 
-bool	Map::meshingX(std::clock_t &start)
+void	Map::meshingX(void)
 {
-	static int		threadId = 0;
 	bool			allMeshDone = true;
 	int				totalWidthMesh = this->targetView.maxMeshChunk.x - this->targetView.minMeshChunk.x;
 	int				widthMeshPerThread = gm::max(MIN_CHUNK_PER_THREAD, totalWidthMesh / MAP_NB_THREAD);
 	ThreadStatus	threadStatus;
 
-	while (threadId < MAP_NB_THREAD)
+	for (int threadId = 0; threadId < MAP_NB_THREAD; threadId++)
 	{
 		this->threadsData[threadId].mutex.lock();
 		threadStatus = this->threadsData[threadId].status;
@@ -351,30 +281,25 @@ bool	Map::meshingX(std::clock_t &start)
 		}
 		else
 			allMeshDone = false;
-		threadId++;
-		if (threadId < MAP_NB_THREAD && getTime(start) >= MAP_MAX_TIME_PER_LOOP)
-		{
-			allMeshDone = false;
-			break;
-		}
 	}
 
-	if (threadId == MAP_NB_THREAD)
-		threadId = 0;
-
-	return (allMeshDone);
+	if (allMeshDone)
+	{
+		this->status = MAP_DESTROYING_X;
+		this->currentView.maxMeshChunk = this->targetView.maxMeshChunk;
+		this->currentView.tmpId = this->minDelete;
+	}
 }
 
 
-bool	Map::meshingY(std::clock_t &start)
+void	Map::meshingY(void)
 {
-	static int		threadId = 0;
 	bool			allMeshDone = true;
 	int				totalHeightMesh = this->targetView.maxMeshChunk.y - this->targetView.minMeshChunk.y;
 	int				heightMeshPerThread = gm::max(MIN_CHUNK_PER_THREAD, totalHeightMesh / MAP_NB_THREAD);
 	ThreadStatus	threadStatus;
 
-	while (threadId < MAP_NB_THREAD)
+	for (int threadId = 0; threadId < MAP_NB_THREAD; threadId++)
 	{
 		this->threadsData[threadId].mutex.lock();
 		threadStatus = this->threadsData[threadId].status;
@@ -414,30 +339,25 @@ bool	Map::meshingY(std::clock_t &start)
 		}
 		else
 			allMeshDone = false;
-		threadId++;
-		if (threadId < MAP_NB_THREAD && getTime(start) >= MAP_MAX_TIME_PER_LOOP)
-		{
-			allMeshDone = false;
-			break;
-		}
 	}
 
-	if (threadId == MAP_NB_THREAD)
-		threadId = 0;
-
-	return (allMeshDone);
+	if (allMeshDone)
+	{
+		this->status = MAP_DESTROYING_Y;
+		this->currentView.maxMeshChunk = this->targetView.maxMeshChunk;
+		this->currentView.tmpId = this->minDelete;
+	}
 }
 
 
-bool	Map::destroyingX(std::clock_t &start)
+void	Map::destroyingX(void)
 {
-	static int		threadId = 0;
 	bool			allDestroyDone = true;
 	int				totalWidthDestroy = this->maxDelete.x - this->minDelete.x;
 	int				widthDestroyPerThread = gm::max(MIN_CHUNK_PER_THREAD, totalWidthDestroy / MAP_NB_THREAD);
 	ThreadStatus	threadStatus;
 
-	while (threadId < MAP_NB_THREAD)
+	for (int threadId = 0; threadId < MAP_NB_THREAD; threadId++)
 	{
 		this->threadsData[threadId].mutex.lock();
 		threadStatus = this->threadsData[threadId].status;
@@ -471,30 +391,24 @@ bool	Map::destroyingX(std::clock_t &start)
 		}
 		else
 			allDestroyDone = false;
-		threadId++;
-		if (threadId < MAP_NB_THREAD && getTime(start) >= MAP_MAX_TIME_PER_LOOP)
-		{
-			allDestroyDone = false;
-			break;
-		}
 	}
 
-	if (threadId == MAP_NB_THREAD)
-		threadId = 0;
-
-	return (allDestroyDone);
+	if (allDestroyDone)
+	{
+		this->status = MAP_NONE;
+		this->currentView.tmpId = this->targetView.tmpId;
+	}
 }
 
 
-bool	Map::destroyingY(std::clock_t &start)
+void	Map::destroyingY(void)
 {
-	static int		threadId = 0;
 	bool			allDestroyDone = true;
 	int				totalHeightDestroy = this->maxDelete.y - this->minDelete.y;
 	int				heightDestroyPerThread = gm::max(MIN_CHUNK_PER_THREAD, totalHeightDestroy / MAP_NB_THREAD);
 	ThreadStatus	threadStatus;
 
-	while (threadId < MAP_NB_THREAD)
+	for (int threadId = 0; threadId < MAP_NB_THREAD; threadId++)
 	{
 		this->threadsData[threadId].mutex.lock();
 		threadStatus = this->threadsData[threadId].status;
@@ -528,18 +442,13 @@ bool	Map::destroyingY(std::clock_t &start)
 		}
 		else
 			allDestroyDone = false;
-		threadId++;
-		if (threadId < MAP_NB_THREAD && getTime(start) >= MAP_MAX_TIME_PER_LOOP)
-		{
-			allDestroyDone = false;
-			break;
-		}
 	}
 
-	if (threadId == MAP_NB_THREAD)
-		threadId = 0;
-
-	return (allDestroyDone);
+	if (allDestroyDone)
+	{
+		this->status = MAP_NONE;
+		this->currentView.tmpId = this->targetView.tmpId;
+	}
 }
 
 
@@ -596,8 +505,3 @@ bool	Map::destroyingChunks(void)
 }
 
 //**** STATIC FUNCTIONS ********************************************************
-
-static float	getTime(std::clock_t &start)
-{
-	return (std::clock() - start) * INV_CLOCKS_PER_SEC;
-}
