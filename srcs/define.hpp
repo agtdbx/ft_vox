@@ -6,7 +6,7 @@
 /*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/07/23 14:43:34 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/07/23 16:00:02 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ const int	CHUNK_SIZE2 = CHUNK_SIZE * CHUNK_SIZE;
 const int	CHUNK_TOTAL_SIZE = CHUNK_SIZE2 * CHUNK_HEIGHT;
 const int	CHUNK_MASK_SIZE = CHUNK_SIZE * CHUNK_HEIGHT;
 
-const std::vector<std::string>	CUBE_TEXTURES = {
+const std::vector<std::string>	TEXTURES_CUBES = {
 	"grass-up", "dirt-up", "stone-up", "snow-up",
 	"ice-up", "sand-up", "red-sand-up", "terra-brown-up", "terra-red-up",
 	"terra-white-up", "terra-yellow-up", "iron-up", "diamond-up",

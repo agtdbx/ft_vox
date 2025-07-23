@@ -53,25 +53,25 @@ static void	loadTextures(Engine &engine)
 	engine.textureManager.addTexture("font", "data/font/ascii.png");
 	engine.textureManager.createImage(
 							engine,
-							{false, true, false, false},
+							{PIXEL_INTERPOLATE, REPEAT_ON, POS_FLOAT, OPTI_QUALITY},
 							"font", "font");
 
 	// Load sky box
 	engine.textureManager.addTexture("skybox", "data/skybox/skybox.png");
 	engine.textureManager.createImage(
 							engine,
-							{false, true, false, false},
+							{PIXEL_INTERPOLATE, REPEAT_ON, POS_FLOAT, OPTI_QUALITY},
 							"skybox", "skybox");
 
 	// Load cube texture and put them in an array.
-	for (const std::string &name : CUBE_TEXTURES)
+	for (const std::string &name : TEXTURES_CUBES)
 	{
 		engine.textureManager.addTexture(name, "data/cubes/" + name +".png");
 	}
 	engine.textureManager.createImageArray(
 							engine,
-							{true, true, false, false},
-							"cubes", CUBE_TEXTURES);
+							{PIXEL_ART, REPEAT_ON, POS_FLOAT, OPTI_QUALITY},
+							"cubes", TEXTURES_CUBES);
 }
 
 
@@ -85,7 +85,7 @@ static void loadShaders(
 								{sizeof(UBOTextColor), BUFFER_UBO, STAGE_FRAGMENT}
 	};
 	std::vector<ImageInfo>	imageInfosCubes = {
-		{CUBE_TEXTURES.size(), STAGE_COMPUTE_FRAGMENT},
+		{TEXTURES_CUBES.size(), STAGE_COMPUTE_FRAGMENT},
 	};
 	std::vector<ImageInfo>	imageInfosSkybox = {
 		{1, STAGE_COMPUTE_FRAGMENT},

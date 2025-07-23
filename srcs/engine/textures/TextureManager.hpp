@@ -7,6 +7,41 @@
 # include <string>
 # include <unordered_map>
 
+/**
+ * @brief Enum for pixel settings.
+ */
+enum PixelSettings
+{
+	PIXEL_INTERPOLATE, // Interpolate pixel, for avoid seeing pixels.
+	PIXEL_ART, // Get nearest pixel, like for pixel art.
+};
+
+/**
+ * @brief Enum for repeat settings.
+ */
+enum RepeatSettings
+{
+	REPEAT_OFF, // Clamp to edge.
+	REPEAT_ON, // Repeat texture. u 1.5 -> 0.5
+};
+
+/**
+ * @brief Enum for position settings.
+ */
+enum PositionSettings
+{
+	POS_FLOAT, // uv [0.0,1.0[.
+	POS_INT, // u [0,width[, v [0,height[. Force REPEAT_OFF and OPTI_PERF.
+};
+
+/**
+ * @brief Enum for optimization settings.
+ */
+enum OptiSettings
+{
+	OPTI_QUALITY, // perf < quality.
+	OPTI_PERF, // perf > quality.
+};
 
 /**
  * @brief Struct for texture loaded from file.
@@ -32,20 +67,19 @@ struct Image
 	uint32_t		nbLayer;
 };
 
-
 /**
  * @brief Struct for sampler info.
  */
 struct SamplerInfo
 {
 	// false for interpolate pixel, true for pixelart
-	bool	pixelize;
+	PixelSettings	pixelize;
 	// false to clamp to edge, true for repeat
-	bool	repeat;
+	RepeatSettings	repeat;
 	// false for texCoord in range [0.0,1.0[, true for range [0, size[
-	bool	intCoordonates;
+	PositionSettings	intCoordonates;
 	// false for quality, true for perf
-	bool	perfOverQuality;
+	OptiSettings	perfOverQuality;
 };
 
 

@@ -352,7 +352,7 @@ void	TextureManager::createTextureSampler(
 	// Define how texture will be displayed (interpolation or not, repeat or not...)
 	VkSamplerCreateInfo samplerInfo{};
 	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-	if (samplerInfoParam.pixelize)
+	if (samplerInfoParam.pixelize == PIXEL_INTERPOLATE)
 	{
 		samplerInfo.magFilter = VK_FILTER_LINEAR;
 		samplerInfo.minFilter = VK_FILTER_LINEAR;
@@ -362,13 +362,13 @@ void	TextureManager::createTextureSampler(
 		samplerInfo.magFilter = VK_FILTER_NEAREST;
 		samplerInfo.minFilter = VK_FILTER_NEAREST;
 	}
-	if (samplerInfoParam.intCoordonates)
+	if (samplerInfoParam.intCoordonates == POS_INT)
 	{
 		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	}
-	else if (samplerInfoParam.repeat)
+	else if (samplerInfoParam.repeat == REPEAT_ON)
 	{
 		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
@@ -381,7 +381,7 @@ void	TextureManager::createTextureSampler(
 		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
 	}
 
-	if (samplerInfoParam.perfOverQuality || samplerInfoParam.intCoordonates)
+	if (samplerInfoParam.perfOverQuality == OPTI_PERF || samplerInfoParam.intCoordonates == POS_INT)
 	{
 		// If anisotropy is lower, perf > quality
 		samplerInfo.anisotropyEnable = VK_FALSE;
@@ -394,9 +394,8 @@ void	TextureManager::createTextureSampler(
 		samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
 	}
 
-
 	samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-	if (samplerInfoParam.intCoordonates)
+	if (samplerInfoParam.intCoordonates == POS_INT)
 	{
 		samplerInfo.unnormalizedCoordinates = VK_TRUE; // True : pixel in range [0, width[
 		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
