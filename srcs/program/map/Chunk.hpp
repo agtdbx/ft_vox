@@ -21,7 +21,7 @@ class Map;
 struct ChunkShader
 {
 	Shader	shader;
-	Shader	shaderWater;
+	Shader	shaderLiquids;
 	Shader	shaderFdf;
 	Shader	shaderBorder;
 	bool	shaderFdfEnable;
@@ -35,7 +35,7 @@ struct ChunkShader
 	void	destroy(Engine &engine)
 	{
 		this->shader.destroy(engine);
-		this->shaderWater.destroy(engine);
+		this->shaderLiquids.destroy(engine);
 		this->shaderFdf.destroy(engine);
 		this->shaderBorder.destroy(engine);
 	}
@@ -222,8 +222,9 @@ public:
 	 * @param engine Engine struct.
 	 * @param camera The camera.
 	 * @param chunkShader Shaders used to draw meshes.
+	 * @param frameId The id of the frame for liquids animation.
 	 */
-	void	drawLiquid(Engine &engine, Camera &camera, ChunkShader &chunkShader);
+	void	drawLiquid(Engine &engine, Camera &camera, ChunkShader &chunkShader, float frameId);
 	/**
 	 * @brief Destroy chunk.
 	 *
@@ -242,6 +243,7 @@ private:
 	ChunkMesh		mesh, liquidMesh;
 	ChunkBorderMesh	borderMesh;
 	UBO3DChunkPos	uboPos;
+	UBOFrameId		uboFrameId;
 	ShaderParam		shaderParam, shaderParamLiquid, shaderParamFdf,
 					shaderParamFdfLiquid, shaderParamBorder;
 	BoundingCube	boundingCube;

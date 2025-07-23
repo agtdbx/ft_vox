@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   shaderStruct.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
+/*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/06/17 19:19:50 by gugus            ###   ########.fr       */
+/*   Updated: 2025/07/23 16:18:34 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,10 @@ struct UBO3DChunkPos {
 	gm::Mat4f	view;
 	gm::Mat4f	proj;
 	gm::Vec4f	pos;
+};
+
+struct UBOFrameId {
+	float	frameId;
 };
 
 #endif

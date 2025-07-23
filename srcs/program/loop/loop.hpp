@@ -24,6 +24,7 @@ struct Objects
 	Text	textPosition;
 	Text	textMapStatus;
 	bool	displayUi;
+	float	frameId = 0.0f;
 
 	/**
 	 * @brief Destroy all object in struct.

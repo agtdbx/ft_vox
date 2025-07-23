@@ -56,6 +56,10 @@ void	computation(
 		placeBlock(engine, camera, objects);
 
 	objects.map.update(engine, camera);
+
+	objects.frameId += delta * LIQUIDS_ANIMATION_SPEED;
+	if (objects.frameId >= LIQUIDS_NB_FRAME)
+		objects.frameId -= LIQUIDS_NB_FRAME;
 }
 
 

@@ -72,6 +72,26 @@ static void	loadTextures(Engine &engine)
 							engine,
 							{PIXEL_ART, REPEAT_ON, POS_FLOAT, OPTI_QUALITY},
 							"cubes", TEXTURES_CUBES);
+
+	// Load water texture and put them in an array.
+	for (const std::string &name : TEXTURES_WATER)
+	{
+		engine.textureManager.addTexture(name, "data/cubes/" + name +".png");
+	}
+	engine.textureManager.createImageArray(
+							engine,
+							{PIXEL_ART, REPEAT_ON, POS_FLOAT, OPTI_QUALITY},
+							"waters", TEXTURES_WATER);
+
+	// TODO: Load lava texture and put them in an array.
+	// for (const std::string &name : TEXTURES_LAVA)
+	// {
+	// 	engine.textureManager.addTexture(name, "data/cubes/" + name +".png");
+	// }
+	engine.textureManager.createImageArray(
+							engine,
+							{PIXEL_ART, REPEAT_ON, POS_FLOAT, OPTI_QUALITY},
+							"lavas", TEXTURES_LAVA);
 }
 
 
@@ -80,12 +100,20 @@ static void loadShaders(
 				Shaders &shaders)
 {
 	std::vector<BufferInfo>	bufferInfosChunk = {{sizeof(UBO3DChunkPos), BUFFER_UBO, STAGE_VERTEX}};
+	std::vector<BufferInfo>	bufferInfosChunkLiquids = {
+								{sizeof(UBO3DChunkPos), BUFFER_UBO, STAGE_VERTEX},
+								{sizeof(UBOFrameId), BUFFER_UBO, STAGE_FRAGMENT}
+	};
 	std::vector<BufferInfo>	bufferTextInfosChunk = {
 								{sizeof(UBOText), BUFFER_UBO, STAGE_VERTEX},
 								{sizeof(UBOTextColor), BUFFER_UBO, STAGE_FRAGMENT}
 	};
 	std::vector<ImageInfo>	imageInfosCubes = {
 		{TEXTURES_CUBES.size(), STAGE_COMPUTE_FRAGMENT},
+	};
+	std::vector<ImageInfo>	imageInfosLiquids = {
+		{TEXTURES_WATER.size(), STAGE_COMPUTE_FRAGMENT},
+		{TEXTURES_LAVA.size(), STAGE_COMPUTE_FRAGMENT},
 	};
 	std::vector<ImageInfo>	imageInfosSkybox = {
 		{1, STAGE_COMPUTE_FRAGMENT},
@@ -98,10 +126,10 @@ static void loadShaders(
 						DEPTH_READ_WRITE, FCUL_COUNTER, DRAW_POLYGON, ALPHA_OFF,
 						"shadersbin/chunk_vert.spv", "shadersbin/chunk_frag.spv",
 						bufferInfosChunk, imageInfosCubes);
-	shaders.chunkShader.shaderWater.init<VertexVoxel>(engine,
+	shaders.chunkShader.shaderLiquids.init<VertexVoxel>(engine,
 						DEPTH_READ, FCUL_COUNTER, DRAW_POLYGON, ALPHA_ON,
-						"shadersbin/chunk_vert.spv", "shadersbin/chunk_frag.spv",
-						bufferInfosChunk, imageInfosCubes);
+						"shadersbin/chunk_vert.spv", "shadersbin/chunkLiquids_frag.spv",
+						bufferInfosChunkLiquids, imageInfosLiquids);
 	shaders.chunkShader.shaderFdf.init<VertexVoxel>(engine,
 						DEPTH_READ_WRITE, FCUL_NONE, DRAW_LINE, ALPHA_OFF,
 						"shadersbin/chunk_vert.spv", "shadersbin/chunkFdf_frag.spv",

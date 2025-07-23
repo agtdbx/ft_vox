@@ -1,7 +1,13 @@
 #version 450
 
+// Buffer input
+layout(binding = 1) uniform UniformBufferObject {
+    float   frameId;
+} ubo;
+
 // Images input
-layout(binding = 1) uniform sampler2DArray sampleCubeTextures;
+layout(binding = 2) uniform sampler2DArray sampleTexturesWater;
+layout(binding = 3) uniform sampler2DArray sampleTexturesLava;
 
 // Input from vertex
 layout(location = 0) in vec3        fragPosition;
@@ -12,6 +18,16 @@ layout(location = 2) in flat uint   fragCubeType;
 layout(location = 0) out vec4   outColor;
 
 // Functions
+vec4    getPixelTexture(vec2 texCoord)
+{
+    if (fragCubeType == 16) // Water
+        return (texture(sampleTexturesWater, vec3(texCoord, int(ubo.frameId))));
+    else if (fragCubeType == 17) // Lava
+        return (texture(sampleTexturesLava, vec3(texCoord, int(ubo.frameId))));
+    else
+        return (vec4(0.5, 0.5, 0.5, 0.5));
+}
+
 vec4    getColor()
 {
     vec4    color = vec4(1, 1, 1, 1);
@@ -20,32 +36,32 @@ vec4    getColor()
     if (fragNormal.y > 0.99) //  Up
     {
         texCoord = fragPosition.xz;
-        color = texture(sampleCubeTextures, vec3(texCoord, fragCubeType));
+        color = getPixelTexture(texCoord);
     }
     else if (fragNormal.y < -0.99) // Down
     {
         texCoord = vec2(fragPosition.x, -fragPosition.z);
-        color = texture(sampleCubeTextures, vec3(texCoord, 32 + fragCubeType)) * 0.2;
+        color = getPixelTexture(texCoord);
     }
     else if (fragNormal.x > 0.99) // Right
     {
         texCoord = vec2(-fragPosition.z, -fragPosition.y);
-        color = texture(sampleCubeTextures, vec3(texCoord, 16 + fragCubeType)) * 0.4;
+        color = getPixelTexture(texCoord);
     }
     else if (fragNormal.x < -0.99) // Left
     {
         texCoord =  vec2(fragPosition.z, -fragPosition.y);
-        color = texture(sampleCubeTextures, vec3(texCoord, 16 + fragCubeType)) * 0.6;
+        color = getPixelTexture(texCoord);
     }
     else if (fragNormal.z > 0.99) // Front
     {
         texCoord = vec2(fragPosition.x, -fragPosition.y);
-        color = texture(sampleCubeTextures, vec3(texCoord, 16 + fragCubeType)) * 0.9;
+        color = getPixelTexture(texCoord);
     }
     else if (fragNormal.z < -0.99) // Back
     {
         texCoord = vec2(-fragPosition.x, -fragPosition.y);
-        color = texture(sampleCubeTextures, vec3(texCoord, 16 + fragCubeType)) * 0.3;
+        color = getPixelTexture(texCoord);
     }
 
     return (color);

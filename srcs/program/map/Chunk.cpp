@@ -183,7 +183,7 @@ void	Chunk::init(
 	this->initDone = true;
 
 	chunkShader.shader.initShaderParam(engine, this->shaderParam, {"cubes"});
-	chunkShader.shaderWater.initShaderParam(engine, this->shaderParamLiquid, {"cubes"});
+	chunkShader.shaderLiquids.initShaderParam(engine, this->shaderParamLiquid, {"waters", "lavas"});
 	chunkShader.shaderFdf.initShaderParam(engine, this->shaderParamFdf);
 	chunkShader.shaderFdf.initShaderParam(engine, this->shaderParamFdfLiquid);
 	chunkShader.shaderBorder.initShaderParam(engine, this->shaderParamBorder);
@@ -264,7 +264,7 @@ void	Chunk::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 }
 
 
-void	Chunk::drawLiquid(Engine &engine, Camera &camera, ChunkShader &chunkShader)
+void	Chunk::drawLiquid(Engine &engine, Camera &camera, ChunkShader &chunkShader, float frameId)
 {
 	if (!this->canBeDraw)
 		return ;
@@ -272,11 +272,15 @@ void	Chunk::drawLiquid(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 	if (this->liquidMesh.getNbIndex() == 0)
 		return ;
 
+	this->uboPos.view = camera.getView();
+
 	// Draw mesh
 	if (!chunkShader.shaderFdfEnable)
 	{
+		this->uboFrameId.frameId = frameId;
 		this->shaderParamLiquid.updateBuffer(engine.window, &this->uboPos, 0);
-		engine.window.drawMesh(this->liquidMesh, chunkShader.shaderWater, this->shaderParamLiquid);
+		this->shaderParamLiquid.updateBuffer(engine.window, &this->uboFrameId, 1);
+		engine.window.drawMesh(this->liquidMesh, chunkShader.shaderLiquids, this->shaderParamLiquid);
 	}
 	else
 	{

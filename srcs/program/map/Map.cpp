@@ -163,7 +163,7 @@ void	Map::init(
 }
 
 
-void	Map::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
+void	Map::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader, float frameId)
 {
 	this->clustersMutex.lock();
 	for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
@@ -175,7 +175,7 @@ void	Map::draw(Engine &engine, Camera &camera, ChunkShader &chunkShader)
 	for (int i = 0; i < MAP_CLUSTER_SIZE; i++)
 	{
 		if (camera.isCubeInFrutum(this->clusters[i].getBoundingCube()))
-			this->clusters[i].drawLiquid(engine, camera, chunkShader);
+			this->clusters[i].drawLiquid(engine, camera, chunkShader, frameId);
 	}
 	this->clustersMutex.unlock();
 }

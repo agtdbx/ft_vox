@@ -168,11 +168,13 @@ public:
 	 * @param engine Engine struct.
 	 * @param camera The camera.
 	 * @param chunkShader Shaders used to draw chunk meshes.
+	 * @param frameId The id of the frame for liquids animation.
 	 */
 	void	draw(
 				Engine &engine,
 				Camera &camera,
-				ChunkShader &chunkShader);
+				ChunkShader &chunkShader,
+				float frameId);
 	/**
 	 * @brief Destroy chunks.
 	 */

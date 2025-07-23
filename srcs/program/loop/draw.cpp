@@ -12,7 +12,7 @@ void	draw(
 	try
 	{
 		objects.skybox.draw(engine, camera, shaders.skyboxShader);
-		objects.map.draw(engine, camera, shaders.chunkShader);
+		objects.map.draw(engine, camera, shaders.chunkShader, objects.frameId);
 		if (objects.displayUi)
 		{
 			objects.textFps.draw(engine, shaders.textShader);

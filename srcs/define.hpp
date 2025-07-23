@@ -6,7 +6,7 @@
 /*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/07/23 16:00:02 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/07/23 17:01:40 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,18 +65,23 @@ const std::vector<std::string>	TEXTURES_CUBES = {
 	"grass-up", "dirt-up", "stone-up", "snow-up",
 	"ice-up", "sand-up", "red-sand-up", "terra-brown-up", "terra-red-up",
 	"terra-white-up", "terra-yellow-up", "iron-up", "diamond-up",
-	"bedrock-up", "wood-up", "leaves-up", "water-up", "lava-up",
+	"bedrock-up", "wood-up", "leaves-up",
 
 	"grass-side", "dirt-side", "stone-side", "snow-side",
 	"ice-side", "sand-side", "red-sand-side", "terra-brown-side", "terra-red-side",
 	"terra-white-side", "terra-yellow-side", "iron-side", "diamond-side",
-	"bedrock-side", "wood-side", "leaves-side", "water-side", "lava-side",
+	"bedrock-side", "wood-side", "leaves-side",
 
 	"grass-down", "dirt-down", "stone-down", "snow-down",
 	"ice-down", "sand-down", "red-sand-down", "terra-brown-down", "terra-red-down",
 	"terra-white-down", "terra-yellow-down", "iron-down", "diamond-down",
-	"bedrock-down", "wood-down", "leaves-down", "water-down", "lava-down"
+	"bedrock-down", "wood-down", "leaves-down",
 };
+
+# define LIQUIDS_NB_FRAME 2
+# define LIQUIDS_ANIMATION_SPEED 1.0f
+const std::vector<std::string>	TEXTURES_WATER = {"water-up", "lava-up"};
+const std::vector<std::string>	TEXTURES_LAVA = {"lava-up", "water-up"};
 
 // Cluster defines
 # define CLUSTER_SIZE 8
