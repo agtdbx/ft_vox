@@ -57,9 +57,24 @@ void	computation(
 
 	objects.map.update(engine, camera);
 
-	objects.frameId += delta * LIQUIDS_ANIMATION_SPEED;
-	if (objects.frameId >= LIQUIDS_NB_FRAME)
-		objects.frameId -= LIQUIDS_NB_FRAME;
+	if (objects.frameIncrease)
+	{
+		objects.frameId += delta * LIQUIDS_ANIMATION_SPEED;
+		if (objects.frameId >= LIQUIDS_NB_FRAME)
+		{
+			objects.frameId = LIQUIDS_NB_FRAME - 1.0f;
+			objects.frameIncrease = false;
+		}
+	}
+	else
+	{
+		objects.frameId -= delta * LIQUIDS_ANIMATION_SPEED;
+		if (objects.frameId < 0.0f)
+		{
+			objects.frameId = 0.0f;
+			objects.frameIncrease = true;
+		}
+	}
 }
 
 

@@ -76,18 +76,18 @@ static void	loadTextures(Engine &engine)
 	// Load water texture and put them in an array.
 	for (const std::string &name : TEXTURES_WATER)
 	{
-		engine.textureManager.addTexture(name, "data/cubes/" + name +".png");
+		engine.textureManager.addTexture(name, "data/liquids/" + name +".png");
 	}
 	engine.textureManager.createImageArray(
 							engine,
 							{PIXEL_ART, REPEAT_ON, POS_FLOAT, OPTI_QUALITY},
 							"waters", TEXTURES_WATER);
 
-	// TODO: Load lava texture and put them in an array.
-	// for (const std::string &name : TEXTURES_LAVA)
-	// {
-	// 	engine.textureManager.addTexture(name, "data/cubes/" + name +".png");
-	// }
+	// Load lava texture and put them in an array.
+	for (const std::string &name : TEXTURES_LAVA)
+	{
+		engine.textureManager.addTexture(name, "data/liquids/" + name +".png");
+	}
 	engine.textureManager.createImageArray(
 							engine,
 							{PIXEL_ART, REPEAT_ON, POS_FLOAT, OPTI_QUALITY},

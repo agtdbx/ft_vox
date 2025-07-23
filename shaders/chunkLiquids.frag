@@ -23,7 +23,11 @@ vec4    getPixelTexture(vec2 texCoord)
     if (fragCubeType == 16) // Water
         return (texture(sampleTexturesWater, vec3(texCoord, int(ubo.frameId))));
     else if (fragCubeType == 17) // Lava
-        return (texture(sampleTexturesLava, vec3(texCoord, int(ubo.frameId))));
+    {
+        vec4    color = texture(sampleTexturesLava, vec3(texCoord, int(ubo.frameId)));
+        color.a = 0.9;
+        return (color);
+    }
     else
         return (vec4(0.5, 0.5, 0.5, 0.5));
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   define.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/07/23 17:01:40 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/07/23 20:01:30 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,10 +78,22 @@ const std::vector<std::string>	TEXTURES_CUBES = {
 	"bedrock-down", "wood-down", "leaves-down",
 };
 
-# define LIQUIDS_NB_FRAME 2
-# define LIQUIDS_ANIMATION_SPEED 1.0f
-const std::vector<std::string>	TEXTURES_WATER = {"water-up", "lava-up"};
-const std::vector<std::string>	TEXTURES_LAVA = {"lava-up", "water-up"};
+# define LIQUIDS_NB_FRAME 20
+const float LIQUIDS_ANIMATION_SPEED = 1.0f / 0.1f; // Last is the frame duration
+const std::vector<std::string>	TEXTURES_WATER = {
+	"water-01", "water-02", "water-03", "water-04",
+	"water-05", "water-06", "water-07", "water-08",
+	"water-09", "water-10", "water-11", "water-12",
+	"water-13", "water-14", "water-15", "water-16",
+	"water-17", "water-18", "water-19", "water-20",
+};
+const std::vector<std::string>	TEXTURES_LAVA = {
+	"lava-01", "lava-02", "lava-03", "lava-04",
+	"lava-05", "lava-06", "lava-07", "lava-08",
+	"lava-09", "lava-10", "lava-11", "lava-12",
+	"lava-13", "lava-14", "lava-15", "lava-16",
+	"lava-17", "lava-18", "lava-19", "lava-20",
+};
 
 // Cluster defines
 # define CLUSTER_SIZE 8

@@ -24,6 +24,7 @@ struct Objects
 	Text	textPosition;
 	Text	textMapStatus;
 	bool	displayUi;
+	bool	frameIncrease = true;
 	float	frameId = 0.0f;
 
 	/**
