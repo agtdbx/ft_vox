@@ -108,10 +108,10 @@ static void cameraMovements(
 
 	// Speed
 	float speed = SPEED * delta;
-	if (engine.inputManager.lcontrol.isDown())
-		speed *= SPRINT;
-	else if (engine.inputManager.lalt.isDown())
+	if (engine.inputManager.lalt.isDown())
 		speed *= FAST_SPRINT;
+	else if (engine.inputManager.lcontrol.isDown())
+		speed *= SPRINT;
 	float rot = ROTATE * delta;
 
 	// Move

@@ -16,10 +16,8 @@ bool init(
 		Objects &objects,
 		Shaders &shaders)
 {
-	// camera.setPosition(gm::Vec3f(0.0f, 200.0f, 0.0f));
-	// camera.setRotation(-30.0f, -90.0f, 0.0f);
-	camera.setPosition(gm::Vec3f(239.0f, 49.0f, -178.0f));
-	camera.setRotation(-10.0f, 717.0f, 0.0f);
+	camera.setPosition(gm::Vec3f(0.0f, 200.0f, 0.0f));
+	camera.setRotation(-30.0f, -90.0f, 0.0f);
 
 	try
 	{
