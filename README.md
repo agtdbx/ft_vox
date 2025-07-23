@@ -39,6 +39,7 @@ cd release
 - turn up		up
 - turn down		down
 - sprint		left control (for movement)
+- fast sprint	left alt (for movement)
 - p				print camera info
 
 \

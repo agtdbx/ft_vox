@@ -104,6 +104,8 @@ static void cameraMovements(
 				Camera &camera,
 				double delta)
 {
+	static bool	firstMouseMove = true;
+
 	// Speed
 	float speed = SPEED * delta;
 	if (engine.inputManager.lcontrol.isDown())
@@ -143,20 +145,24 @@ static void cameraMovements(
 	if (glfwGetWindowAttrib(engine.glfwWindow, GLFW_FOCUSED) == GLFW_TRUE)
 	{
 		gm::Vec2i	windowCenter = engine.window.getSize() / 2;
-		gm::Vec2d	mousePos;
-		int			mx, my;
-
-		mousePos = engine.inputManager.mouse.getPos();
+		gm::Vec2d	mousePos = engine.inputManager.mouse.getPos();
 		engine.inputManager.mouse.goTo(engine.glfwWindow, windowCenter.x, windowCenter.y);
 
-		mx = (int)mousePos.x;
-		if (mx != windowCenter.x)
-			camera.rotateY((mx - windowCenter.x) * SENSITIVITY * delta);
+		if (!firstMouseMove)
+		{
+			int mx = (int)mousePos.x;
+			if (mx != windowCenter.x)
+				camera.rotateY((mx - windowCenter.x) * SENSITIVITY * delta);
 
-		my = (int)mousePos.y;
-		if (my != windowCenter.y)
-			camera.rotateX((windowCenter.y - my) * SENSITIVITY * delta);
+			int my = (int)mousePos.y;
+			if (my != windowCenter.y)
+				camera.rotateX((windowCenter.y - my) * SENSITIVITY * delta);
+		}
+		else
+			firstMouseMove = false;
 	}
+	else
+		firstMouseMove = true;
 
 	// Status
 	if (engine.inputManager.p.isPressed())

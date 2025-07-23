@@ -297,7 +297,7 @@ void	Chunk::createMesh(Map &map)
 		// z axis
 		for (int x = 0; x < CHUNK_SIZE; x++)
 		{
-			// Face front
+			// Contruct chunk line
 			if (backBitmap)
 				chunkLeftLine = backBitmap->axisX[CHUNK_MAX + idY];
 			else
@@ -308,6 +308,7 @@ void	Chunk::createMesh(Map &map)
 			else
 				chunkRightLine = 0ull;
 
+			// Face front
 			chunkLeftBlock = ((chunkLeftLine >> x) & 1) & UINT32_MAX;
 			chunkRightBlock = ((chunkRightLine >> x) & 1) & UINT32_MAX;
 			chunkCurrLine = cBitmapR.axisZ[x + idY] & UINT32_MAX;
@@ -415,6 +416,8 @@ void	Chunk::createMesh(Map &map)
 			}
 
 			// Face back
+			chunkLeftBlock = ((chunkLeftLine >> x) & 1) & UINT32_MAX;
+			chunkRightBlock = ((chunkRightLine >> x) & 1) & UINT32_MAX;
 			chunkCurrLine = cBitmapL.axisZ[x + idY] & UINT32_MAX;
 			chunkLineL = (chunkRightBlock << 33) | (chunkCurrLine << 1) | chunkLeftBlock;
 
@@ -539,6 +542,7 @@ void	Chunk::createMesh(Map &map)
 			chunkRightBlock = ((chunkRightLine >> z) & 1) & UINT32_MAX;
 			chunkCurrLine = cBitmapR.axisX[z + idY] & UINT32_MAX;
 			chunkLineR = (chunkLeftBlock << 33) | (chunkCurrLine << 1) | chunkRightBlock;
+
 			while (chunkLineR != 0)
 			{
 				int x = trailing64Zero(chunkLineR);
@@ -590,10 +594,10 @@ void	Chunk::createMesh(Map &map)
 					uint32_t	chunkLeftLine2 = 0ull;
 					uint32_t	chunkRightLine2 = 0ull;
 
-					if (backBitmap)
-						chunkLeftLine2 = backBitmap->axisZ[CHUNK_MAX + idY2];
-					if (frontBitmap)
-						chunkRightLine2 = frontBitmap->axisZ[0 + idY2];
+					if (leftBitmap)
+						chunkLeftLine2 = leftBitmap->axisZ[CHUNK_MAX + idY2];
+					if (rightBitmap)
+						chunkRightLine2 = rightBitmap->axisZ[0 + idY2];
 
 					while (tmpZ < d)
 					{
@@ -645,6 +649,7 @@ void	Chunk::createMesh(Map &map)
 			chunkRightBlock = ((chunkRightLine >> z) & 1) & UINT32_MAX;
 			chunkCurrLine = cBitmapL.axisX[z + idY] & UINT32_MAX;
 			chunkLineL = (chunkRightBlock << 33) | (chunkCurrLine << 1) | chunkLeftBlock;
+
 			while (chunkLineL != 0)
 			{
 				int x = trailing64Zero(chunkLineL);
@@ -696,10 +701,10 @@ void	Chunk::createMesh(Map &map)
 					uint32_t	chunkLeftLine2 = 0ull;
 					uint32_t	chunkRightLine2 = 0ull;
 
-					if (backBitmap)
-						chunkLeftLine2 = backBitmap->axisZ[CHUNK_MAX + idY2];
-					if (frontBitmap)
-						chunkRightLine2 = frontBitmap->axisZ[0 + idY2];
+					if (leftBitmap)
+						chunkLeftLine2 = leftBitmap->axisZ[CHUNK_MAX + idY2];
+					if (rightBitmap)
+						chunkRightLine2 = rightBitmap->axisZ[0 + idY2];
 
 					while (tmpZ < d)
 					{
@@ -765,7 +770,6 @@ void	Chunk::createLiquidMesh(void)
 	bool	cubeMeshed[CHUNK_SIZE2] = {0};
 
 	int	x, w, h, tmpW, idZ, idZ2;
-	// int	y = CHUNK_LIQUID_LEVEL;
 	for (int y = 0; y <= CHUNK_LIQUID_LEVEL; y++)
 	{
 		if (!this->waterLevels[y])

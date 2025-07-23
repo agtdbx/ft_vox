@@ -240,6 +240,10 @@ void	Camera::updateFromWindow(const int windowWidth, const int windowHeight)
 
 	this->planeHeight = tan(gm::radians(this->fov * 0.5f)) * 2.0f;
 	this->planeWidth = this->planeHeight * this->winRatio;
+
+	this->computeRotation();
+	this->computeView();
+	this->computeFrustum();
 }
 
 
@@ -256,6 +260,10 @@ void	Camera::updateFOV(const float fov)
 
 	this->planeHeight = tan(gm::radians(this->fov * 0.5f)) * 2.0f;
 	this->planeWidth = this->planeHeight * this->winRatio;
+
+	this->computeRotation();
+	this->computeView();
+	this->computeFrustum();
 }
 
 //---- status ------------------------------------------------------------------
