@@ -41592,7 +41592,8 @@
    fun:_dl_catch_exception
    fun:_dl_open
    fun:dlopen_doit
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -41610,7 +41611,8 @@
    fun:_dl_catch_exception
    fun:_dl_open
    fun:dlopen_doit
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -41628,7 +41630,8 @@
    fun:_dl_catch_exception
    fun:_dl_open
    fun:dlopen_doit
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -41646,7 +41649,8 @@
    fun:dl_open_worker
    fun:dl_open_worker
    fun:_dl_catch_exception
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -41664,7 +41668,8 @@
    fun:dl_open_worker
    fun:dl_open_worker
    fun:_dl_catch_exception
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -41682,7 +41687,8 @@
    fun:dl_open_worker
    fun:dl_open_worker
    fun:_dl_catch_exception
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -41700,7 +41706,8 @@
    fun:dl_open_worker
    fun:dl_open_worker
    fun:_dl_catch_exception
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -41718,7 +41725,8 @@
    fun:dl_open_worker
    fun:dl_open_worker
    fun:_dl_catch_exception
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -41736,7 +41744,8 @@
    fun:dl_open_worker
    fun:dl_open_worker
    fun:_dl_catch_exception
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -41754,7 +41763,8 @@
    fun:dl_open_worker
    fun:dl_open_worker
    fun:_dl_catch_exception
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -41772,7 +41782,8 @@
    fun:dl_open_worker
    fun:dl_open_worker
    fun:_dl_catch_exception
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -41790,7 +41801,8 @@
    fun:dl_open_worker
    fun:dl_open_worker
    fun:_dl_catch_exception
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -41808,7 +41820,8 @@
    fun:dl_open_worker
    fun:dl_open_worker
    fun:_dl_catch_exception
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -41826,7 +41839,8 @@
    fun:dl_open_worker
    fun:dl_open_worker
    fun:_dl_catch_exception
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -41844,7 +41858,8 @@
    fun:dl_open_worker
    fun:dl_open_worker
    fun:_dl_catch_exception
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -41862,7 +41877,8 @@
    fun:dl_open_worker
    fun:dl_open_worker
    fun:_dl_catch_exception
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -41880,7 +41896,8 @@
    fun:dl_open_worker
    fun:dl_open_worker
    fun:_dl_catch_exception
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -41898,7 +41915,8 @@
    fun:dl_open_worker
    fun:dl_open_worker
    fun:_dl_catch_exception
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -41916,7 +41934,8 @@
    fun:dl_open_worker
    fun:dl_open_worker
    fun:_dl_catch_exception
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -41934,7 +41953,8 @@
    fun:dl_open_worker
    fun:dl_open_worker
    fun:_dl_catch_exception
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -41952,7 +41972,8 @@
    fun:dl_open_worker
    fun:dl_open_worker
    fun:_dl_catch_exception
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -41970,7 +41991,8 @@
    fun:dl_open_worker
    fun:dl_open_worker
    fun:_dl_catch_exception
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -41988,7 +42010,8 @@
    fun:dl_open_worker
    fun:dl_open_worker
    fun:_dl_catch_exception
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42006,7 +42029,8 @@
    fun:dl_open_worker
    fun:_dl_catch_exception
    fun:_dl_open
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42024,7 +42048,8 @@
    fun:_dl_catch_exception
    fun:_dl_open
    fun:dlopen_doit
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42039,7 +42064,8 @@
    fun:XrmGetStringDatabase
    fun:glfwInit
    fun:main
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42055,13 +42081,12 @@
    fun:XrmGetStringDatabase
    fun:glfwInit
    fun:main
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: definite
    fun:malloc
-   obj:*
-   obj:*
    obj:*
    obj:*
    obj:*
@@ -42072,7 +42097,8 @@
    fun:loadShaders
    fun:_Z4initR6EngineR6CameraR7ObjectsR7Shaders
    fun:main
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42088,7 +42114,8 @@
    obj:*
    obj:*
    obj:*
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42104,7 +42131,8 @@
    obj:*
    obj:*
    obj:*
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42120,7 +42148,8 @@
    fun:XrmGetStringDatabase
    fun:glfwInit
    fun:main
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42136,7 +42165,8 @@
    obj:*
    obj:*
    obj:*
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42154,7 +42184,8 @@
    fun:dl_open_worker
    fun:_dl_catch_exception
    fun:_dl_open
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42170,7 +42201,8 @@
    fun:_XOpenLC
    fun:_XrmInitParseInfo
    obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.4.0
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42186,7 +42218,8 @@
    obj:*
    obj:*
    obj:*
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42202,7 +42235,8 @@
    obj:*
    obj:*
    obj:*
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42217,7 +42251,8 @@
    fun:XrmGetStringDatabase
    fun:glfwInit
    fun:main
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42233,7 +42268,8 @@
    fun:XrmGetStringDatabase
    fun:glfwInit
    fun:main
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42250,7 +42286,8 @@
    fun:call_init
    fun:_dl_init
    fun:_dl_catch_exception
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42267,7 +42304,8 @@
    fun:call_init.part.0
    fun:call_init
    fun:_dl_init
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42283,7 +42321,8 @@
    obj:/usr/lib/x86_64-linux-gnu/libdbus-1.so.3.19.13
    obj:*
    obj:*
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42299,7 +42338,8 @@
    obj:/usr/lib/x86_64-linux-gnu/libdbus-1.so.3.19.13
    obj:*
    obj:*
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42315,7 +42355,8 @@
    fun:dbus_connection_send_with_reply_and_block
    fun:dbus_bus_register
    obj:/usr/lib/x86_64-linux-gnu/libdbus-1.so.3.19.13
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42329,7 +42370,8 @@
    fun:XrmGetStringDatabase
    fun:glfwInit
    fun:main
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42343,7 +42385,8 @@
    fun:XrmGetStringDatabase
    fun:glfwInit
    fun:main
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42359,7 +42402,8 @@
    fun:_XOpenLC
    fun:_XrmInitParseInfo
    obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.4.0
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42375,7 +42419,8 @@
    obj:*
    obj:*
    obj:*
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42391,7 +42436,8 @@
    obj:*
    obj:*
    obj:*
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42407,7 +42453,8 @@
    obj:*
    obj:*
    obj:*
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42424,7 +42471,8 @@
    fun:dlopen_doit
    fun:_dl_catch_exception
    fun:_dl_catch_error
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42441,7 +42489,8 @@
    fun:dlopen_doit
    fun:_dl_catch_exception
    fun:_dl_catch_error
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42457,7 +42506,8 @@
    fun:dbus_bus_register
    obj:/usr/lib/x86_64-linux-gnu/libdbus-1.so.3.19.13
    obj:*
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42473,7 +42523,8 @@
    obj:*
    obj:*
    obj:*
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42489,7 +42540,8 @@
    obj:*
    obj:*
    obj:*
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42505,7 +42557,8 @@
    obj:*
    obj:*
    obj:*
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42522,7 +42575,8 @@
    fun:vkDestroyInstance
    fun:_ZN13VulkanContext7destroyEv
    fun:main
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42538,7 +42592,8 @@
    obj:*
    obj:*
    obj:*
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42554,7 +42609,8 @@
    obj:/usr/lib/x86_64-linux-gnu/libdbus-1.so.3.19.13
    fun:dbus_pending_call_block
    fun:dbus_connection_send_with_reply_and_block
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42572,7 +42628,8 @@
    fun:dl_open_worker
    fun:dl_open_worker
    fun:_dl_catch_exception
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42588,7 +42645,8 @@
    fun:XrmGetStringDatabase
    fun:glfwInit
    fun:main
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42604,7 +42662,8 @@
    fun:dbus_connection_send_with_reply_and_block
    fun:dbus_bus_register
    obj:/usr/lib/x86_64-linux-gnu/libdbus-1.so.3.19.13
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42622,7 +42681,8 @@
    fun:_dl_catch_exception
    fun:_dl_open
    fun:dlopen_doit
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42638,7 +42698,8 @@
    obj:*
    obj:*
    obj:*
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42654,7 +42715,8 @@
    obj:*
    obj:*
    obj:*
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42670,7 +42732,8 @@
    obj:*
    obj:*
    obj:*
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42687,7 +42750,8 @@
    fun:dl_open_worker
    fun:_dl_catch_exception
    fun:_dl_open
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42704,7 +42768,8 @@
    fun:dl_open_worker
    fun:_dl_catch_exception
    fun:_dl_open
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42720,7 +42785,8 @@
    fun:_XrmInitParseInfo
    obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.4.0
    fun:XrmGetStringDatabase
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42736,7 +42802,8 @@
    fun:_XrmInitParseInfo
    obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.4.0
    fun:XrmGetStringDatabase
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42752,7 +42819,8 @@
    fun:_XOpenLC
    fun:_XrmInitParseInfo
    obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.4.0
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42770,7 +42838,8 @@
    fun:dl_open_worker
    fun:_dl_catch_exception
    fun:_dl_open
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42786,7 +42855,8 @@
    fun:_XrmInitParseInfo
    obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.4.0
    fun:XrmGetStringDatabase
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42802,7 +42872,8 @@
    fun:_XOpenLC
    fun:_XrmInitParseInfo
    obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.4.0
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42818,7 +42889,8 @@
    fun:_XOpenLC
    fun:_XrmInitParseInfo
    obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.4.0
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42834,7 +42906,8 @@
    fun:XrmGetStringDatabase
    fun:glfwInit
    fun:main
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42850,7 +42923,8 @@
    fun:_XOpenLC
    fun:_XrmInitParseInfo
    obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.4.0
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42866,7 +42940,8 @@
    fun:dbus_pending_call_block
    fun:dbus_connection_send_with_reply_and_block
    obj:*
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42882,7 +42957,8 @@
    fun:XrmGetStringDatabase
    fun:glfwInit
    fun:main
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42898,7 +42974,8 @@
    obj:/usr/lib/x86_64-linux-gnu/libdbus-1.so.3.19.13
    obj:*
    obj:*
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42914,7 +42991,8 @@
    fun:XrmGetStringDatabase
    fun:glfwInit
    fun:main
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42930,7 +43008,8 @@
    obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.4.0
    fun:XrmGetStringDatabase
    fun:glfwInit
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42946,7 +43025,8 @@
    fun:_XrmInitParseInfo
    obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.4.0
    fun:XrmGetStringDatabase
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42962,7 +43042,8 @@
    fun:_XrmInitParseInfo
    obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.4.0
    fun:XrmGetStringDatabase
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42980,7 +43061,8 @@
    fun:_dl_catch_exception
    fun:_dl_open
    fun:dlopen_doit
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -42997,7 +43079,8 @@
    fun:dlopen_doit
    fun:_dl_catch_exception
    fun:_dl_catch_error
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -43007,7 +43090,8 @@
    fun:XrmInitialize
    fun:glfwInit
    fun:main
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -43023,7 +43107,8 @@
    obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.4.0
    fun:XrmGetStringDatabase
    fun:glfwInit
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -43037,7 +43122,8 @@
    fun:_XimOpenIM
    fun:glfwInit
    fun:main
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -43055,7 +43141,8 @@
    fun:_dlerror_run
    fun:dlopen_implementation
    fun:dlopen@@GLIBC_2.34
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable
@@ -43072,7 +43159,8 @@
    fun:dl_open_worker
    fun:_dl_catch_exception
    fun:_dl_open
-}{
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: reachable

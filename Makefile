@@ -109,7 +109,7 @@ genvsupp: all
 	@echo "$(BLUE)Start project with $(UNDERLINE)valgrind for generate vsupp$(NOC)"
 	@cd $(MESON_BUILD_DIR) && valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --gen-suppressions=all --log-file=vsupp ./$(EXECUTABLE_NAME) $(ARG)
 	@echo "$(GREEN)Bye !$(NOC)"
-	@cat vsupp | grep -v '==' > vsupp
+	@cd $(MESON_BUILD_DIR) && cp vsupp vsupp2 && cat vsupp2 | grep -v '==' > vsupp && rm vsupp2
 
 #---------------------------------INSTALL RULES--------------------------------#
 install:
