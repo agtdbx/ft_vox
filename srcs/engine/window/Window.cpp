@@ -26,7 +26,7 @@ Window::Window(void)
 	// Create window
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-	// glfwWindowHint(GLFW_DECORATED, GLFW_FALSE); // TODO : PUT TO TRUE FOR FULLSCREEN
+	glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 	this->window = glfwCreateWindow(this->size.x, this->size.y,
 										this->title.c_str(), nullptr, nullptr);
 	if (window == NULL)

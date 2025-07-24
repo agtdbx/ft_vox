@@ -6,7 +6,7 @@
 /*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/07/24 12:21:17 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/07/24 13:09:54 by aderouba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,8 @@ const float MIN_DELTA = 1.0 / MAX_FPS;
 // Window defines
 # define WIN_TITLE "vox"
 # define ENGINE_TITLE "gvEngine"
-# define WIN_W 1600 // TODO: PUT TO 1920x1080
-# define WIN_H 900
+# define WIN_W 1920
+# define WIN_H 1080
 
 const int MAX_FRAMES_IN_FLIGHT = 1;
 
@@ -100,8 +100,11 @@ const std::vector<std::string>	TEXTURES_LAVA = {
 const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
 
 // Map defines
-# define SEED 1753092615
-# define MAX_CHUNK_BUFFER_SIZE 200000
+// # define SEED 1753092615 // Desert messa
+// # define SEED 1753354014 // Big icy moutains
+// # define SEED 1753354094 // Big volcano
+// # define SEED 1753355135 // Big snowy moutain
+# define MAX_CHUNK_BUFFER_SIZE 250000
 # define MIN_CHUNK_PER_THREAD 4
 # define MAX_CHUNKS_FREE_PER_LOOP 2
 
