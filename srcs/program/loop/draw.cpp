@@ -13,6 +13,12 @@ void	draw(
 	{
 		objects.skybox.draw(engine, camera, shaders.skyboxShader);
 		objects.map.draw(engine, camera, shaders.chunkShader, objects.frameId);
+
+		if (objects.underLiquids == OVERLAY_WATER)
+			objects.liquids.drawWater(engine, shaders.overlayWater);
+		else if (objects.underLiquids == OVERLAY_LAVA)
+			objects.liquids.drawLava(engine, shaders.overlayLava);
+
 		if (objects.displayUi)
 		{
 			objects.textFps.draw(engine, shaders.textShader);

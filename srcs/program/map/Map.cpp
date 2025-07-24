@@ -187,6 +187,10 @@ void	Map::destroy(Engine &engine)
 	this->maxDelete = this->cameraChunkId + this->maxChunkIdOffset + gm::Vec2i(1, 1);
 	this->currentView.tmpId = this->minDelete;
 
+	engine.chunkFreeableMutex.lock();
+	engine.chunkFreeable = MAP_CLUSTER_SIZE * CLUSTER_SIZE2;
+	engine.chunkFreeableMutex.unlock();
+
 	// Destroy chunk multhreaded
 	while (1)
 	{

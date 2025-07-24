@@ -34,6 +34,7 @@ bool init(
 
 		objects.map.init(engine, camera, shaders.chunkShader);
 		objects.skybox.init(engine, camera, shaders.skyboxShader);
+		objects.liquids.init(engine, shaders.overlayWater, shaders.overlayLava);
 	}
 	catch(const std::exception& e)
 	{
@@ -148,6 +149,14 @@ static void loadShaders(
 						DEPTH_DISABLE, FCUL_NONE, DRAW_POLYGON, ALPHA_ON,
 						"shadersbin/text_vert.spv", "shadersbin/text_frag.spv",
 						bufferTextInfosChunk, imageInfosSkybox);
+
+	shaders.overlayWater.init<VertexPos>(engine,
+						DEPTH_DISABLE, FCUL_NONE, DRAW_POLYGON, ALPHA_ON,
+						"shadersbin/overlayLiquids_vert.spv", "shadersbin/overlayWater_frag.spv");
+
+	shaders.overlayLava.init<VertexPos>(engine,
+						DEPTH_DISABLE, FCUL_NONE, DRAW_POLYGON, ALPHA_ON,
+						"shadersbin/overlayLiquids_vert.spv", "shadersbin/overlayLava_frag.spv");
 }
 
 

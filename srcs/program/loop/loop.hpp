@@ -13,19 +13,28 @@
 # include <program/shaderStruct.hpp>
 # include <program/map/Map.hpp>
 # include <program/skybox/Skybox.hpp>
+# include <program/overlay/OverlayLiquids.hpp>
 
+enum OverlayType
+{
+	OVERLAY_NONE,
+	OVERLAY_WATER,
+	OVERLAY_LAVA,
+};
 
 struct Objects
 {
-	Map		map;
-	Skybox	skybox;
-	Text	textFps;
-	Text	textCrossAir;
-	Text	textPosition;
-	Text	textMapStatus;
-	bool	displayUi;
-	bool	frameIncrease = true;
-	float	frameId = 0.0f;
+	Map				map;
+	Skybox			skybox;
+	OverlayLiquids	liquids;
+	Text			textFps;
+	Text			textCrossAir;
+	Text			textPosition;
+	Text			textMapStatus;
+	bool			displayUi = true;
+	bool			frameIncrease = true;
+	float			frameId = 0.0f;
+	OverlayType		underLiquids = OVERLAY_NONE;
 
 	/**
 	 * @brief Destroy all object in struct.
@@ -36,6 +45,7 @@ struct Objects
 	{
 		map.destroy(engine);
 		skybox.destroy(engine);
+		liquids.destroy(engine);
 		textFps.destroy(engine);
 		textCrossAir.destroy(engine);
 		textPosition.destroy(engine);
@@ -48,6 +58,8 @@ struct Shaders
 	ChunkShader	chunkShader;
 	Shader		skyboxShader;
 	Shader		textShader;
+	Shader		overlayLava;
+	Shader		overlayWater;
 
 	/**
 	 * @brief Destroy all shader in struct.
@@ -59,6 +71,8 @@ struct Shaders
 		chunkShader.destroy(engine);
 		skyboxShader.destroy(engine);
 		textShader.destroy(engine);
+		overlayWater.destroy(engine);
+		overlayLava.destroy(engine);
 	}
 };
 

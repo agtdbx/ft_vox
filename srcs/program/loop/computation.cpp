@@ -26,6 +26,9 @@ static void	updateChunkMesh(
 				Map &map,
 				int chunkX,
 				int chunkY);
+static OverlayType getOverlay(
+				gm::Vec3f pos,
+				Map &map);
 
 
 void	computation(
@@ -75,8 +78,9 @@ void	computation(
 			objects.frameIncrease = true;
 		}
 	}
-}
 
+	objects.underLiquids = getOverlay(camera.getPosition(), objects.map);
+}
 
 static void perfLog(
 				double delta,
@@ -369,4 +373,32 @@ static void	updateChunkMesh(
 		}
 		engine.queueMutex.unlock();
 	}
+}
+
+
+static OverlayType getOverlay(gm::Vec3f pos, Map &map)
+{
+	gm::Vec3f	posId = pos / (float)CHUNK_SIZE;
+	gm::Vec2i	chunkId((int)posId.x, (int)posId.z);
+
+	if (posId.x < 0.0f)
+		chunkId.x--;
+	if (posId.z < 0.0f)
+		chunkId.y--;
+	Chunk		*currentChunk = map.getChunk(chunkId.x, chunkId.y);
+
+	if (!currentChunk || !currentChunk->isMeshCreated())
+		return (OVERLAY_NONE);
+
+	int	cubeX = pos.x - (chunkId.x * CHUNK_SIZE);
+	int	cubeY = pos.y + 0.24f;
+	int	cubeZ = pos.z - (chunkId.y * CHUNK_SIZE);
+	Cube	cube = currentChunk->getCube(cubeX, cubeY, cubeZ);
+
+	if (cube == CUBE_WATER)
+		return (OVERLAY_WATER);
+	else if (cube == CUBE_LAVA)
+		return (OVERLAY_LAVA);
+
+	return (OVERLAY_NONE);
 }

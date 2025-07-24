@@ -22,10 +22,10 @@ Skybox::~Skybox()
 
 void Skybox::init(Engine &engine, Camera &camera, Shader &skyboxShader)
 {
+	skyboxShader.initShaderParam(engine, this->shaderParam, {"skybox"});
+
 	std::vector<VertexPosTex> vertices;
 	std::vector<uint32_t> indices;
-
-	skyboxShader.initShaderParam(engine, this->shaderParam, {"skybox"});
 
 	float	x0 =    0.0f / 3600.0f;
 	float	x1 =  901.0f / 3600.0f;

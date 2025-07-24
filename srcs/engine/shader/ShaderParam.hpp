@@ -117,7 +117,7 @@ public:
 	 */
 	void	destroy(Engine &engine);
 	/**
-	 * @brief Update uniform values used by shader.destroy
+	 * @brief Update uniform values used by shader.
 	 *
  	 * @param window Window class of the engine.
 	 * @param buffer Pointer of buffer values struct used for update.
