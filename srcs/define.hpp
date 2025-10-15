@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   define.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aderouba <aderouba@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gugus <gugus@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 12:55:17 by aderouba          #+#    #+#             */
-/*   Updated: 2025/07/24 13:09:54 by aderouba         ###   ########.fr       */
+/*   Updated: 2025/10/15 20:44:28 by gugus            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,6 +104,7 @@ const int	CLUSTER_SIZE2 = CLUSTER_SIZE * CLUSTER_SIZE;
 // # define SEED 1753354014 // Big icy moutains
 // # define SEED 1753354094 // Big volcano
 // # define SEED 1753355135 // Big snowy moutain
+// # define SEED 1760553785 // Nice moutains
 # define MAX_CHUNK_BUFFER_SIZE 250000
 # define MIN_CHUNK_PER_THREAD 4
 # define MAX_CHUNKS_FREE_PER_LOOP 2
