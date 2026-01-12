@@ -213,7 +213,5 @@ Projet pédagogique école 42 — Usage éducatif uniquement.
 
 ## 👥 Auteurs
 
-**Projet collaboratif à 2 personnes**
-
 **Auguste Deroubaix** (agtdbx) 🔗 [GitHub](https://github.com/agtdbx) • 🎓 Étudiant 42</br>
 **Hugo De Min** (Bonchour) 🔗 [GitHub](https://github.com/Bonchour) • 🎓 Étudiant 42
