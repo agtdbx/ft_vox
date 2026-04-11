@@ -53,7 +53,8 @@ bool	strToInt(const std::string &s, int &res)
 	long	value = std::stol(s.c_str());
 
 	// Check overflow by value
-	if (value > INT32_MAX || value < INT32_MIN)
+	if (value > std::numeric_limits<int>::max()
+		|| value < std::numeric_limits<int>::max())
 		return (false);
 
 	// Value is an integer

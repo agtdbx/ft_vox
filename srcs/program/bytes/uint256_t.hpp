@@ -2,6 +2,7 @@
 # define UINT256_T_HPP
 
 # include <iostream>
+# include <cstdint>
 
 /**
  * @brief Class for an unsigned interger of 256 bits.

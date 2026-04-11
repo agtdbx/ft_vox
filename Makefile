@@ -115,12 +115,12 @@ genvsupp: all
 install:
 	@echo "$(BLUE)You need to have sudo permission$(NOC)"
 	@echo "$(GREEN)Installing vulkan$(NOC)"
-	@sudo apt install vulkan-tools libvulkan-dev vulkan-validationlayers-dev spirv-tools
+	@sudo apt install vulkan-tools libvulkan-dev vulkan-utility-libraries-dev spirv-tools
 	@echo "$(GREEN)Installing shader compilator and vulkan sdk$(NOC)"
 	@wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
 	@sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-jammy.list https://packages.lunarg.com/vulkan/lunarg-vulkan-jammy.list
 	@sudo apt update
-	@sudo apt install vulkan-sdk intel-opencl-icd
+	@sudo apt install vulkan-sdk
 
 full_install: install
 	@echo "$(GREEN)Installing glfw$(NOC)"
